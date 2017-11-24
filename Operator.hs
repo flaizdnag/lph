@@ -3,22 +3,22 @@ module Operator where
 import Formulas
 
 
-isSublist :: Eq a => [a] -> [a] -> Bool
+isSublist :: Eq a => [a] -> [a] -> Bool                 --checks if list is a sublist of other list
 isSublist [] _ = True
 isSublist (x:xs) ys
                 | elem x ys = isSublist xs ys
                 | otherwise     = False
 
-isElem :: Eq a => [a] -> [a] -> Bool
+isElem :: Eq a => [a] -> [a] -> Bool                    --checks if list contains any element of other list
 isElem [] _          = False
 isElem (x:xs) ys 
                 | elem x ys     = True
                 | otherwise     = isElem xs ys
 
-opTp :: LogicP -> [Atom] -> [Atom]
+opTp :: LogicP -> [Atom] -> [Atom]                      --immediate consequence operator 
 opTp [] ys     = []
 opTp (x:xs) ys = case x of
-                    (a, b, c) -> if isSublist b ys && isElem (turnBodyNtoP c) ys == False 
+                    (a, b, c) -> if isSublist b ys && isElem (turnNtoP c) ys == False 
                         then a : opTp xs ys 
                         else opTp xs ys
 
