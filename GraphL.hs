@@ -2,30 +2,34 @@ module Graph where
 
 import Formulas
 import Operator
+import Data.Graph
 
-type Graph = ([(Atom, Atom)], [(Atom, Atom)])               --([positive edges][negative edges])
+--takes list of Atoms and returns list of Ints
+atomToInt :: [Atom] -> [Int]
+atomToInt []     = []
+atomToInt (x:xs) = case x of
+                        A b -> b : atomToInt xs
 
-zipEdges :: Atom -> [Atom] -> [(Atom, Atom)]        --zips head with body elements
+--takes list of Ints and returns list of Atoms
+intToAtom :: [Int] -> [Atom]
+intToAtom []     = []
+intToAtom (x:xs) = case x of
+                         b -> A b : intToAtom xs
+
+--takes Herbrand Base and returns bounds for the graph (requirement: Atoms in program have to be numbered in order)
+bounds' :: LogicP -> (Int, Int)
+bounds' xs = (minimum (atomToInt (bP xs)), maximum (atomToInt (bP xs)))
+
+
+zipEdges :: [Int] -> [Int] -> [(Int, Int)]        
 zipEdges _ []     = []
-zipEdges a (x:xs) = (a, x) : zipEdges a xs
+zipEdges (x:xs) (y:ys) = (x, y) : zipEdges (x:xs) ys
 
-graphP :: LogicP -> [(Atom, Atom)]                  --makes positive edges
-graphP []     = []
-graphP (x:xs) = case x of
-                        (a, b, _) -> (zipEdges a b) ++ graphP xs
+-- creates list of pairs, each containing HC Head and one element of HC Body
+edges' :: LogicP -> [(Int, Int)]
+edges' [] = []
+edges' (x:xs) = zipEdges (atomToInt (hClHead x)) (atomToInt (hClBody x)) ++ edges' xs
 
-graphN :: LogicP -> [(Atom, Atom)]                  --makes negative edges
-graphN []     = []
-graphN (x:xs) = case x of
-                        (a, _, c) -> (zipEdges a c) ++ graphN xs
-
-graphCreator :: LogicP -> Graph                     --creates a graph
-graphCreator []     = ([], [])
-graphCreator xs = (graphP xs, graphN xs)
-
-
-
--- pathG :: Atom -> Atom -> Graph -> ([(Atom, Atom)], [(Atom, Atom)])
--- graphCreator :: LogicP -> Graph
--- dependsP and dependsN -> Bool
-{- unzip :: [(a, b)] -> ([a], [b]) transforms a list of pairs into a list of first components and a list of second components.-}
+--creates a graph
+graphG :: LogicP -> Graph
+graphG x = buildG (bounds' x) (edges' x)
