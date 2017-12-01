@@ -51,3 +51,5 @@ negP' x (y:ys) []     =
 negP' x (y:ys) (z:zs) = if path x y z then z : negP' x ys (z:zs) else negP' x ys (z:zs)-}
 
 --gr = buildG (1,7) [(1,2), (3,2), (4,5), (7,2), (6,5), (1,7), (2,4)]
+-- dependsP and dependsN -> Bool
+{- unzip :: [(a, b)] -> ([a], [b]) transforms a list of pairs into a list of first components and a list of second components.-}
