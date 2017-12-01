@@ -7,20 +7,20 @@ isSublist :: Eq a => [a] -> [a] -> Bool                 --checks if list is a su
 isSublist [] _ = True
 isSublist (x:xs) ys
                 | elem x ys = isSublist xs ys
-                | otherwise     = False
+                | otherwise = False
 
 isElem :: Eq a => [a] -> [a] -> Bool                    --checks if list contains any element of other list
-isElem [] _          = False
+isElem [] _ = False
 isElem (x:xs) ys 
-                | elem x ys     = True
-                | otherwise     = isElem xs ys
+                | elem x ys = True
+                | otherwise = isElem xs ys
 
 opTp :: LogicP -> [Atom] -> [Atom]                      --immediate consequence operator 
 opTp [] ys     = []
 opTp (x:xs) ys = case x of
-                    (a, b, c) -> if isSublist b ys && isElem (turnNtoP c) ys == False 
-                        then a : opTp xs ys 
-                        else opTp xs ys
+                    (h, pos, neg) -> if   isSublist pos ys && isElem neg ys == False 
+                                     then h : opTp xs ys 
+                                     else opTp xs ys
 
 {-LogicP examples:
 
