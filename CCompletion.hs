@@ -1,6 +1,6 @@
 module CCompletion where
 
-import Formulas
+import FormulasL
 
 negP :: LogicP -> [Atom]
 negP []     = []

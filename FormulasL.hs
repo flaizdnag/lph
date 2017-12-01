@@ -1,4 +1,4 @@
-module Formulas where
+module FormulasL where
 
 import Data.List
 
