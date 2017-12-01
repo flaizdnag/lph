@@ -33,3 +33,21 @@ edges' (x:xs) = zipEdges (atomToInt (hClHead x)) (atomToInt (hClBody x)) ++ edge
 --creates a graph
 graphG :: LogicP -> Graph
 graphG x = buildG (bounds' x) (edges' x)
+
+
+negP :: LogicP -> [Atom]
+negP []     = []
+negP (x:xs) = hClBodyN x ++ negP xs
+
+{-depends :: LogicP -> [Int] -> Bool
+depends x (y:z:zs)
+                    | (y:z:zs) == []      = False
+                    | path (graphG x) y z = True
+                    | otherwise           = depends x zs
+
+
+negP' :: LogicP 
+negP' x (y:ys) []     = 
+negP' x (y:ys) (z:zs) = if path x y z then z : negP' x ys (z:zs) else negP' x ys (z:zs)-}
+
+--gr = buildG (1,7) [(1,2), (3,2), (4,5), (7,2), (6,5), (1,7), (2,4)]
