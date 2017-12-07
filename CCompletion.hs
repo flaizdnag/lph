@@ -3,6 +3,7 @@ module CCompletion where
 import FormulasL
 import GraphL
 import Operator
+<<<<<<< HEAD
 import Data.Graph
 
 data Form =   V Atom 
@@ -11,7 +12,18 @@ data Form =   V Atom
             | D [Form]      -- disjunction - D Form Form? 
             | E Form Form   -- equivalence
             deriving Show
+=======
+import CPL
+import Data.Graph
+>>>>>>> bd46f1deff13b25326fcc8e85132a3552b75055f
 
+data Form =   V Atom 
+            | N Form        -- negation
+            | C [Form]      -- conjunction - C Form Form? 
+            | D [Form]      -- disjunction - D Form Form? 
+            | E Form Form   -- equivalence
+            deriving Show
+            
 negP :: LogicP -> [Atom]
 negP []     = []
 negP (x:xs) = hClBodyN x ++ negP xs
@@ -20,7 +32,11 @@ negP' :: LogicP -> [Atom]
 negP' xs = intToAtom [x | x <- atomToInt (bP xs), 
                           y <- atomToInt (negP xs), 
                           path g y x && not (path g x y)]
+<<<<<<< HEAD
                           where g = graphG xs
+=======
+                          where g = $ graphG xs
+>>>>>>> bd46f1deff13b25326fcc8e85132a3552b75055f
 
 -- creates a program which heads belong to negP'
 logicP' :: LogicP -> LogicP
@@ -57,4 +73,8 @@ hClToEq x = case x of
 
 comp :: LogicP -> [Form]
 comp []     = []
+<<<<<<< HEAD
 comp (x:xs) = hClToEq x : comp xs
+=======
+comp (x:xs) = hClToEq x : comp xs
+>>>>>>> bd46f1deff13b25326fcc8e85132a3552b75055f
