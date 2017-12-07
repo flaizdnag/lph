@@ -2,6 +2,7 @@ module FormulasL where
 
 import Data.List
 
+
 data Atom = A Int
             deriving Show
 
@@ -10,7 +11,6 @@ instance Eq Atom where
 
 type HClause = (Atom, [Atom], [Atom])
 type LogicP = [HClause]
-
 
 -- returns head of horn clause
 hClHead :: HClause -> [Atom]
