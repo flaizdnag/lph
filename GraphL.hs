@@ -1,16 +1,19 @@
-module Graph where
+module GraphL where
     
 import FormulasL
 import Operator()
 import Data.Graph
     
---takes Herbrand Base (bPBase) and turns all its atoms into integers
+-- takes Herbrand Base (bPBase) and turns all its atoms into integers
 atomToInt :: [Atom] -> [Int]
 atomToInt []     = []
 atomToInt (x:xs) = case x of
                         A b -> b : atomToInt xs
-    
---takes Herbrand Base and returns bounds for the graph (requirement: Atoms in program have to be numbered in order)
+
+{-
+takes Herbrand Base and returns bounds for the graph 
+(requirement: Atoms in program have to be numbered in order)
+-}
 bounds' :: LogicP -> (Int, Int)
 bounds' xs = (minimum (atomToInt (bP xs)), maximum (atomToInt (bP xs)))
     
@@ -24,6 +27,6 @@ edges' :: LogicP -> [(Int, Int)]
 edges' [] = []
 edges' (x:xs) = zipEdges (atomToInt (hClHead x)) (atomToInt (hClBody x)) ++ edges' xs
     
---creates a graph
+-- creates a graph
 graphG :: LogicP -> Graph
 graphG x = buildG (bounds' x) (edges' x)
