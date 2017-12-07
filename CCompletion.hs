@@ -1,25 +1,25 @@
--- wszystko, co potrzebne do stworzenia uzupełnienia Clarka
-
 module CCompletion where
 
 import FormulasL
-import GraphL()
+import GraphL
+import Operator
+import CPL
+import Data.Graph
 
 negP :: LogicP -> [Atom]
 negP []     = []
 negP (x:xs) = hClBodyN x ++ negP xs
 
-{-negP' :: 
-negP' = [x | x <- bP, y <- negP, path (atomToInt x) (atomToInt y)]
+negP' :: LogicP -> [Atom]
+negP' xs = intToAtom [x | x <- atomToInt (bP xs), 
+                          y <- atomToInt (negP xs), 
+                          path g y x && not (path g x y)]
+                          where g = $ graphG xs
 
-uzupełniona definicja atomu
-spójniki: negacja ~, równoważność <->, koniukcja ^, alternatywa v
+-- creates a program which heads belong to negP'
+logicP' :: LogicP -> LogicP
+logicP' xs = [x | x <- xs, isElem (hClHead x) (negP' xs)]
 
-osobne pliki: 
-examples - przykłady programów logicznych
-CPL - cpl + prover
-AcceptableTest - tu będzie dużo rzeczy
-
-nie przekraczać 80 linijek
-
--}
+comp :: LogicP -> [Form]
+comp []     = []
+comp (x:xs) = hClToEq x : comp xs
