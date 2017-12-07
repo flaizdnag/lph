@@ -19,13 +19,7 @@ opTp (x:xs) ys = case x of
                                      then h : opTp xs ys 
                                      else opTp xs ys
 
-{-
-operator iteracji opTp 
-Tp ^ 1 = inf P(Bp) = zbiór pusty
-Tp ^ n = Tp(Tp ^ (n-1))
-warunek stopu: Tp ([Atom]) = xs - sprawdzać na programach, które się zatrzymują
-                     xs
--}
+
 {-LogicP examples:
 
 [(A 1, [A 3, A 5], [A 2, A 8]), (A 11, [A 9], [A 13, A 12]), (A 17, [A 4, A 6], [A 10, A 12])] [A 3, A 5, A 9, A 4, A 6, A 10]
