@@ -7,9 +7,10 @@ import Data.Graph
 
 data Form = V Atom 
             | N Form        -- negation
-            | C [Form]      -- conjunction - C Form Form? 
-            | D [Form]      -- disjunction - D Form Form? 
+            | C [Form]      -- conjunction 
+            | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
+            | T             -- Top symbol
                 deriving Show
 
 negP :: LogicP -> [Atom]
@@ -26,10 +27,6 @@ negP' xs = intToAtom [x | x <- atomToInt (bP xs),
 logicP' :: LogicP -> LogicP
 logicP' xs = [x | x <- xs, isElem (hClHead x) (negP' xs)]
 
-comp :: LogicP -> [Form]
-comp []     = []
-comp (x:xs) = hClToEq x : comp xs
-
 -- CPL
 -- changes negative atoms to N Form
 addN :: [Atom] -> [Form]
@@ -44,19 +41,21 @@ atomToForm x = case x of
                     (y:ys) -> V y : atomToForm ys
 
 -- connects elements of the horn clauses body by conjunction
-bodyToC :: HClause -> Form
-bodyToC x = case x of 
-{-
-                 (_, [], neg)  -> case neg of
-                                       n -> N (V n)
-                                       (n:ns) -> C (addN (n:ns))
-                 (_, pos, [])  -> case pos of
-                                       p -> V p
-                                       (p:ps) -> C (atomToForm (p:ps)) ??? -}
-                 (_, pos, neg) -> C (atomToForm pos ++ addN neg)
+addC :: HClause -> Form
+addC (_, [], []) = T
+addC (_, [], (xs)) 
+                 | length (xs) == 1 = N (V (head xs))
+                 | otherwise        = C (addN (xs))
+addC (_, (ys), []) 
+                 | length (ys) == 1 = N (V (head ys))
+                 | otherwise        = C (atomToForm (ys))
+addC (_, ys, xs) = C (atomToForm ys ++ addN xs)
+
+--addD
 
 -- connects head and body of horn clause by equivalence
-hClToEq :: HClause -> Form
-hClToEq x = case x of 
-                 (h, _, _) -> E (V h) (bodyToC x) 
+comp:: LogicP -> [Form]
+comp []     = []
+comp (x:xs) = case x of 
+                 (h, _, _) -> (E (V h) (addC x)) : comp xs
 
