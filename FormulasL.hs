@@ -1,8 +1,10 @@
-module Formulas where
+module FormulasL where
 
 import Data.List
+
+
 data Atom = A Int
-            deriving (Show)
+            deriving Show
 
 instance Eq Atom where
         A a == A b = a == b
