@@ -41,7 +41,7 @@ fxp x n = (opTp x (fst (fxp x (n - 1))), (n + 1))
 iteration :: LogicP -> ([Atom], Int) -> ([Atom], Int)
 iteration x (y, n) = if a == b
                         then fxp x n
-                        else fxp x (n + 1)
+                        else iteration x (fxp x (n + 1))
                             where
                                 a = fst (fxp x n)
                                 b = fst (fxp x (n - 1))
