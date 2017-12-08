@@ -1,7 +1,7 @@
-module CCompletion where
+module Completion where
 
-import FormulasL
-import GraphL
+import Formulas
+import Graph
 import Operator
 import Data.Graph
 
