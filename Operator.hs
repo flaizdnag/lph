@@ -1,6 +1,6 @@
 module Operator where
 
-import FormulasL
+import Formulas
 import Data.List
 --import GHC.Exts
 
