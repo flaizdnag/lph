@@ -32,7 +32,7 @@ iterTp x (y:ys)
                | (opTp x y) == y = (y:ys)
                | otherwise       = iterTp x ((opTp x y) : y:ys)
 
--- initiates iterations of Tp and returns finale result (Herbrand model) 
+-- initiates iterations of Tp and returns final result (Herbrand model) 
 upArrow :: LogicP -> [Atom]
 upArrow x = head (iterTp x [[]])
 
