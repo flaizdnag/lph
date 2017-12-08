@@ -1,6 +1,4 @@
 # lph
 Logic Programs in Haskell
 
-:)
-
-zmiana
+The aim of this project is to implement propositional version of logic programs in Haskell.
