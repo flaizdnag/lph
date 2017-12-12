@@ -1,6 +1,6 @@
 module Graph where
 
-import Formulas
+import FormulasL
 import Operator
 import Data.Graph
 
