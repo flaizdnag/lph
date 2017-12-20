@@ -2,6 +2,22 @@ module FormulasL where
 
 import Data.List
 
+{-
+ - Logic programs in the propositional case are defined as sets of Horn
+ - clauses, which in turn can be defined in the following way:
+ -
+ - a{0} <- a{1} , ... , a{n} , ~a{n+1} , ... a{m}
+ -
+ - where a{0}, ..., a{m} are propositions called atoms. Atom a{0} is called the
+ - head of a Horn clause and the rest of the atoms, i.e. a{1}, ..., a{m} form
+ - the body of a Horn clause. As it can be seen in the above example, there are
+ - two types of atoms in the body of a Horn clause: atoms and negated atoms.
+ - Since the negated atoms occur only in the body of a Horn clause, we decided
+ - to instead of defining the negation itself, implement a Horn clause as a
+ - tuple with atom (the head of a Horn clause), list of atoms that occur
+ - without the negation in the body of a Horn clause and list of atoms that
+ - occur with negation in the body of a Horn clause.
+ -}
 
 data Atom = A Int
             deriving Show
@@ -45,13 +61,3 @@ bPBody (x:xs) = nub (hClBody x ++ bPBody xs)
 bP :: LogicP -> [Atom]
 bP [] = []
 bP xs = nub (bPHead xs ++ bPBody xs)
-
-
--- LogicP: [(A 1, [A 2, A 3], [A 4, A 5]), (A 6, [A 5, A 7], [A 8, A 9]), (A 10, [A 11, A 12], [A 13, A 14])]
-
-{- 
-show:   atoms: A Int -> a Int
-        literals: a Int, n a Int
-        horn clauses: a Int <- a Int, a Int, ...
-        logic program: {horn clause, ...}
--}

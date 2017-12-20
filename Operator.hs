@@ -1,31 +1,47 @@
 module Operator where
 
-import FormulasL
-import Data.List
+import Formulas
+--import GHC.Exts
+
+--checks if list is a sublist of other list
+isSublist :: Eq a => [a] -> [a] -> Bool
+isSublist [] _ = True
+isSublist (x:xs) ys
+                    | elem x ys = isSublist xs ys
+                    | otherwise = False
 
 
 --checks if list contains any element of other list
 isElem :: Eq a => [a] -> [a] -> Bool
 isElem [] _ = False
-isElem (x:xs) ys 
+isElem (x:xs) ys
                 | elem x ys = True
                 | otherwise = isElem xs ys
 
 --immediate consequence operator
-opTp :: LogicP -> [Atom] -> [Atom] 
+opTp :: LogicP -> [Atom] -> [Atom]
 opTp [] _      = []
 opTp (x:xs) ys = case x of
-                    (h, pos, neg) -> if   isInfixOf pos ys && isElem neg ys == False 
-                                     then h : opTp xs ys 
+                    (h, pos, neg) -> if isSublist pos ys && isElem neg ys == False
+                                     then h : opTp xs ys
                                      else opTp xs ys
 
+-- iteraters Tp
+iterTp :: LogicP -> [[Atom]] -> [[Atom]]
+iterTp x (y:ys) 
+               | (opTp x y) == y = (y:ys)
+               | otherwise       = iterTp x ((opTp x y) : y:ys)
 
-{-LogicP examples:
+-- initiates iterations of Tp and returns final result (Herbrand model) 
+upArrow :: LogicP -> [Atom]
+upArrow x = head (iterTp x [[]])
 
-[(A 1, [A 3, A 5], [A 2, A 8]), (A 11, [A 9], [A 13, A 12]), (A 17, [A 4, A 6], [A 10, A 12])] [A 3, A 5, A 9, A 4, A 6, A 10]
-wynik: A 1, A 11
-[(A 1, [A 3, A 5], [A 2, A 8]), (A 11, [A 9], [A 13, A 12]), (A 17, [A 4, A 6], [A 10, A 12])] [A 3, A 5, A 9, A 4, A 6]
-wynik: A 1, A 11, A 17
-[(A 1, [A 3, A 5], [A 2, A 8]), (A 11, [A 9], [A 13, A 12]), (A 17, [A 4, A 6], [A 10, A 12])] [A 3, A 5] 
-wynik: A 1
+
+
+{-
+interps :: LogicP -> [[Atom]]
+interps x = sortWith length $ subsequences (bP x)
 -}
+
+
+

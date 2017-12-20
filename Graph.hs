@@ -1,6 +1,7 @@
 module GraphL where
 
 import FormulasL
+import Operator
 import Data.Graph
 
 --takes list of Atoms and returns list of Ints
@@ -37,6 +38,7 @@ graphG :: LogicP -> Graph
 graphG x = buildG (bounds' x) (edges' x)
 
 
+graph = graphG
+
+
 --gr = buildG (1,7) [(1,2), (3,2), (4,5), (7,2), (6,5), (1,7), (2,4)]
--- dependsP and dependsN -> Bool
-{- unzip :: [(a, b)] -> ([a], [b]) transforms a list of pairs into a list of first components and a list of second components.-}
