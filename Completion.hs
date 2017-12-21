@@ -4,6 +4,7 @@ import Formulas
 import Graph
 import Operator
 import Data.Graph
+import Data.List
 
 data Form = V Atom 
             | N Form        -- negation
@@ -11,7 +12,7 @@ data Form = V Atom
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
             | T             -- Top symbol
-                deriving Show
+            deriving Show
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -43,18 +44,18 @@ atomToForm x = case x of
 -- connects elements of the horn clauses body by conjunction
 addC :: HClause -> Form
 addC (_, [], []) = T
-addC (_, [], (xs)) 
-                 | length (xs) == 1 = N (V (head xs))
-                 | otherwise        = C (addN (xs))
-addC (_, (ys), []) 
-                 | length (ys) == 1 = N (V (head ys))
-                 | otherwise        = C (atomToForm (ys))
-addC (_, ys, xs) = C (atomToForm ys ++ addN xs)
+addC (_, [], ys) 
+                | length ys == 1 = N (V (head ys))
+                | otherwise      = C (addN ys)
+addC (_, xs, []) 
+                | length xs == 1 = V (head xs)
+                | otherwise      = C (atomToForm xs)
+addC (_, xs, ys) = C (atomToForm xs ++ addN ys)
 
 --addD
 
 -- connects head and body of horn clause by equivalence
-comp:: LogicP -> [Form]
+comp :: LogicP -> [Form]
 comp []     = []
 comp (x:xs) = case x of 
                  (h, _, _) -> (E (V h) (addC x)) : comp xs

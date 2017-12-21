@@ -1,6 +1,6 @@
 module Graph where
 
-import FormulasL
+import Formulas
 import Operator
 import Data.Graph
 
@@ -16,7 +16,10 @@ intToAtom []     = []
 intToAtom (x:xs) = case x of
                          b -> A b : intToAtom xs
 
---takes Herbrand Base and returns bounds for the graph (requirement: Atoms in program have to be numbered in order)
+{-
+takes Herbrand Base and returns bounds for the graph 
+(requirement: Atoms in program have to be numbered in order)
+-}
 bounds' :: LogicP -> (Int, Int)
 bounds' xs = (minimum (atomToInt (bP xs)), maximum (atomToInt (bP xs)))
 
