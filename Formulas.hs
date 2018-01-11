@@ -52,12 +52,12 @@ hClBodyN (_, _, ys) = ys
 -- returns all heads of logic program
 bPHead :: LogicP -> [Atom]              
 bPHead []     = []
-bPHead (x:xs) = hClHead x ++ bPHead xs
+bPHead (x:xs) = nub (hClHead x ++ bPHead xs)
 
 -- returns bodies of logic program
 bPBody :: LogicP -> [Atom]              
 bPBody []     = []
-bPBody (x:xs) = hClBodyP x ++ hClBodyN x ++ bPBody xs
+bPBody (x:xs) = nub (hClBodyP x ++ hClBodyN x ++ bPBody xs)
 
 -- returns herbrand base of logic program (without duplicates)
 bP :: LogicP -> [Atom]                 
