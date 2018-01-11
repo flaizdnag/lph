@@ -5,6 +5,7 @@ import Graph
 import Operator
 import Data.Graph
 import Data.List
+import DataUnique
 
 data Form = V Atom 
             | N Form        -- negation
@@ -54,8 +55,44 @@ addC (_, ys, xs) = C (atomToForm ys ++ addN xs)
 
 --addD
 
+-- creates list of heads that repeate in LogicP
+repHeads :: LogicP -> [Atom]
+repHeads [] = []
+repHeads xs = repeated (bPHead' xs)
+
+first :: (a, b, c) -> a
+first (x, _, _) = x
+
+headBody :: LogicP -> [Atom] -> [HClause]
+headBody _ [] = []
+headBody [] _ = []
+headBody (x:xs) ys 
+                  | elem (first x) ys = x : (headBody xs ys)
+                  | otherwise = headBody xs ys
+
+hBody x = headBody x (repHeads x)
+
+groupBy' :: (HClause -> HClause -> Bool) -> LogicP -> [[HClause]]
+groupBy' eq []     = []
+groupBy' eq (x:xs) = (x:ys) : groupBy eq zs
+                where
+                    (ys, zs) = span (eq x) xs
+
+
+sorts a b 
+           | (first a) == (first b) = EQ
+           | (first a) < (first b)  = LT
+           | otherwise = GT
+
+sortHeads :: LogicP -> LogicP
+sortHeads xs = sortBy sorts xs
+
+groupHeads :: LogicP -> [[HClause]]
+groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
+
+
 -- connects head and body of horn clause by equivalence
-comp:: LogicP -> [Form]
+comp :: LogicP -> [Form]
 comp []     = []
 comp (x:xs) = case x of 
                  (h, _, _) -> (E (V h) (addC x)) : comp xs
@@ -108,10 +145,13 @@ mapNum' xs = mapNum (sortElems xs) (numList (bP xs))
 perms :: ([Atom], [Atom], [Atom]) -> [[Atom]]
 perms (a, b, c) = permutations b
 
+--checker??
+
+-- replaces middle list with one of the permutations (checker needed)
 replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
 replaceNum (a, b, c) (x:xs) = (a, x, c)
 
-{-lvlMap (x:xs) = if checker (map (a, x, c)) 
-                    then map (a, x, c) 
+{-lvlMap (x:xs) = if checker (numMap (a, x, c)) 
+                    then numMap (a, x, c) 
                     else lvlMap xs
 -}
