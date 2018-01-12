@@ -5,7 +5,6 @@ import Graph
 import Operator
 import Data.Graph
 import Data.List
-import DataUnique
 
 data Form = V Atom 
             | N Form        -- negation
@@ -53,40 +52,41 @@ addC (_, (ys), [])
                  | otherwise        = C (atomToForm (ys))
 addC (_, ys, xs) = C (atomToForm ys ++ addN xs)
 
---addD
+-- maps adding conjunction on list with HClauses
+addC1 :: [[HClause]] -> [[Form]]
+addC1 []     = []
+addC1 (x:xs) = (map addC x) : (addC1 xs)
 
--- creates list of heads that repeate in LogicP
-repHeads :: LogicP -> [Atom]
-repHeads [] = []
-repHeads xs = repeated (bPHead' xs)
+-- adds conjunction to the whole LogicP
+addC2 :: LogicP -> [[Form]]
+addC2 [] = []
+addC2 x  = addC1 (groupHeads x)
 
+{-addD :: [[Form]] -> [[Form]]
+addD []     = []
+addD (x:xs) = if (length x) > 1 
+                then (D x) : (addD xs) 
+                else x ++ (addD xs)
+-}
+
+addD1 [] = []
+addD1 xs = addD (addC2 xs)
+
+-- returns first element of tuple with 3 elements
 first :: (a, b, c) -> a
 first (x, _, _) = x
 
-headBody :: LogicP -> [Atom] -> [HClause]
-headBody _ [] = []
-headBody [] _ = []
-headBody (x:xs) ys 
-                  | elem (first x) ys = x : (headBody xs ys)
-                  | otherwise = headBody xs ys
-
-hBody x = headBody x (repHeads x)
-
-groupBy' :: (HClause -> HClause -> Bool) -> LogicP -> [[HClause]]
-groupBy' eq []     = []
-groupBy' eq (x:xs) = (x:ys) : groupBy eq zs
-                where
-                    (ys, zs) = span (eq x) xs
-
-
+-- ordering for HClauses in LogicP (by their head indexes)
 sorts a b 
            | (first a) == (first b) = EQ
            | (first a) < (first b)  = LT
            | otherwise = GT
 
+-- sorts HClauses by their heads indexes 
 sortHeads :: LogicP -> LogicP
 sortHeads xs = sortBy sorts xs
 
+-- groups HClauses with the same heads in LogicP 
 groupHeads :: LogicP -> [[HClause]]
 groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
 
@@ -147,11 +147,15 @@ perms (a, b, c) = permutations b
 
 --checker??
 
--- replaces middle list with one of the permutations (checker needed)
+-- replaces middle list with one of the permutations (depended on checker)
 replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
 replaceNum (a, b, c) (x:xs) = (a, x, c)
 
 {-lvlMap (x:xs) = if checker (numMap (a, x, c)) 
                     then numMap (a, x, c) 
                     else lvlMap xs
+
+
+
+
 -}
