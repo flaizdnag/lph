@@ -12,7 +12,8 @@ data Form = V Atom
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
             | T             -- Top symbol
-                deriving Show
+
+deriving Show
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -44,6 +45,7 @@ atomToForm x = case x of
 -- connects elements of the horn clauses body by conjunction
 addC :: HClause -> Form
 addC (_, [], []) = T
+
 addC (_, [], (xs)) 
                  | length (xs) == 1 = N (V (head xs))
                  | otherwise        = C (addN (xs))
@@ -89,7 +91,6 @@ sortHeads xs = sortBy sorts xs
 -- groups HClauses with the same heads in LogicP 
 groupHeads :: LogicP -> [[HClause]]
 groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
-
 
 -- connects head and body of horn clause by equivalence
 comp :: LogicP -> [Form]
@@ -154,8 +155,4 @@ replaceNum (a, b, c) (x:xs) = (a, x, c)
 {-lvlMap (x:xs) = if checker (numMap (a, x, c)) 
                     then numMap (a, x, c) 
                     else lvlMap xs
-
-
-
-
 -}
