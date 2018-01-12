@@ -25,6 +25,9 @@ data Atom = A Int
 instance Eq Atom where
         A a == A b = a == b
 
+instance Ord Atom where
+        compare (A a) (A b) = compare a b
+
 type HClause = (Atom, [Atom], [Atom])
 type LogicP = [HClause]
 
@@ -47,17 +50,23 @@ hClBodyN :: HClause -> [Atom]
 hClBodyN (_, _, []) = []
 hClBodyN (_, _, ys) = ys
 
--- returns heads of logic program 
-bPHead :: LogicP -> [Atom]
+-- returns all heads of logic program (w/o duplicates)
+bPHead :: LogicP -> [Atom]              
 bPHead []     = []
 bPHead (x:xs) = nub (hClHead x ++ bPHead xs)
 
--- returns bodies of logic program
-bPBody :: LogicP -> [Atom]
+-- returns all heads of logic program (with duplicates)
+bPHead' :: LogicP -> [Atom]              
+bPHead' []     = []
+bPHead' (x:xs) = (hClHead x) ++ (bPHead' xs)
+
+-- returns bodies of logic program (w/o duplicates)
+bPBody :: LogicP -> [Atom]              
 bPBody []     = []
-bPBody (x:xs) = nub (hClBody x ++ bPBody xs)
+bPBody (x:xs) = nub (hClBodyP x ++ hClBodyN x ++ bPBody xs)
 
 -- returns herbrand base of logic program (without duplicates)
 bP :: LogicP -> [Atom]
 bP [] = []
 bP xs = nub (bPHead xs ++ bPBody xs)
+
