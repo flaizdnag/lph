@@ -12,8 +12,7 @@ data Form = V Atom
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
             | T             -- Top symbol
-
-deriving Show
+                deriving Show
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -37,10 +36,13 @@ addN x = case x of
               (y:ys) -> N (V y) : addN ys
 
 -- changes positive atoms to V Atom
-atomToForm :: [Atom] -> [Form]
-atomToForm x = case x of
+atomsToForm :: [Atom] -> [Form]
+atomsToForm x = case x of
                     []     -> []
-                    (y:ys) -> V y : atomToForm ys
+                    (y:ys) -> V y : atomsToForm ys
+
+atomToForm :: Atom -> Form
+atomToForm x = V x
 
 -- connects elements of the horn clauses body by conjunction
 addC :: HClause -> Form
@@ -51,28 +53,33 @@ addC (_, [], (xs))
                  | otherwise        = C (addN (xs))
 addC (_, (ys), []) 
                  | length (ys) == 1 = N (V (head ys))
-                 | otherwise        = C (atomToForm (ys))
-addC (_, ys, xs) = C (atomToForm ys ++ addN xs)
+                 | otherwise        = C (atomsToForm (ys))
+addC (_, ys, xs) = C (atomsToForm ys ++ addN xs)
 
--- maps adding conjunction on list with HClauses
-addC1 :: [[HClause]] -> [[Form]]
-addC1 []     = []
-addC1 (x:xs) = (map addC x) : (addC1 xs)
 
--- adds conjunction to the whole LogicP
-addC2 :: LogicP -> [[Form]]
-addC2 [] = []
-addC2 x  = addC1 (groupHeads x)
+sameHead :: HClause -> (Form, Form)
+sameHead x = (atomToForm (first x), addC x)
 
-{-addD :: [[Form]] -> [[Form]]
-addD []     = []
-addD (x:xs) = if (length x) > 1 
-                then (D x) : (addD xs) 
-                else x ++ (addD xs)
--}
+sameH1 :: [[HClause]] -> [[(Form, Form)]]
+sameH1 []     = []
+sameH1 (x:xs) = (map sameHead x) : sameH1 xs
 
+--gives us list of lists with same head clauses as pairs (head, conjunction of body atoms)
+sameH2 :: LogicP -> [[(Form, Form)]]
+sameH2 [] = []
+sameH2 xs = sameH1 (groupHeads xs)
+
+--adds disjunction to one group of clauses (with the same head)
+addD :: [(Form, Form)] -> (Form, Form)
+addD x 
+            | (length x) > 1 = (fst (head x), D (map snd x))
+            | otherwise       = head x
+
+--maps adding disjunction to whole LogicP
+addD1 :: LogicP -> [(Form, Form)]
 addD1 [] = []
-addD1 xs = addD (addC2 xs)
+addD1 xs = map addD (sameH2 xs)
+
 
 -- returns first element of tuple with 3 elements
 first :: (a, b, c) -> a
