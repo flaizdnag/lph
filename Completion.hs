@@ -69,16 +69,16 @@ sameH2 :: LogicP -> [[(Form, Form)]]
 sameH2 [] = []
 sameH2 xs = sameH1 (groupHeads xs)
 
---adds disjunction to one group of clauses (with the same head)
-addD :: [(Form, Form)] -> (Form, Form)
-addD x 
-            | (length x) > 1 = (fst (head x), D (map snd x))
-            | otherwise       = head x
+--adds disjunction and equivalence to one group of clauses 
+addDE1 :: [(Form, Form)] -> Form
+addDE1 x 
+            | (length x) > 1 = E (fst (head x)) (D (map snd x))
+            | otherwise       = E (fst (head x)) (snd (head x))
 
---maps adding disjunction to whole LogicP
-addD1 :: LogicP -> [(Form, Form)]
-addD1 [] = []
-addD1 xs = map addD (sameH2 xs)
+--maps adding disjunction and equivalence to whole LogicP
+addDE :: LogicP -> [Form]
+addDE [] = []
+addDE xs = map addDE1 (sameH2 xs)
 
 
 -- returns first element of tuple with 3 elements
