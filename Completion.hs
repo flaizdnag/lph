@@ -13,7 +13,9 @@ data Form = V Atom
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
             | T             -- Top symbol
-                deriving Show
+                deriving (Show, Eq)
+
+
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -44,6 +46,27 @@ atomsToForm x = case x of
 
 atomToForm :: Atom -> Form
 atomToForm x = V x
+
+
+                 
+
+-- returns first element of tuple with 3 elements
+first :: (a, b, c) -> a
+first (x, _, _) = x
+
+-- ordering for HClauses in LogicP (by their head indexes)
+sorts a b 
+           | (first a) == (first b) = EQ
+           | (first a) < (first b)  = LT
+           | otherwise = GT
+
+-- sorts HClauses by their heads indexes 
+sortHeads :: LogicP -> LogicP
+sortHeads xs = sortBy sorts xs
+
+-- groups HClauses with the same heads in LogicP 
+groupHeads :: LogicP -> [[HClause]]
+groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
 
 -- connects elements of the horn clauses body by conjunction
 addC :: HClause -> (Form, Form)
@@ -93,27 +116,36 @@ compP' xs = compP (p' xs)
 
 p' :: LogicP -> LogicP
 p' []     = []
-p' (x:xs) = if isElem (hClHead x) (negP' (x:xs))
-            then x : p' xs
-            else p' xs
+p' (x:xs) = if isElem (hClHead x) (negP' (x:xs)) then x : p' xs
+                else p' xs
 
--- returns first element of tuple with 3 elements
-first :: (a, b, c) -> a
-first (x, _, _) = x
+--checks if Formula is always True (T)
+isTrue :: Form -> Bool
+isTrue x = case x of
+                 E _ T -> True
+                 _     -> False
 
--- ordering for HClauses in LogicP (by their head indexes)
-sorts a b 
-           | (first a) == (first b) = EQ
-           | (first a) < (first b)  = LT
-           | otherwise = GT
+-- groups Formulas by their values (unknown, True, False)
+groupByValue :: [Form] -> [[Form]]
+groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
 
--- sorts HClauses by their heads indexes 
-sortHeads :: LogicP -> LogicP
-sortHeads xs = sortBy sorts xs
 
--- groups HClauses with the same heads in LogicP 
-groupHeads :: LogicP -> [[HClause]]
-groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
+{-
+trueC :: Form -> [[Form]] -> Bool
+trueC _ []     = False
+trueC (C a) xs = if isElem a (xs !! 2) then False
+                else 
+                    if isSublist a (xs !! 1) then True
+                        else False
+
+
+breakForm :: Form -> [Form]
+breakForm a = case a of
+                 V a   -> [V a]
+                 C a   -> a
+                 D b   -> case b of
+                                [C d] -> d
+                 E c d -> (breakForm c) ++ (breakForm d)-}
 
 
 -- LEVEL MAPPING
