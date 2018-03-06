@@ -5,6 +5,7 @@ import Graph
 import Operator
 import Data.Graph
 import Data.List
+import Examples
 
 data Form = V Atom 
             | N Form        -- negation
@@ -45,41 +46,56 @@ atomToForm :: Atom -> Form
 atomToForm x = V x
 
 -- connects elements of the horn clauses body by conjunction
-addC :: HClause -> Form
-addC (_, [], []) = T
+addC :: HClause -> (Form, Form)
+addC (h, [], []) = (V h, T)
+addC (h, [], xs) 
+                | length xs == 1 = (V h, N (V (head xs)))
+                | otherwise      = (V h, C (addN xs))
+addC (h, ys, []) 
+                | length ys == 1 = (V h, V (head ys))
+                | otherwise      = (V h, C (atomsToForm ys))
+addC (h, ys, xs) = (V h, C (atomsToForm ys ++ addN xs))
 
-addC (_, [], (xs)) 
-                 | length (xs) == 1 = N (V (head xs))
-                 | otherwise        = C (addN (xs))
-addC (_, (ys), []) 
-                 | length (ys) == 1 = N (V (head ys))
-                 | otherwise        = C (atomsToForm (ys))
-addC (_, ys, xs) = C (atomsToForm ys ++ addN xs)
-
-
-sameHead :: HClause -> (Form, Form)
-sameHead x = (atomToForm (first x), addC x)
+--sameHead :: HClause -> (Form, Form)
+--sameHead x = (atomToForm (first x), addC x)
 
 sameH1 :: [[HClause]] -> [[(Form, Form)]]
 sameH1 []     = []
-sameH1 (x:xs) = (map sameHead x) : sameH1 xs
+sameH1 (x:xs) = (map addC x) : sameH1 xs
 
---gives us list of lists with same head clauses as pairs (head, conjunction of body atoms)
+-- gives us list of lists with same head clauses as pairs (head, conjunction of body atoms)
 sameH2 :: LogicP -> [[(Form, Form)]]
 sameH2 [] = []
 sameH2 xs = sameH1 (groupHeads xs)
 
---adds disjunction and equivalence to one group of clauses 
+-- adds disjunction and equivalence to one group of clauses 
 addDE1 :: [(Form, Form)] -> Form
 addDE1 x 
-            | (length x) > 1 = E (fst (head x)) (D (map snd x))
-            | otherwise       = E (fst (head x)) (snd (head x))
+        | (length x) > 1 = E (fst (head x)) (D (map snd x))
+        | otherwise      = E (fst (head x)) (snd (head x))
 
---maps adding disjunction and equivalence to whole LogicP
+-- maps adding disjunction and equivalence to whole LogicP
 addDE :: LogicP -> [Form]
 addDE [] = []
 addDE xs = map addDE1 (sameH2 xs)
 
+compP :: LogicP -> [Form]
+compP xs = addDE xs ++ negA xs
+
+-- adds negation to atoms in bodies that do not appear in heads
+negA :: LogicP -> [Form]
+negA [] = []
+negA xs = addN ((bP xs) \\ (bPHead xs))
+
+-- comp P-
+compP' :: LogicP -> [Form]
+compP' xs = compP (p' xs)
+
+p' :: LogicP -> LogicP
+p' []     = []
+p' (x:xs) = if isElem (hClHead x) (negP' (x:xs))
+            then x : p' xs
+            else p' xs
 
 -- returns first element of tuple with 3 elements
 first :: (a, b, c) -> a
@@ -99,34 +115,28 @@ sortHeads xs = sortBy sorts xs
 groupHeads :: LogicP -> [[HClause]]
 groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
 
--- connects head and body of horn clause by equivalence
-comp :: LogicP -> [Form]
-comp []     = []
-comp (x:xs) = case x of 
-                 (h, _, _) -> (E (V h) (addC x)) : comp xs
 
 -- LEVEL MAPPING
 
 -- generates list of subsequent numbers as long as given list
 numList :: [Atom] -> [Int]
 numList [] = []
-numList xs = [x |x <- [1..n]]
-                where
-                    n = (length xs)
+numList xs = [x | x <- [1..n]]
+             where n = length xs
 
 -- checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
-onlyHead [] _      = False
+onlyHead [] _ = False
 onlyHead xs y = if elem y (bPBody xs) 
-                        then False
-                        else True
+                then False
+                else True
 
 -- checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
-onlyBody [] _      = False
+onlyBody [] _ = False
 onlyBody xs y = if elem y (bPHead xs) 
-                        then False
-                        else True
+                then False
+                else True
 
 -- sorts Bp elements into 3 lists in order: 
 -- elements that appear only in heads,
@@ -159,7 +169,8 @@ perms (a, b, c) = permutations b
 replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
 replaceNum (a, b, c) (x:xs) = (a, x, c)
 
-{-lvlMap (x:xs) = if checker (numMap (a, x, c)) 
-                    then numMap (a, x, c) 
-                    else lvlMap xs
+{-
+lvlMap (x:xs) = if checker (mapNum (a, x, c)) 
+                then mapNum (a, x, c) 
+                else lvlMap xs
 -}
