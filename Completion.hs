@@ -123,13 +123,9 @@ trueC (C a) x    = if isElem a (snd x) then False
 trueD :: Form -> ([Form], [Form]) -> Bool
 trueD (D []) _ = False
 trueD (D a) x = case a of
-                     [V b, bs] -> if elem (V b) (fst x) then True else trueD (D [bs]) x
-                     [N b, bs] -> if elem b (snd x) then True else trueD (D [bs]) x
-                     [C b, bs] -> if trueC (C b) x then True else trueD (D [bs]) x
-                     [V b]     -> if elem (V b) (fst x) then True else False
-                     [N b]     -> if elem b (snd x) then True else False
-                     [C b]     -> if trueC (C b) x then True else False
-                     []        -> False
+                     (V b):bs -> if elem (V b) (fst x) then True else trueD (D bs) x
+                     (N b):bs -> if elem b (snd x) then True else trueD (D bs) x
+                     (C b):bs -> if trueC (C b) x then True else trueD (D bs) x
 
 trueE :: Form -> ([Form], [Form]) -> Bool
 trueE (E a b) x = case b of 
