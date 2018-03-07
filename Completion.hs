@@ -12,8 +12,13 @@ data Form = V Atom
             | C [Form]      -- conjunction 
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
-            | T             -- Top symbol
+            | T             -- verum
+            | U             -- undecided
             deriving Show
+
+instance Eq Form where
+         V a == V b = a == b
+         N a == N b = a == b
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -63,7 +68,8 @@ sameH1 :: [[HClause]] -> [[(Form, Form)]]
 sameH1 []     = []
 sameH1 (x:xs) = (map addC x) : sameH1 xs
 
--- gives us list of lists with same head clauses as pairs (head, conjunction of body atoms)
+-- gives us list of lists with same head clauses as pairs 
+-- (head, conjunction of body atoms)
 sameH2 :: LogicP -> [[(Form, Form)]]
 sameH2 [] = []
 sameH2 xs = sameH1 (groupHeads xs)
@@ -89,13 +95,65 @@ negA xs = addN ((bP xs) \\ (bPHead xs))
 
 -- comp P-
 compP' :: LogicP -> [Form]
-compP' xs = compP (p' xs)
+compP' xs = compP (logicP' xs)
 
-p' :: LogicP -> LogicP
-p' []     = []
-p' (x:xs) = if isElem (hClHead x) (negP' (x:xs))
-            then x : p' xs
-            else p' xs
+--checks if Formula is always True (T)
+isTrue :: Form -> Bool
+isTrue x = case x of
+                E _ T -> True
+                _     -> False
+
+-- groups Formulas by their values [[unknown], [True], [False]]
+groupByValue :: [Form] -> [[Form]]
+groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
+
+-- invariants in possible interpretation ([True], [False])
+inv :: [[Form]] -> ([Form], [Form])
+inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
+
+
+
+trueC :: Form -> ([Form], [Form]) -> Bool
+trueC _ ([], []) = False -- unknown
+trueC (C a) x    = if isElem a (snd x) then False
+                   else 
+                        if isSublist a (fst x) then True
+                        else False -- unknown
+
+trueD :: Form -> ([Form], [Form]) -> Bool
+trueD (D []) _ = False
+trueD (D a) x = case a of
+                     [V b, bs] -> if elem (V b) (fst x) then True else trueD (D [bs]) x
+                     [N b, bs] -> if elem b (snd x) then True else trueD (D [bs]) x
+                     [C b, bs] -> if trueC (C b) x then True else trueD (D [bs]) x
+                     [V b]     -> if elem (V b) (fst x) then True else False
+                     [N b]     -> if elem b (snd x) then True else False
+                     [C b]     -> if trueC (C b) x then True else False
+                     []        -> False
+
+trueE :: Form -> ([Form], [Form]) -> Bool
+trueE (E a b) x = case b of 
+                       V c -> if elem (V c) (fst x) then True else False
+                       N c -> if elem c (fst x) then True else False
+                       C c -> trueC (C c) x
+                       D c -> trueD (D c) x
+
+breakForm :: Form -> [Form]
+breakForm a = case a of
+                   V b   -> [V b]
+                   N b   -> [b]
+                   C b   -> b
+                   D b   -> b
+--                        case b of
+--                                 [V d, xs] -> [V d] ++ breakForm xs
+--                                 [N d, xs] -> [N d] ++ breakForm xs
+--                                 [C d, xs] -> d ++ breakForm xs
+                   E b c -> (breakForm b) ++ (breakForm c)
+                   T     -> []
+
+breakForms :: [Form] -> [Form]
+breakForms []     = []
+breakForms (x:xs) = breakForm x ++ breakForms xs
 
 -- returns first element of tuple with 3 elements
 first :: (a, b, c) -> a
@@ -127,15 +185,13 @@ numList xs = [x | x <- [1..n]]
 -- checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
 onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBody xs) 
-                then False
+onlyHead xs y = if elem y (bPBody xs) then False
                 else True
 
 -- checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
 onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHead xs) 
-                then False
+onlyBody xs y = if elem y (bPHead xs) then False
                 else True
 
 -- sorts Bp elements into 3 lists in order: 
