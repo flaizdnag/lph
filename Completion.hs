@@ -14,6 +14,9 @@ data Form = V Atom
             | E Form Form   -- equivalence
             | T             -- Top symbol
                 deriving (Show, Eq)
+            
+data Bool2 = Fa | Tr | Un
+                deriving (Show, Eq)
 
 
 
@@ -129,23 +132,73 @@ isTrue x = case x of
 groupByValue :: [Form] -> [[Form]]
 groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
 
+-- invariants in possible interpretation ([True], [False])
+inv :: [[Form]] -> ([Form], [Form])
+inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
 
-{-
-trueC :: Form -> [[Form]] -> Bool
-trueC _ []     = False
-trueC (C a) xs = if isElem a (xs !! 2) then False
-                else 
-                    if isSublist a (xs !! 1) then True
-                        else False
+--checking if conjunction is True/False/Unknown
+trueC :: Form -> ([Form], [Form]) -> Bool2
+trueC (C []) _     = Tr
+trueC (C (a:as)) x = case a of
+                         N a -> if elem a (fst x) then Fa
+                                else 
+                                    if elem a (snd x) then trueC (C as) x
+                                    else Un
+                         a   -> if elem a (snd x) then Fa
+                                else            
+                                    if elem a (fst x) then trueC (C as) x
+                                    else Un
 
+--checking if disjunction is True/False/Unknown
+trueD :: Form -> ([Form], [Form]) -> Bool2
+trueD (D []) _ = Fa
+trueD (D a) x  = case a of
+                    (V b):bs -> if elem (V b) (fst x) then Tr else trueD (D bs) x
+                    (N b):bs -> if elem b (snd x) then Tr else trueD (D bs) x
+                    (C b):bs -> if ((trueC (C b) x) == Tr) then Tr else trueD (D bs) x
+
+trueD' :: Form -> ([Form], [Form]) -> Bool2
+trueD' (D []) _ = Fa
+trueD' (D a) x  = case a of
+                    (V b):bs -> if (elem (V b) (snd x)) == False then Un else trueD' (D bs) x
+                    (N b):bs -> if (elem b (fst x)) == False then Un else trueD (D bs) x
+                    (C b):bs -> if ((trueC (C b) x) == Un) then Un else trueD (D bs) x
+
+trueD'' :: Form -> ([Form], [Form]) -> Bool2
+trueD'' a b 
+            | (trueD a b) == Tr = Tr
+            | otherwise         = trueD' a b
+
+trueE :: Form -> ([Form], [Form]) -> Bool2
+trueE (E a b) x = case b of 
+                       V c -> if elem (V c) (fst x) then Tr else Un
+                       N c -> if elem c (snd x) then Tr else Un
+                       C c -> trueC (C c) x
+                       D c -> trueD'' (D c) x
+
+trueE' :: Form -> ([Form], [Form]) -> Bool2
+trueE' (E a b) (c, d) 
+                    | (elem a c) && ((trueE (E a b) (c, d)) == Tr)            = Tr
+                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Fa) = Fa
+                    | otherwise                                               = Un
 
 breakForm :: Form -> [Form]
 breakForm a = case a of
-                 V a   -> [V a]
-                 C a   -> a
-                 D b   -> case b of
-                                [C d] -> d
-                 E c d -> (breakForm c) ++ (breakForm d)-}
+                   V b   -> [V b]
+                   N b   -> [b]
+                   C b   -> b
+                   D b   -> b
+--                        case b of
+--                                 [V d, xs] -> [V d] ++ breakForm xs
+--                                 [N d, xs] -> [N d] ++ breakForm xs
+--                                 [C d, xs] -> d ++ breakForm xs
+                   E b c -> (breakForm b) ++ (breakForm c)
+                   T     -> []
+
+breakForms :: [Form] -> [Form]
+breakForms []     = []
+breakForms (x:xs) = breakForm x ++ breakForms xs
+
 
 
 -- LEVEL MAPPING
