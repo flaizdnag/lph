@@ -5,6 +5,7 @@ import Graph
 import Operator
 import Data.Graph
 import Data.List
+import GHC.Exts
 import Examples
 
 data Form = V Atom 
@@ -13,22 +14,21 @@ data Form = V Atom
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
             | T             -- verum
-            | U             -- undecided
-            deriving Show
+                deriving (Show, Eq)
 
-instance Eq Form where
-         V a == V b = a == b
-         N a == N b = a == b
+data Bool2 = Fa | Tr | Un
+                deriving (Show, Eq)
+
 
 negP :: LogicP -> [Atom]
 negP []     = []
-negP (x:xs) = hClBodyN x ++ negP xs
+negP (x:xs) = nub (hClBodyN x ++ negP xs)
 
 negP' :: LogicP -> [Atom]
-negP' xs = intToAtom [x | x <- atomToInt (bP xs), 
-                          y <- atomToInt (negP xs), 
-                          path g y x && not (path g x y)]
-                          where g = graphG xs
+negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs), 
+                               y <- atomToInt (negP xs), 
+                               path g y x && not (path g x y)])
+                               where g = graphG xs
 
 -- creates a program which heads belong to negP'
 logicP' :: LogicP -> LogicP
@@ -50,6 +50,25 @@ atomsToForm x = case x of
 atomToForm :: Atom -> Form
 atomToForm x = V x
 
+
+-- returns first element of tuple with 3 elements
+first :: (a, b, c) -> a
+first (x, _, _) = x
+
+-- ordering for HClauses in LogicP (by their head indexes)
+sorts a b 
+           | (first a) == (first b) = EQ
+           | (first a) < (first b)  = LT
+           | otherwise = GT
+
+-- sorts HClauses by their heads indexes 
+sortHeads :: LogicP -> LogicP
+sortHeads xs = sortBy sorts xs
+
+-- groups HClauses with the same heads in LogicP 
+groupHeads :: LogicP -> [[HClause]]
+groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
+
 -- connects elements of the horn clauses body by conjunction
 addC :: HClause -> (Form, Form)
 addC (h, [], []) = (V h, T)
@@ -61,18 +80,15 @@ addC (h, ys, [])
                 | otherwise      = (V h, C (atomsToForm ys))
 addC (h, ys, xs) = (V h, C (atomsToForm ys ++ addN xs))
 
---sameHead :: HClause -> (Form, Form)
---sameHead x = (atomToForm (first x), addC x)
-
-sameH1 :: [[HClause]] -> [[(Form, Form)]]
-sameH1 []     = []
-sameH1 (x:xs) = (map addC x) : sameH1 xs
+sameHead :: [[HClause]] -> [[(Form, Form)]]
+sameHead []     = []
+sameHead (x:xs) = (map addC x) : sameHead xs
 
 -- gives us list of lists with same head clauses as pairs 
 -- (head, conjunction of body atoms)
-sameH2 :: LogicP -> [[(Form, Form)]]
-sameH2 [] = []
-sameH2 xs = sameH1 (groupHeads xs)
+sameHead' :: LogicP -> [[(Form, Form)]]
+sameHead' [] = []
+sameHead' xs = sameHead (groupHeads xs)
 
 -- adds disjunction and equivalence to one group of clauses 
 addDE1 :: [(Form, Form)] -> Form
@@ -83,7 +99,7 @@ addDE1 x
 -- maps adding disjunction and equivalence to whole LogicP
 addDE :: LogicP -> [Form]
 addDE [] = []
-addDE xs = map addDE1 (sameH2 xs)
+addDE xs = map addDE1 (sameHead' xs)
 
 compP :: LogicP -> [Form]
 compP xs = addDE xs ++ negA xs
@@ -107,33 +123,6 @@ isTrue x = case x of
 groupByValue :: [Form] -> [[Form]]
 groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
 
--- invariants in possible interpretation ([True], [False])
-inv :: [[Form]] -> ([Form], [Form])
-inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
-
-
-
-trueC :: Form -> ([Form], [Form]) -> Bool
-trueC _ ([], []) = False -- unknown
-trueC (C a) x    = if isElem a (snd x) then False
-                   else 
-                        if isSublist a (fst x) then True
-                        else False -- unknown
-
-trueD :: Form -> ([Form], [Form]) -> Bool
-trueD (D []) _ = False
-trueD (D a) x = case a of
-                     (V b):bs -> if elem (V b) (fst x) then True else trueD (D bs) x
-                     (N b):bs -> if elem b (snd x) then True else trueD (D bs) x
-                     (C b):bs -> if trueC (C b) x then True else trueD (D bs) x
-
-trueE :: Form -> ([Form], [Form]) -> Bool
-trueE (E a b) x = case b of 
-                       V c -> if elem (V c) (fst x) then True else False
-                       N c -> if elem c (fst x) then True else False
-                       C c -> trueC (C c) x
-                       D c -> trueD (D c) x
-
 breakForm :: Form -> [Form]
 breakForm a = case a of
                    V b   -> [V b]
@@ -151,24 +140,89 @@ breakForms :: [Form] -> [Form]
 breakForms []     = []
 breakForms (x:xs) = breakForm x ++ breakForms xs
 
--- returns first element of tuple with 3 elements
-first :: (a, b, c) -> a
-first (x, _, _) = x
+-- invariants in possible interpretation ([True], [False])
+inv :: [[Form]] -> ([Form], [Form])
+inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
 
--- ordering for HClauses in LogicP (by their head indexes)
-sorts a b 
-           | (first a) == (first b) = EQ
-           | (first a) < (first b)  = LT
-           | otherwise = GT
+-- checking if conjunction is True/False/Unknown
+trueC :: Form -> ([Form], [Form]) -> Bool2
+trueC (C []) _     = Tr
+trueC (C (a:as)) x = case a of
+                         N a -> if elem a (fst x) then Fa
+                                else 
+                                    if elem a (snd x) then trueC (C as) x else Un
+                         a   -> if elem a (snd x) then Fa
+                                else            
+                                    if elem a (fst x) then trueC (C as) x else Un
 
--- sorts HClauses by their heads indexes 
-sortHeads :: LogicP -> LogicP
-sortHeads xs = sortBy sorts xs
+-- checking if disjunction is True/False/Unknown
+trueD :: Form -> ([Form], [Form]) -> Bool2
+trueD (D []) _ = Fa
+trueD (D a) x  = case a of
+                    (V b):bs -> if elem (V b) (fst x) then Tr else trueD (D bs) x
+                    (N b):bs -> if elem b (snd x) then Tr else trueD (D bs) x
+                    (C b):bs -> if ((trueC (C b) x) == Tr) then Tr else trueD (D bs) x
 
--- groups HClauses with the same heads in LogicP 
-groupHeads :: LogicP -> [[HClause]]
-groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
+trueD' :: Form -> ([Form], [Form]) -> Bool2
+trueD' (D []) _ = Fa
+trueD' (D a) x  = case a of
+                    (V b):bs -> if (elem (V b) (snd x)) == False then Un else trueD' (D bs) x
+                    (N b):bs -> if (elem b (fst x)) == False then Un else trueD (D bs) x
+                    (C b):bs -> if ((trueC (C b) x) == Un) then Un else trueD (D bs) x
 
+trueD'' :: Form -> ([Form], [Form]) -> Bool2
+trueD'' a b 
+            | (trueD a b) == Tr = Tr
+            | otherwise         = trueD' a b
+
+-- checks if equivalence is True/False/Unknown
+trueE :: Form -> ([Form], [Form]) -> Bool2
+trueE (E a b) x = case b of 
+                       V c -> if elem (V c) (fst x) then Tr else Un
+                       N c -> if elem c (snd x) then Tr else Un
+                       C c -> trueC (C c) x
+                       D c -> trueD'' (D c) x
+
+trueE' :: Form -> ([Form], [Form]) -> Bool2
+trueE' (E a b) (c, d) 
+                    | (elem a c) && ((trueE (E a b) (c, d)) == Tr)            = Tr
+                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Fa) = Fa
+                    | otherwise                                               = Un
+
+-- adds negation to formulas
+addNToForm :: [Form] -> [Form]
+addNToForm []     = []
+addNToForm (x:xs) = N x : addNToForm xs
+
+-- creates a list of all Forms from the LogicP that aren't included in I
+allForms :: LogicP -> ([Form], [Form]) -> [Form]
+allForms [] _ = []
+allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
+                where 
+                        a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
+                        b = fst y
+                        c = (addN (negP x))
+                        d = addNToForm (snd y)
+                        e = addNToForm (fst y) 
+                        f = snd y
+
+-- creates list of all permutations of Formulas we can add to I
+interps :: LogicP -> ([Form], [Form]) -> [[Form]]
+interps x y = sortWith length $ subsequences (allForms x y)
+
+{-
+funkcja :: Form -> ([Form], [Form]) -> ([Form], [Form])
+funkcja (E a b) (c, d) 
+                | trueE (E a b) (c, d) == Tr = (a:c, d)
+                | trueE (E a b) (c, d) == Fa = (c, a:d)
+                | otherwise                  = interps
+
+funkcja2 ::  Form -> ([Form], [Form]) -> ([Form], [Form])
+funkcja2 (E a b) x 
+                | trueE' (E a b) x == Un = funkcja (E a b) x
+                | trueE' (E a b) x == Fa = ([], [])
+                | otherwise              = (zwraca interpretację)
+-}
 
 -- LEVEL MAPPING
 
