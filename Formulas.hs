@@ -64,10 +64,6 @@ bPHead' (x:xs) = (hClHead x) ++ (bPHead' xs)
 bPBody :: LogicP -> [Atom]              
 bPBody []     = []
 bPBody (x:xs) = nub (hClBodyP x ++ hClBodyN x ++ bPBody xs)
--- returns positive atoms from bodies of LogicP
-bPBodyP :: LogicP -> [Atom]
-bPBodyP []     = []
-bPBodyP (x:xs) = nub (hClBodyP x ++ bPBodyP xs)
 
 -- returns positive atoms from bodies of LogicP
 bPBodyP :: LogicP -> [Atom]
