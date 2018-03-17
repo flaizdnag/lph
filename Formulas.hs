@@ -69,6 +69,11 @@ bPBodyP :: LogicP -> [Atom]
 bPBodyP []     = []
 bPBodyP (x:xs) = nub (hClBodyP x ++ bPBodyP xs)
 
+-- returns positive atoms from bodies of LogicP
+bPBodyP :: LogicP -> [Atom]
+bPBodyP []     = []
+bPBodyP (x:xs) = nub (hClBodyP x ++ bPBodyP xs)
+
 -- returns herbrand base of logic program (without duplicates)
 bP :: LogicP -> [Atom]
 bP [] = []

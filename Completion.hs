@@ -14,6 +14,7 @@ data Form = V Atom
             | C [Form]      -- conjunction 
             | D [Form]      -- disjunction 
             | E Form Form   -- equivalence
+<<<<<<< HEAD
             | T             -- Top symbol
                 deriving (Show, Eq)
             
@@ -21,6 +22,14 @@ data Bool2 = Fa | Tr | Un
                 deriving (Show, Eq)
 
 
+=======
+            | T             -- verum
+                deriving (Show, Eq)
+
+data Bool2 = Fa | Tr | Un
+                deriving (Show, Eq)
+
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 
 negP :: LogicP -> [Atom]
 negP []     = []
@@ -28,9 +37,15 @@ negP (x:xs) = nub (hClBodyN x ++ negP xs)
 
 negP' :: LogicP -> [Atom]
 negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs), 
+<<<<<<< HEAD
                           y <- atomToInt (negP xs), 
                           path g y x && not (path g x y)])
                           where g = graphG xs
+=======
+                               y <- atomToInt (negP xs), 
+                               path g y x && not (path g x y)])
+                               where g = graphG xs
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 
 -- creates a program which heads belong to negP'
 logicP' :: LogicP -> LogicP
@@ -82,12 +97,21 @@ addC (h, ys, [])
                 | otherwise      = (V h, C (atomsToForm ys))
 addC (h, ys, xs) = (V h, C (atomsToForm ys ++ addN xs))
 
+<<<<<<< HEAD
 
 sameHead :: [[HClause]] -> [[(Form, Form)]]
 sameHead []     = []
 sameHead (x:xs) = (map addC x) : sameHead xs
 
 -- gives us list of lists with same head clauses as pairs (head, conjunction of body atoms)
+=======
+sameHead :: [[HClause]] -> [[(Form, Form)]]
+sameHead []     = []
+sameHead (x:xs) = (map addC x) : sameHead xs
+
+-- gives us list of lists with same head clauses as pairs 
+-- (head, conjunction of body atoms)
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 sameHead' :: LogicP -> [[(Form, Form)]]
 sameHead' [] = []
 sameHead' xs = sameHead (groupHeads xs)
@@ -113,16 +137,21 @@ negA xs = addN ((bP xs) \\ (bPHead xs))
 
 -- comp P-
 compP' :: LogicP -> [Form]
+<<<<<<< HEAD
 compP' xs = compP (p' xs)
 
 p' :: LogicP -> LogicP
 p' []     = []
 p' (x:xs) = if isElem (hClHead x) (negP' (x:xs)) then x : p' xs
                 else p' xs
+=======
+compP' xs = compP (logicP' xs)
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 
 --checks if Formula is always True (T)
 isTrue :: Form -> Bool
 isTrue x = case x of
+<<<<<<< HEAD
                  E _ T -> True
                  _     -> False
 
@@ -131,6 +160,15 @@ groupByValue :: [Form] -> [[Form]]
 groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
 
 -- breaks complex formulas
+=======
+                E _ T -> True
+                _     -> False
+
+-- groups Formulas by their values [[unknown], [True], [False]]
+groupByValue :: [Form] -> [[Form]]
+groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
+
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 breakForm :: Form -> [Form]
 breakForm a = case a of
                    V b   -> [V b]
@@ -152,7 +190,11 @@ breakForms (x:xs) = breakForm x ++ breakForms xs
 inv :: [[Form]] -> ([Form], [Form])
 inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
 
+<<<<<<< HEAD
 --checks if conjunction is True/False/Unknown
+=======
+-- checking if conjunction is True/False/Unknown
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 trueC :: Form -> ([Form], [Form]) -> Bool2
 trueC (C []) _     = Tr
 trueC (C (a:as)) x = case a of
@@ -163,7 +205,11 @@ trueC (C (a:as)) x = case a of
                                 else            
                                     if elem a (fst x) then trueC (C as) x else Un
 
+<<<<<<< HEAD
 --checks if disjunction is True/False/Unknown
+=======
+-- checking if disjunction is True/False/Unknown
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 trueD :: Form -> ([Form], [Form]) -> Bool2
 trueD (D []) _ = Fa
 trueD (D a) x  = case a of
@@ -205,6 +251,7 @@ addNToForm (x:xs) = N x : addNToForm xs
 -- creates a list of all Forms from the LogicP that aren't included in I
 allForms :: LogicP -> ([Form], [Form]) -> [Form]
 allForms [] _ = []
+<<<<<<< HEAD
 allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
                 where
                 a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
@@ -215,8 +262,34 @@ allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
                 f = snd y
 
 -- creates list of all permutations of Formulas we can add to I
+=======
+allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
+                where 
+                        a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
+                        b = fst y
+                        c = (addN (negP x))
+                        d = addNToForm (snd y)
+                        e = addNToForm (fst y) 
+                        f = snd y
+
+-- creates list of all permutations of Formulas we can add to I
+interps :: LogicP -> ([Form], [Form]) -> [[Form]]
+>>>>>>> cc6c6010b598a6d0e8303258aad3f0b0fb760373
 interps x y = sortWith length $ subsequences (allForms x y)
 
+{-
+funkcja :: Form -> ([Form], [Form]) -> ([Form], [Form])
+funkcja (E a b) (c, d) 
+                | trueE (E a b) (c, d) == Tr = (a:c, d)
+                | trueE (E a b) (c, d) == Fa = (c, a:d)
+                | otherwise                  = interps
+
+funkcja2 ::  Form -> ([Form], [Form]) -> ([Form], [Form])
+funkcja2 (E a b) x 
+                | trueE' (E a b) x == Un = funkcja (E a b) x
+                | trueE' (E a b) x == Fa = ([], [])
+                | otherwise              = (zwraca interpretację)
+-}
 
 -- LEVEL MAPPING
 
@@ -229,15 +302,13 @@ numList xs = [x | x <- [1..n]]
 -- checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
 onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBody xs) 
-                then False
+onlyHead xs y = if elem y (bPBody xs) then False
                 else True
 
 -- checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
 onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHead xs) 
-                then False
+onlyBody xs y = if elem y (bPHead xs) then False
                 else True
 
 -- sorts Bp elements into 3 lists in order: 
