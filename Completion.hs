@@ -8,6 +8,7 @@ import Data.List
 import GHC.Exts
 import Examples
 
+
 data Form = V Atom 
             | N Form        -- negation
             | C [Form]      -- conjunction 
@@ -114,15 +115,17 @@ compP' :: LogicP -> [Form]
 compP' xs = compP (logicP' xs)
 
 --checks if Formula is always True (T)
-isTrue :: Form -> Bool
-isTrue x = case x of
-                E _ T -> True
-                _     -> False
+alwaysTrue :: Form -> Bool2
+alwaysTrue x = case x of
+                E _ T   -> Tr
+                N _     -> Fa
+                _       -> Un
 
 -- groups Formulas by their values [[unknown], [True], [False]]
 groupByValue :: [Form] -> [[Form]]
-groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
+groupByValue xs = groupBy (\x y -> (alwaysTrue x) == (alwaysTrue y)) xs
 
+--breaks complex formulas to variables
 breakForm :: Form -> [Form]
 breakForm a = case a of
                    V b   -> [V b]
@@ -140,54 +143,69 @@ breakForms :: [Form] -> [Form]
 breakForms []     = []
 breakForms (x:xs) = breakForm x ++ breakForms xs
 
--- invariants in possible interpretation ([True], [False])
+--generates interpretation from formulas with known value
 inv :: [[Form]] -> ([Form], [Form])
-inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
+inv xs = ([a | x <- xs, alwaysTrue (head x) == Tr, a <- (breakForms x)], [b | x <- xs, alwaysTrue (head x) == Fa, b <- (breakForms x)])
 
--- checking if conjunction is True/False/Unknown
-trueC :: Form -> ([Form], [Form]) -> Bool2
-trueC (C []) _     = Tr
+--checks if conjunction is True/False/Unknown
+trueC :: Form -> ([Form], [Form]) -> [Bool2]
+trueC (C []) _     = []
 trueC (C (a:as)) x = case a of
-                         N a -> if elem a (fst x) then Fa
-                                else 
-                                    if elem a (snd x) then trueC (C as) x else Un
-                         a   -> if elem a (snd x) then Fa
-                                else            
-                                    if elem a (fst x) then trueC (C as) x else Un
+                        N a -> if elem a (fst x) then Fa : (trueC (C as) x)
+                               else 
+                                   if elem a (snd x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
+                        a -> if elem a (snd x) then Fa : (trueC (C as) x)
+                               else
+                                   if elem a (fst x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
 
--- checking if disjunction is True/False/Unknown
-trueD :: Form -> ([Form], [Form]) -> Bool2
-trueD (D []) _ = Fa
-trueD (D a) x  = case a of
-                    (V b):bs -> if elem (V b) (fst x) then Tr else trueD (D bs) x
-                    (N b):bs -> if elem b (snd x) then Tr else trueD (D bs) x
-                    (C b):bs -> if ((trueC (C b) x) == Tr) then Tr else trueD (D bs) x
+
+trueC' :: Form -> ([Form], [Form]) -> Bool2
+trueC' a x 
+         | all (Tr==) (trueC a x) = Tr
+         | any (Fa==) (trueC a x) = Fa
+         | otherwise              = Un
+
+--checks if disjunction is True/False/Unknown
+trueD :: Form -> ([Form], [Form]) -> [Bool2]
+trueD (D []) _ = []
+trueD (D (a:as)) x  = case (a:as) of
+                    (V b):bs -> if elem (V b) (fst x) then Tr : (trueD (D as) x)
+                                else
+                                    if elem (V b) (snd x) then Fa : (trueD (D as) x)
+                                    else Un : (trueD (D as) x)
+                    (N b):bs -> if elem b (snd x) then Tr : (trueD (D as) x) 
+                                else
+                                    if elem b (fst x) then Fa : (trueD (D as) x)
+                                    else Un : (trueD (D as) x)
+                    (C b):bs -> (trueC' (C b) x) : (trueD (D as) x)
 
 trueD' :: Form -> ([Form], [Form]) -> Bool2
-trueD' (D []) _ = Fa
-trueD' (D a) x  = case a of
-                    (V b):bs -> if (elem (V b) (snd x)) == False then Un else trueD' (D bs) x
-                    (N b):bs -> if (elem b (fst x)) == False then Un else trueD (D bs) x
-                    (C b):bs -> if ((trueC (C b) x) == Un) then Un else trueD (D bs) x
+trueD' a x 
+         | any (Tr==) (trueD a x) = Tr
+         | all (Fa==) (trueD a x) = Fa
+         | otherwise              = Un
 
-trueD'' :: Form -> ([Form], [Form]) -> Bool2
-trueD'' a b 
-            | (trueD a b) == Tr = Tr
-            | otherwise         = trueD' a b
+
 
 -- checks if equivalence is True/False/Unknown
 trueE :: Form -> ([Form], [Form]) -> Bool2
 trueE (E a b) x = case b of 
-                       V c -> if elem (V c) (fst x) then Tr else Un
-                       N c -> if elem c (snd x) then Tr else Un
-                       C c -> trueC (C c) x
-                       D c -> trueD'' (D c) x
+                       V c -> if elem (V c) (fst x) then Tr 
+                              else
+                                  if elem (V c) (snd x) then Fa else Un 
+                       N c -> if elem c (snd x) then Tr
+                              else
+                                  if elem c (fst x) then Fa else Un
+                       C c -> trueC' (C c) x
+                       D c -> trueD' (D c) x
 
-trueE' :: Form -> ([Form], [Form]) -> Bool2
-trueE' (E a b) (c, d) 
-                    | (elem a c) && ((trueE (E a b) (c, d)) == Tr)            = Tr
-                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Fa) = Fa
-                    | otherwise                                               = Un
+-- adds heads from equivalences with known value
+addHeadToInv :: Form -> ([Form], [Form]) -> ([Form], [Form])
+addHeadToInv (E a b) (c, d) 
+                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
+                    | ((elem a d) == False) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
+                    | otherwise                                               = (c, d) -- add from interps?
+
 
 -- adds negation to formulas
 addNToForm :: [Form] -> [Form]
@@ -195,9 +213,9 @@ addNToForm []     = []
 addNToForm (x:xs) = N x : addNToForm xs
 
 -- creates a list of all Forms from the LogicP that aren't included in I
-allForms :: LogicP -> ([Form], [Form]) -> [Form]
-allForms [] _ = []
-allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
+unForms :: LogicP -> ([Form], [Form]) -> [Form]
+unForms [] _ = []
+unForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
                 where 
                         a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
                         b = fst y
@@ -208,75 +226,12 @@ allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
 
 -- creates list of all permutations of Formulas we can add to I
 interps :: LogicP -> ([Form], [Form]) -> [[Form]]
-interps x y = sortWith length $ subsequences (allForms x y)
+interps x y = sortWith length $ subsequences (unForms x y)
 
 {-
-funkcja :: Form -> ([Form], [Form]) -> ([Form], [Form])
-funkcja (E a b) (c, d) 
-                | trueE (E a b) (c, d) == Tr = (a:c, d)
-                | trueE (E a b) (c, d) == Fa = (c, a:d)
-                | otherwise                  = interps
-
 funkcja2 ::  Form -> ([Form], [Form]) -> ([Form], [Form])
 funkcja2 (E a b) x 
                 | trueE' (E a b) x == Un = funkcja (E a b) x
                 | trueE' (E a b) x == Fa = ([], [])
                 | otherwise              = (zwraca interpretację)
--}
-
--- LEVEL MAPPING
-
--- generates list of subsequent numbers as long as given list
-numList :: [Atom] -> [Int]
-numList [] = []
-numList xs = [x | x <- [1..n]]
-             where n = length xs
-
--- checks if head does not appear in bodies
-onlyHead :: LogicP -> Atom -> Bool
-onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBody xs) then False
-                else True
-
--- checks if atom appears only in bodies
-onlyBody :: LogicP -> Atom -> Bool
-onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHead xs) then False
-                else True
-
--- sorts Bp elements into 3 lists in order: 
--- elements that appear only in heads,
--- elements that appear both in heads and bodies
--- elements that appear only in bodies.
-sortElems :: LogicP -> ([Atom], [Atom], [Atom])
-sortElems xs = ([x | x <- (bPHead xs), onlyHead xs x], 
-                [y | y <- (bPHead xs), (onlyHead xs y) == False], 
-                [z | z <- (bPBody xs), onlyBody xs z])
-
-
--- replaces atoms with assigned numbers
-mapNum :: ([Atom], [Atom], [Atom]) -> [Int] -> ([Int], [Int], [Int])
-mapNum (a, b, c) xs = (x, y, z)
-                            where
-                                z = (take (length c) xs)
-                                x = (drop ((length xs) - (length a)) xs)
-                                y = (xs \\ (x ++ z))
-
-mapNum' :: LogicP -> ([Int], [Int], [Int])
-mapNum' xs = mapNum (sortElems xs) (numList (bP xs))
-
--- returns permutations of list
-perms :: ([Atom], [Atom], [Atom]) -> [[Atom]]
-perms (a, b, c) = permutations b
-
---checker??
-
--- replaces middle list with one of the permutations (depended on checker)
-replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
-replaceNum (a, b, c) (x:xs) = (a, x, c)
-
-{-
-lvlMap (x:xs) = if checker (mapNum (a, x, c)) 
-                then mapNum (a, x, c) 
-                else lvlMap xs
 -}
