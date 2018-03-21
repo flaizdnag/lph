@@ -8,6 +8,7 @@ import Data.List
 import GHC.Exts
 import Examples
 
+
 data Form = V Atom 
             | N Form        -- negation
             | C [Form]      -- conjunction 
@@ -114,15 +115,17 @@ compP' :: LogicP -> [Form]
 compP' xs = compP (logicP' xs)
 
 --checks if Formula is always True (T)
-alwaysTrue :: Form -> Bool
+alwaysTrue :: Form -> Bool2
 alwaysTrue x = case x of
-                E _ T -> True
-                _     -> False
+                E _ T   -> Tr
+                N _     -> Fa
+                _       -> Un
 
 -- groups Formulas by their values [[unknown], [True], [False]]
 groupByValue :: [Form] -> [[Form]]
-groupByValue xs = groupBy (\x y -> (isTrue x) == (isTrue y)) xs
+groupByValue xs = groupBy (\x y -> (alwaysTrue x) == (alwaysTrue y)) xs
 
+--breaks complex formulas to variables
 breakForm :: Form -> [Form]
 breakForm a = case a of
                    V b   -> [V b]
@@ -140,72 +143,78 @@ breakForms :: [Form] -> [Form]
 breakForms []     = []
 breakForms (x:xs) = breakForm x ++ breakForms xs
 
--- invariants in possible interpretation ([True], [False])
+--generates interpretation from formulas with known value
 inv :: [[Form]] -> ([Form], [Form])
-inv xs = ((breakForms (xs !! 1)), (breakForms (xs !! 2)))
+inv xs = ([a | x <- xs, alwaysTrue (head x) == Tr, a <- (breakForms x)], [b | x <- xs, alwaysTrue (head x) == Fa, b <- (breakForms x)])
 
--- checking if conjunction is True/False/Unknown 
+--checks if conjunction is True/False/Unknown
 trueC :: Form -> ([Form], [Form]) -> [Bool2]
 trueC (C []) _     = []
 trueC (C (a:as)) x = case a of
                         N a -> if elem a (fst x) then Fa : (trueC (C as) x)
                                else 
-                                  if elem a (snd x) then Tr : (trueC (C as) x) 
-                                  else Un : (trueC (C as) x)
-                        a   -> if elem a (snd x) then Fa : (trueC (C as) x)
-                               else            
-                                  if elem a (fst x) then Tr : (trueC (C as) x) 
-                                  else Un : (trueC (C as) x)
+                                   if elem a (snd x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
+                        a -> if elem a (snd x) then Fa : (trueC (C as) x)
+                               else
+                                   if elem a (fst x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
+
 
 trueC' :: Form -> ([Form], [Form]) -> Bool2
 trueC' a x 
-        | all (Tr==) (trueC a x) = Tr
-        | any (Fa==) (trueC a x) = Fa
-        | otherwise              = Un
+         | all (Tr==) (trueC a x) = Tr
+         | any (Fa==) (trueC a x) = Fa
+         | otherwise              = Un
 
--- checking if disjunction is True/False/Unknown
+--checks if disjunction is True/False/Unknown
 trueD :: Form -> ([Form], [Form]) -> [Bool2]
-trueD (D []) _    = []
-trueD (D (a:as)) x = case (a:as) of
-                         (V b):bs -> if elem (V b) (fst x) then Tr : (trueD (D as) x)
-                                     else 
-                                        if elem (V b) (snd x) then Fa : (trueD (D as) x)
-                                        else Un : (trueD (D as) x)
-                         (N b):bs -> if elem b (snd x) then Tr : (trueD (D as) x) 
-                                     else 
-                                        if elem b (fst x) then Fa : (trueD (D as) x)
-                                        else Un : (trueD (D as) x)
-                         (C b):bs -> (trueC' (C b) x) : (trueD (D as) x)
+trueD (D []) _ = []
+trueD (D (a:as)) x  = case (a:as) of
+                    (V b):bs -> if elem (V b) (fst x) then Tr : (trueD (D as) x)
+                                else
+                                    if elem (V b) (snd x) then Fa : (trueD (D as) x)
+                                    else Un : (trueD (D as) x)
+                    (N b):bs -> if elem b (snd x) then Tr : (trueD (D as) x) 
+                                else
+                                    if elem b (fst x) then Fa : (trueD (D as) x)
+                                    else Un : (trueD (D as) x)
+                    (C b):bs -> (trueC' (C b) x) : (trueD (D as) x)
 
 trueD' :: Form -> ([Form], [Form]) -> Bool2
 trueD' a x 
-        | any (Tr==) (trueD a x) = Tr
-        | all (Fa==) (trueD a x) = Fa
-        | otherwise              = Un
+         | any (Tr==) (trueD a x) = Tr
+         | all (Fa==) (trueD a x) = Fa
+         | otherwise              = Un
 
--- checking if equivalence is True/False/Unknown
+
+
+-- checks if equivalence is True/False/Unknown
 trueE :: Form -> ([Form], [Form]) -> Bool2
 trueE (E a b) x = case b of 
-                       V c -> if elem (V c) (fst x) then Tr else Un
-                       N c -> if elem c (snd x) then Tr else Un
-                       C c -> trueC (C c) x
-                       D c -> trueD'' (D c) x
+                       V c -> if elem (V c) (fst x) then Tr 
+                              else
+                                  if elem (V c) (snd x) then Fa else Un 
+                       N c -> if elem c (snd x) then Tr
+                              else
+                                  if elem c (fst x) then Fa else Un
+                       C c -> trueC' (C c) x
+                       D c -> trueD' (D c) x
 
-trueE' :: Form -> ([Form], [Form]) -> Bool2
-trueE' (E a b) (c, d) 
-                    | (elem a c) && ((trueE (E a b) (c, d)) == Tr)            = Tr
-                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Fa) = Fa
-                    | otherwise                                               = Un
-{-
+-- adds heads from equivalences with known value
+addHeadToInv :: Form -> ([Form], [Form]) -> ([Form], [Form])
+addHeadToInv (E a b) (c, d) 
+                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
+                    | ((elem a d) == False) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
+                    | otherwise                                               = (c, d) -- add from interps?
+
 -- adds negation to formulas
 addNToForm :: [Form] -> [Form]
 addNToForm []     = []
 addNToForm (x:xs) = N x : addNToForm xs
 
 -- creates a list of all Forms from the LogicP that aren't included in I
-allForms :: LogicP -> ([Form], [Form]) -> [Form]
-allForms [] _ = []
-allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
+unForms :: LogicP -> ([Form], [Form]) -> [Form]
+unForms [] _ = []
+unForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
                 where 
                         a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
                         b = fst y
@@ -216,19 +225,12 @@ allForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
 
 -- creates list of all permutations of Formulas we can add to I
 interps :: LogicP -> ([Form], [Form]) -> [[Form]]
-interps x y = sortWith length $ subsequences (allForms x y)
--}
-{-
-funkcja :: Form -> ([Form], [Form]) -> ([Form], [Form])
-funkcja (E a b) (c, d) 
-                | trueE (E a b) (c, d) == Tr = (a:c, d)
-                | trueE (E a b) (c, d) == Fa = (c, a:d)
-                | otherwise                  = interps
+interps x y = sortWith length $ subsequences (unForms x y)
 
+{-
 funkcja2 ::  Form -> ([Form], [Form]) -> ([Form], [Form])
 funkcja2 (E a b) x 
                 | trueE' (E a b) x == Un = funkcja (E a b) x
                 | trueE' (E a b) x == Fa = ([], [])
                 | otherwise              = (zwraca interpretację)
 -}
-
