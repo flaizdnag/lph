@@ -1,3 +1,3 @@
-# Changelog for LPHtemp
+# Changelog for lph
 
 ## Unreleased changes

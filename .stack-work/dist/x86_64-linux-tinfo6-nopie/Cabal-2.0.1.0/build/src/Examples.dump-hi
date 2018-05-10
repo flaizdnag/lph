@@ -1,0 +1,765 @@
+
+==================== FINAL INTERFACE ====================
+2018-05-10 09:49:55.531948805 UTC
+
+interface lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C:Examples 8022
+  interface hash: 559fdfe796d5952fca634154126a2134
+  ABI hash: 31ea72c521afb08e4b11851d1a44d003
+  export-list hash: 7cd463041272ca4bcb59a5a042e25db4
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 26e0ff4b0ff758fc4ebf6a516aed248e
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Examples.ex1
+  Examples.ex10
+  Examples.ex11
+  Examples.ex2
+  Examples.ex3
+  Examples.ex4
+  Examples.ex5
+  Examples.ex6
+  Examples.ex7
+  Examples.ex8
+  Examples.ex9
+module dependencies: Formulas
+package dependencies: base-4.10.1.0* ghc-prim-0.5.1.1
+                      integer-gmp-1.0.1.0
+orphans: base-4.10.1.0:GHC.Float base-4.10.1.0:GHC.Base
+family instance modules: base-4.10.1.0:Control.Applicative
+                         base-4.10.1.0:Data.Either base-4.10.1.0:Data.Functor.Const
+                         base-4.10.1.0:Data.Functor.Identity base-4.10.1.0:Data.Monoid
+                         base-4.10.1.0:Data.Type.Equality base-4.10.1.0:GHC.Generics
+                         base-4.10.1.0:GHC.IO.Exception base-4.10.1.0:GHC.TypeLits
+                         base-4.10.1.0:GHC.TypeNats
+import  -/  base-4.10.1.0:Prelude 31945b7d0084063347fc52506d3a4020
+import  -/  Formulas 29828620833d925386bc7e66a6485a46
+  exports: 18cdaffd124661ac46eb1dd5b1e7aefc
+  A 3f2135a5a1b94435b51125ac851094f8
+ee363a3cdd6385ef004dad6e37728517
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Examples.$trModule3
+                   Examples.$trModule1) -}
+97a6001bddcfcc70da5d3a898911c24d
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Examples.$trModule2) -}
+1aa5531bad224df26bfb0b0db391eba8
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Examples"#) -}
+e33387afe2294f3a336acb8684af5602
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Examples.$trModule4) -}
+783317cb28842ad82b475dcdd7c2113f
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C"#) -}
+51e8acb3a76a1209be2927fd7e7e324b
+  ex1 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex30
+                   Examples.ex16) -}
+93b89de1b5c4290a8eb365fb2b068acc
+  ex10 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex56
+                   Examples.ex31) -}
+ec416479c5712c04d2191ef5d3cd2a22
+  ex100 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex23, Examples.ex83, Examples.ex77)) -}
+61fec00eb2237f823bc578b5d9a96bbf
+  ex101 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex85
+                   Examples.ex102) -}
+dfe30f1ddde6035eeb888eae0a8a9501
+  ex102 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex76
+                   Examples.ex2) -}
+df6518aa18d128ff38b8a17c6464f08d
+  ex103 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex27
+                   Examples.ex104) -}
+b7a006fe2887ed2845b0e23e67597acd
+  ex104 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex18
+                   Examples.ex105) -}
+4f8c5b4d18372519f0b0a27aa86aecc8
+  ex105 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex118
+                   Examples.ex106) -}
+5609d3f42e3cf6ca853faebf70a5f9e4
+  ex106 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex114
+                   Examples.ex107) -}
+012b67563d2b8b1fd1cac06011da903e
+  ex107 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex113
+                   Examples.ex108) -}
+7c42dedcfeed83a393b8bb10abc77600
+  ex108 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex109
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+3c6f45f088411190e2d5054c16d857e9
+  ex109 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex23, Examples.ex110, Examples.ex19)) -}
+9a5752149c3694cb8c66c0324cdefb34
+  ex11 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex73
+                   Examples.ex62) -}
+824a035f5f404cdb2a07b9371217feb6
+  ex110 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex111
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+d27fa3671cc6c54d671f04e73e43e2b5
+  ex111 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex112) -}
+91130dbe38fe9dc34e7722edd62f53a9
+  ex112 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 31#) -}
+9381d1850f9590f41ca0dee41275a36d
+  ex113 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex20, Examples.ex22, Examples.ex19)) -}
+198f24b12cde4ef15f7a060fb78f7533
+  ex114 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex20, Examples.ex72, Examples.ex115)) -}
+40538e1bb6a3b9ee2df50e72840aa2a0
+  ex115 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex116
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+84f0bb093f55a0231385f38d1c3432e0
+  ex116 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex117) -}
+cc3d54842ddb2def73d05450296b25de
+  ex117 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 33#) -}
+3eee29fbf2968a818cb31dd221bc5148
+  ex118 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex28, Examples.ex22, Examples.ex19)) -}
+edca807f79490f8503a7804fe75ac880
+  ex119 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex44
+                   Examples.ex120) -}
+1c21ceb9ff48325524d1bee6c5f90f50
+  ex120 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex42
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+6da82207c45cdd3100808613807638a5
+  ex121 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex70
+                   Examples.ex122) -}
+145c477ddd356b1b0aea20924a9abf96
+  ex122 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex44
+                   Examples.ex123) -}
+bf0b9b238274159d998b0446a8f61ac8
+  ex123 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex42
+                   Examples.ex124) -}
+717e182e481fe115a98f7efb298380de
+  ex124 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex125
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+f57721bbd6df6b228b29edcfa9bfecbf
+  ex125 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex40, GHC.Types.[] @ Formulas.Atom,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+731b3bdc5676daa77c9c06ee57819e6c
+  ex126 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex60, GHC.Types.[] @ Formulas.Atom,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+125da3dae789f33d4dafc177334b97ef
+  ex127 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex52
+                   Examples.ex128) -}
+59be130107d248ab5bce077858237be9
+  ex128 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex129
+                   Examples.ex121) -}
+bb75711938d2070b243f8eba313a9371
+  ex129 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex25, Examples.ex57, Examples.ex78)) -}
+91e9c3534ee945d8d64b498092bbd64a
+  ex16 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex27
+                   Examples.ex17) -}
+c9f3e292c073721e7e4ec922d7a2f831
+  ex17 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex18
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+d3ecce32d36ab03caba45db672819c87
+  ex18 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex25, Examples.ex22, Examples.ex19)) -}
+6fa8b7da99dead726ba2c9b6a8c3fb87
+  ex19 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex20
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+de9d8f818b14126dbdae24f96ba349eb
+  ex2 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex92
+                   Examples.ex74) -}
+61101b28f15616ab8a3e30df5cfbd37e
+  ex20 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex21) -}
+c777e571bbb78f557c8c3adc0a339075
+  ex21 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 3#) -}
+d76e79511ea52091b5be96193f1396c2
+  ex22 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex23
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+5076025f6360c3b47b99253498f2b4cf
+  ex23 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex24) -}
+ff15896a30f2bcc1a5171beea69901ae
+  ex24 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 1#) -}
+41112092f4d4fb4dc80f7d4715f09490
+  ex25 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex26) -}
+b329e9458be295a64cdff10d571d62e8
+  ex26 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 4#) -}
+edfd44d8422d96a186ed75feb2ae5075
+  ex27 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex28, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex19)) -}
+b26e96b1a7786032b81b144db54f06f1
+  ex28 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex29) -}
+870a7386ad4d6b560661eb488d61fcc1
+  ex29 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 2#) -}
+2ec9cf52b1aabbc0862c029f5803528b
+  ex3 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex92
+                   Examples.ex98) -}
+d71037da67264aa36ebe33d14a83ea39
+  ex30 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex23, GHC.Types.[] @ Formulas.Atom,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+8016d7f520065646ce6ab9f5760fda7f
+  ex31 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex52
+                   Examples.ex32) -}
+5112ba61896b7e416a1e4ede58c34041
+  ex32 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex46
+                   Examples.ex33) -}
+2ce43bfd624845bcbcc05e4d0dced0f2
+  ex33 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex44
+                   Examples.ex34) -}
+8248e894468f1ba859090227f080a4d3
+  ex34 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex42
+                   Examples.ex35) -}
+d6093f341a41a1fcd906787d6e4c441e
+  ex35 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex36
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+44a96d0a7def56907d3411d42a96521b
+  ex36 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex40, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex37)) -}
+9b5d5c0d2fa0a33cca74fab5e1474156
+  ex37 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex38
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+4e5787043537e3ad5ec2892c3d60fc11
+  ex38 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex39) -}
+9f4e5101861294e8292f1ae4979c90ae
+  ex39 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 18#) -}
+fbaefbd9623ef31ed526e77caf91b11a
+  ex4 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex92
+                   Examples.ex101) -}
+08eca71ae1390706365961c03fa8b697
+  ex40 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex41) -}
+048020d7986c146e66910ad4962f2c15
+  ex41 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 6#) -}
+599588660b3d49f8fe54ef12162d22d2
+  ex42 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex28, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex43)) -}
+f057c2dbabbaeffc5c0ce173350ee153
+  ex43 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex25
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+a0b0c4e9f5fe220fa456d4cc8839ff9b
+  ex44 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex23, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex45)) -}
+78f563080ade618f83a9781cad7d75fc
+  ex45 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex28
+                   Examples.ex19) -}
+0a5422811857b1441087519c43d358f2
+  ex46 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex50, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex47)) -}
+ad88baa448abc323e0734e51a626afd3
+  ex47 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex48
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+a3383a3db389f11cef61a7dc942b5035
+  ex48 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex49) -}
+09a0f32411b510fb6867ee41f383bb39
+  ex49 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 22#) -}
+ea43e2986aee3e883ac94473a0b3dc69
+  ex5 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex30
+                   Examples.ex103) -}
+381f7b56f9bc09c74829cacc25e0aa5f
+  ex50 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex51) -}
+32934ef3c200cf600c6d2fc60e89fd40
+  ex51 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 12#) -}
+740f338509f70dcb9e4a2014e825b24c
+  ex52 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex25, Examples.ex53,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+8a15dfd6676b6f235fed38b77275e4b1
+  ex53 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex54
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+f018031653ab7f7427ec4f46141bea35
+  ex54 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex55) -}
+c68733ed83c730f12f3eedb3b3d0838b
+  ex55 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 5#) -}
+b8c1a1ae5db7344111631c04c89c3040
+  ex56 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex60, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex57)) -}
+160aa6fdee5baf9f524a2cf100b06b4a
+  ex57 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex58
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+4ba7359cb90465a367af0cbe80d28781
+  ex58 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex59) -}
+6a3903522785ba9fb910a98892ae3830
+  ex59 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 19#) -}
+333d16e0bb0ce423b10e9be74226919c
+  ex6 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex52
+                   Examples.ex119) -}
+0c0e5ef55f1aa78bbadca52a4467e917
+  ex60 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex61) -}
+053a8d0f129c05a85e52861c88da503c
+  ex61 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 10#) -}
+1d63c0d1a7d985c088ed2ab5137771af
+  ex62 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex71
+                   Examples.ex63) -}
+9f94f296c9d56424a9b506010295c120
+  ex63 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex70
+                   Examples.ex64) -}
+b673b6464e4f45f8e6a63396d61dad51
+  ex64 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex68
+                   Examples.ex65) -}
+b5d7e1526149531a81330807df0aa7ff
+  ex65 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex66
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+a5074f11ed1d565c15a53402f2e1b60b
+  ex66 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex40, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex67)) -}
+bc37710a845cf5a37c3b08f5193604a5
+  ex67 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex60
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+52b8919bc35207953cdf95bec12af740
+  ex68 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex28, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex69)) -}
+f5865db09f916d3d8054c9f947bd50dd
+  ex69 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex28
+                   Examples.ex43) -}
+10410b8b9ed5612c238e07e8e0e39850
+  ex7 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex52
+                   Examples.ex121) -}
+8df9966effb1c60e11e46e290393526e
+  ex70 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex50, GHC.Types.[] @ Formulas.Atom,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+f281b4d10cec703f57897c80509e309a
+  ex71 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex25, Examples.ex72,
+                  GHC.Types.[] @ Formulas.Atom)) -}
+8df617a0fed4c3e61454d92df0f75f99
+  ex72 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex50
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+97e6757920dcd1d49ff27c63b2512373
+  ex73 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex60, GHC.Types.[] @ Formulas.Atom,
+                  Examples.ex43)) -}
+a59549c6e3463ee152de9153d39fc6f8
+  ex74 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex85
+                   Examples.ex75) -}
+a46b18af40242aab5507a5d6715ba199
+  ex75 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex76
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+c2232ace217cdfdd6cf02efc4e9323b7
+  ex76 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex50, Examples.ex83, Examples.ex77)) -}
+85bb33bd345e472f38389e92c5d3e439
+  ex77 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex81
+                   Examples.ex78) -}
+567b389523ae13c5b95a9ba9f28f02d6
+  ex78 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex79
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+9cd87a73aad490349e23cbc4916187e9
+  ex79 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex80) -}
+3f8c10d4b5ae0da93af45417e805a9a5
+  ex8 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex126
+                   Examples.ex7) -}
+c87180d02505c9fb05be5f2aa79230f6
+  ex80 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 11#) -}
+32ba01b2bf10b25f967d87cd87c974ed
+  ex81 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex82) -}
+e9846ed3d01279f7efbe2a011701cea8
+  ex82 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 13#) -}
+829f72344b192c0c13edac6a7f34a253
+  ex83 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex25
+                   Examples.ex84) -}
+03bbca057da8f82e4d3c2caba285c5af
+  ex84 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex40
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+e4e832e64505079c2ac957ffdc9d219a
+  ex85 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex90, Examples.ex87, Examples.ex86)) -}
+364ca0cc547e8e66aa818b0111fa8c05
+  ex86 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex60
+                   Examples.ex78) -}
+24676c43b2a459816efcee959b0bfb46
+  ex87 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex88
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+b40d52765a716b9fcc4294be3b568413
+  ex88 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex89) -}
+9f9778450e0bd64d572b9a632cac6031
+  ex89 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 9#) -}
+aad0228a001eb619ac8a8a6e42b393b3
+  ex9 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex126
+                   Examples.ex127) -}
+5ab518a82cfe8ac6e910dd7138060fcb
+  ex90 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex91) -}
+2adabada2ca2d2523df3cfd1f32ddaf5
+  ex91 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 8#) -}
+c5da501f76406ccbc6681c37398a3e22
+  ex92 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: ((Examples.ex23, Examples.ex97, Examples.ex93)) -}
+abecfa9963c8b4790c37ab2fff53a54b
+  ex93 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex28
+                   Examples.ex94) -}
+d0a1744abcaea4666378700cb68a5768
+  ex94 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex95
+                   (GHC.Types.[] @ Formulas.Atom)) -}
+7af75d88f913c2fe213e90947604d872
+  ex95 :: Formulas.Atom
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (Formulas.A Examples.ex96) -}
+f00f81b5173cc2d4f691f930e71ae185
+  ex96 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 7#) -}
+ababe3c934ba0d8124fcd1e9779a0c04
+  ex97 :: [Formulas.Atom]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ Formulas.Atom
+                   Examples.ex20
+                   Examples.ex53) -}
+06da825be61f46a95885b1ac60f3305a
+  ex98 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex85
+                   Examples.ex99) -}
+3921d90a6c8b732b41444037226609c3
+  ex99 :: [(Formulas.Atom, [Formulas.Atom], [Formulas.Atom])]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Examples.ex100
+                   (GHC.Types.[]
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))) -}
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+

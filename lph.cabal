@@ -2,16 +2,16 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5b463a9b2dbe6e27d28cb5f35ddb3463c07dc01cf469bf47c1c65d12fb305e23
+-- hash: fc1eb6d5eb9a75ba8c6c0bd6f2ad0cfd564b1b7d9d2e9610c496cec51ce6f78f
 
-name:           LPHtemp
+name:           lph
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/LPHtemp#readme>
-homepage:       https://github.com/githubuser/LPHtemp#readme
-bug-reports:    https://github.com/githubuser/LPHtemp/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2018 Author name here
+description:    Please see the README on GitHub at <https://github.com/flaizdnag/lph#readme>
+homepage:       https://github.com/flaizdnag/lph#readme
+bug-reports:    https://github.com/flaizdnag/lph/issues
+author:         Aleksandra Cz., Kinga O., Andrzej G.
+maintainer:     andrzej.gajda@amu.edu.pl
+copyright:      2018 Aleksandra Cz., Kinga O., Andrzej G.
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -23,13 +23,14 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/LPHtemp
+  location: https://github.com/flaizdnag/lph
 
 library
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , containers
   exposed-modules:
       Completion
       Examples
@@ -38,30 +39,32 @@ library
       LvlMap
       Operator
   other-modules:
-      Paths_LPHtemp
+      Paths_lph
   default-language: Haskell2010
 
-executable LPHtemp-exe
+executable lph-exe
   main-is: Main.hs
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      LPHtemp
-    , base >=4.7 && <5
+      base >=4.7 && <5
+    , containers
+    , lph
   other-modules:
-      Paths_LPHtemp
+      Paths_lph
   default-language: Haskell2010
 
-test-suite LPHtemp-test
+test-suite lph-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      LPHtemp
-    , base >=4.7 && <5
+      base >=4.7 && <5
+    , containers
+    , lph
   other-modules:
-      Paths_LPHtemp
+      Paths_lph
   default-language: Haskell2010

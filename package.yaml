@@ -1,10 +1,10 @@
-name:                LPHtemp
+name:                lph
 version:             0.1.0.0
-github:              "githubuser/LPHtemp"
+github:              "flaizdnag/lph"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2018 Author name here"
+author:              "Aleksandra Cz., Kinga O., Andrzej G."
+maintainer:          "andrzej.gajda@amu.edu.pl"
+copyright:           "2018 Aleksandra Cz., Kinga O., Andrzej G."
 
 extra-source-files:
 - README.md
@@ -17,16 +17,17 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/LPHtemp#readme>
+description:         Please see the README on GitHub at <https://github.com/flaizdnag/lph#readme>
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 
 library:
   source-dirs: src
 
 executables:
-  LPHtemp-exe:
+  lph-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -34,10 +35,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - LPHtemp
+    - lph
 
 tests:
-  LPHtemp-test:
+  lph-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -45,4 +46,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - LPHtemp
+    - lph

@@ -1,0 +1,118 @@
+
+==================== FINAL INTERFACE ====================
+2018-05-10 09:49:55.599088471 UTC
+
+interface lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C:Operator 8022
+  interface hash: b3eabf6e8c3c5b1b3111e1785a7d5222
+  ABI hash: 8dc6fbb1c3f160df5ba9a64af21ba612
+  export-list hash: 532a2d9519c6011070db5787766fd4fc
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 26e0ff4b0ff758fc4ebf6a516aed248e
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Operator.isElem
+  Operator.isSublist
+  Operator.iterTp
+  Operator.opTp
+  Operator.upArrow
+module dependencies: Formulas
+package dependencies: base-4.10.1.0* ghc-prim-0.5.1.1
+                      integer-gmp-1.0.1.0
+orphans: base-4.10.1.0:GHC.Float base-4.10.1.0:GHC.Base
+family instance modules: base-4.10.1.0:Control.Applicative
+                         base-4.10.1.0:Data.Either base-4.10.1.0:Data.Functor.Const
+                         base-4.10.1.0:Data.Functor.Identity base-4.10.1.0:Data.Monoid
+                         base-4.10.1.0:Data.Type.Equality base-4.10.1.0:GHC.Generics
+                         base-4.10.1.0:GHC.IO.Exception base-4.10.1.0:GHC.TypeLits
+                         base-4.10.1.0:GHC.TypeNats
+import  -/  base-4.10.1.0:Data.Foldable 9ed87455d68e87ff2b5b8725eae9897e
+import  -/  base-4.10.1.0:GHC.Base 782fd99b5e36f3698a26179a49afca64
+import  -/  base-4.10.1.0:GHC.List e3060fbeb44ce0038e6b4dedf2dd9cf1
+import  -/  base-4.10.1.0:Prelude 31945b7d0084063347fc52506d3a4020
+import  -/  ghc-prim-0.5.1.1:GHC.Classes 93e2660065dce9329577e83d76d8f0d4
+import  -/  Formulas 29828620833d925386bc7e66a6485a46
+  exports: 18cdaffd124661ac46eb1dd5b1e7aefc
+  Atom 5e63cb212f133c594f84fba19ed012fa
+  LogicP 677480e6f3d861e38d8ed3d2537b7d36
+3081c0e7d4170bb64617f8e6a92dbb63
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Operator.$trModule3
+                   Operator.$trModule1) -}
+a5bfb92d29dc0a470feca9a6c23fa0a5
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Operator.$trModule2) -}
+c6c320c74e63bbb14fec5546881b182a
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Operator"#) -}
+e51600b5fcff31e8a60080a62cf63823
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Operator.$trModule4) -}
+36a455073b6225668a69b99fd025bb84
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C"#) -}
+41f285504a205d8bdca528f0bb0f0214
+  $witerTp ::
+    Formulas.LogicP
+    -> [[Formulas.Atom]] -> (# [Formulas.Atom], [[Formulas.Atom]] #)
+  {- Arity: 2, Strictness: <S,U><S,1*U>, Inline: [0] -}
+585400bc287f29b1a9e539d7ba778284
+  isElem :: GHC.Classes.Eq a => [a] -> [a] -> GHC.Types.Bool
+  {- Arity: 3, HasNoCafRefs,
+     Strictness: <L,U(C(C1(U)),A)><S,1*U><L,U> -}
+e45d53164c67a45cd489c77062c7270e
+  isElem_$sisElem ::
+    [Formulas.Atom] -> [Formulas.Atom] -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,U> -}
+9500cba6b83cb695f455045ec8a63c28
+  isSublist :: GHC.Classes.Eq a => [a] -> [a] -> GHC.Types.Bool
+  {- Arity: 3, HasNoCafRefs,
+     Strictness: <L,U(C(C1(U)),A)><S,1*U><L,U> -}
+f0478f2bbae58df26eee6d474cdc4ad1
+  isSublist_$sisSublist ::
+    [Formulas.Atom] -> [Formulas.Atom] -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,U> -}
+781ab6157f0402213a42f09613e1cfbc
+  iterTp :: Formulas.LogicP -> [[Formulas.Atom]] -> [[Formulas.Atom]]
+  {- Arity: 2, Strictness: <S,U><S,1*U>m2, Inline: [0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Formulas.LogicP) (w1 :: [[Formulas.Atom]]) ->
+                 case Operator.$witerTp w w1 of ww { (#,#) ww1 ww2 ->
+                 GHC.Types.: @ [Formulas.Atom] ww1 ww2 }) -}
+340279930e4575d3fb289bad6ff80693
+  opTp :: Formulas.LogicP -> [Formulas.Atom] -> [Formulas.Atom]
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,U> -}
+8b833ea5f8c10115c7e03eed41bdbdae
+  upArrow :: Formulas.LogicP -> [Formulas.Atom]
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: Formulas.LogicP) ->
+                 case Operator.iterTp x Operator.upArrow1 of wild {
+                   [] -> GHC.List.badHead @ [Formulas.Atom] : x1 ds1 -> x1 }) -}
+4a8629678850d0802215971c86a02a17
+  upArrow1 :: [[Formulas.Atom]]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ [Formulas.Atom]
+                   (GHC.Types.[] @ Formulas.Atom)
+                   (GHC.Types.[] @ [Formulas.Atom])) -}
+"SPEC isElem @ Atom" forall ($dEq :: GHC.Classes.Eq Formulas.Atom)
+  Operator.isElem @ Formulas.Atom $dEq = Operator.isElem_$sisElem
+"SPEC isSublist @ Atom" forall ($dEq :: GHC.Classes.Eq
+                                          Formulas.Atom)
+  Operator.isSublist @ Formulas.Atom $dEq
+  = Operator.isSublist_$sisSublist
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+

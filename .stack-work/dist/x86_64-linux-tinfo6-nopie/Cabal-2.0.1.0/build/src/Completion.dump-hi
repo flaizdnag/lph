@@ -1,0 +1,1193 @@
+
+==================== FINAL INTERFACE ====================
+2018-05-10 09:49:56.024379457 UTC
+
+interface lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C:Completion 8022
+  interface hash: 21beaeb51124234a5b83898bd2b76043
+  ABI hash: edf95d60c1ff68a9c6ec394965d2c9e3
+  export-list hash: 8c6defe0cf84ccd6e5c7b6af9967be13
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 26e0ff4b0ff758fc4ebf6a516aed248e
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Completion.addC
+  Completion.addDE
+  Completion.addDE1
+  Completion.addHeadToInv
+  Completion.addN
+  Completion.addNToForm
+  Completion.alwaysTrue
+  Completion.atomToForm
+  Completion.atomsToForm
+  Completion.breakForm
+  Completion.breakForms
+  Completion.compP
+  Completion.compP'
+  Completion.first
+  Completion.groupByValue
+  Completion.groupHeads
+  Completion.interps
+  Completion.inv
+  Completion.logicP'
+  Completion.negA
+  Completion.negP
+  Completion.negP'
+  Completion.sameHead
+  Completion.sameHead'
+  Completion.sortHeads
+  Completion.sorts
+  Completion.trueC
+  Completion.trueC'
+  Completion.trueD
+  Completion.trueD'
+  Completion.trueE
+  Completion.unForms
+  Completion.Bool2{Completion.Fa Completion.Tr Completion.Un}
+  Completion.Form{Completion.C Completion.D Completion.E Completion.N Completion.T Completion.V}
+module dependencies: Examples Formulas Graph Operator
+package dependencies: array-0.5.2.0 base-4.10.1.0
+                      containers-0.5.10.2 deepseq-1.4.3.0 ghc-prim-0.5.1.1
+                      integer-gmp-1.0.1.0
+orphans: base-4.10.1.0:GHC.Float base-4.10.1.0:GHC.Base
+family instance modules: base-4.10.1.0:Control.Applicative
+                         base-4.10.1.0:Data.Complex base-4.10.1.0:Data.Either
+                         base-4.10.1.0:Data.Functor.Compose base-4.10.1.0:Data.Functor.Const
+                         base-4.10.1.0:Data.Functor.Identity
+                         base-4.10.1.0:Data.Functor.Product base-4.10.1.0:Data.Functor.Sum
+                         base-4.10.1.0:Data.List.NonEmpty base-4.10.1.0:Data.Monoid
+                         base-4.10.1.0:Data.Semigroup base-4.10.1.0:Data.Type.Equality
+                         base-4.10.1.0:Data.Version base-4.10.1.0:Data.Void
+                         base-4.10.1.0:GHC.Exts base-4.10.1.0:GHC.Generics
+                         base-4.10.1.0:GHC.IO.Exception base-4.10.1.0:GHC.TypeLits
+                         base-4.10.1.0:GHC.TypeNats containers-0.5.10.2:Data.Graph
+                         containers-0.5.10.2:Data.Sequence.Internal
+                         containers-0.5.10.2:Data.Tree
+import  -/  base-4.10.1.0:Data.Foldable 9ed87455d68e87ff2b5b8725eae9897e
+import  -/  base-4.10.1.0:Data.List 4ab7fa2a1b87502b23af891a384f0506
+import  -/  base-4.10.1.0:Data.OldList 555420b092ca8cf0a8f9666bc0e07dcf
+import  -/  base-4.10.1.0:Data.Tuple 8fa1305aa5032ea35e2a54fa5f1e78f9
+import  -/  base-4.10.1.0:GHC.Base 782fd99b5e36f3698a26179a49afca64
+import  -/  base-4.10.1.0:GHC.Exts 7dc7a2be934e058493541437800afa50
+import  -/  base-4.10.1.0:GHC.List e3060fbeb44ce0038e6b4dedf2dd9cf1
+import  -/  base-4.10.1.0:GHC.Show 0a8ce2b5e533d1c2cfb7954e6736be45
+import  -/  base-4.10.1.0:Prelude 31945b7d0084063347fc52506d3a4020
+import  -/  containers-0.5.10.2:Data.Graph 6d23d46547ce557456a2360f2f999a75
+import  -/  ghc-prim-0.5.1.1:GHC.Classes 93e2660065dce9329577e83d76d8f0d4
+import  -/  ghc-prim-0.5.1.1:GHC.Types b1fd0716441595db508c1a74387bf394
+import  -/  Examples 31ea72c521afb08e4b11851d1a44d003
+  exports: 7cd463041272ca4bcb59a5a042e25db4
+import  -/  Formulas 29828620833d925386bc7e66a6485a46
+  exports: 18cdaffd124661ac46eb1dd5b1e7aefc
+  Atom 5e63cb212f133c594f84fba19ed012fa
+  HClause 0b2a8e4566400f449d194587bf23a956
+  LogicP 677480e6f3d861e38d8ed3d2537b7d36
+  bP 88ea949769107c8f2be51f50ca3e3425
+  bPBodyP 3324ac12b209b61a7759b3ac32440392
+  bPHead db2886ee4541d23fd699dcfe68b2a44a
+  hClBodyN 8e606056e37697b8aaa97577355df513
+  hClHead 78d0c0794c4a586076e791218a1f42ed
+import  -/  Graph ab078ba4c5a29083074eb40419085ba1
+  exports: edac960e23907a6ed45bb17c17f37bbd
+  atomToInt 16139b699784c1ec7b9ba226872a9d3b
+  graphG cfee02d7f8215591364e38bbfa5b450b
+  intToAtom 4ccd4ad4fc9f85f4eb477d516a09232c
+import  -/  Operator 8dc6fbb1c3f160df5ba9a64af21ba612
+  exports: 532a2d9519c6011070db5787766fd4fc
+  isElem 585400bc287f29b1a9e539d7ba778284
+a3dc2501d96eb809ecdbe419c6848359
+  $fEqBool2 :: GHC.Classes.Eq Completion.Bool2
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Completion.Bool2
+                  Completion.$fEqBool2_$c==
+                  Completion.$fEqBool2_$c/= -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fEqBool2_$c/= ::
+    Completion.Bool2 -> Completion.Bool2 -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (a :: Completion.Bool2) (b :: Completion.Bool2) ->
+                 case a of wild {
+                   Completion.Fa
+                   -> case b of wild1 {
+                        DEFAULT -> GHC.Types.True Completion.Fa -> GHC.Types.False }
+                   Completion.Tr
+                   -> case b of wild1 {
+                        DEFAULT -> GHC.Types.True Completion.Tr -> GHC.Types.False }
+                   Completion.Un
+                   -> case b of wild1 {
+                        DEFAULT -> GHC.Types.True Completion.Un -> GHC.Types.False } }) -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fEqBool2_$c== ::
+    Completion.Bool2 -> Completion.Bool2 -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (ds :: Completion.Bool2) (ds1 :: Completion.Bool2) ->
+                 case ds of wild {
+                   Completion.Fa
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False Completion.Fa -> GHC.Types.True }
+                   Completion.Tr
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False Completion.Tr -> GHC.Types.True }
+                   Completion.Un
+                   -> case ds1 of wild1 {
+                        DEFAULT -> GHC.Types.False Completion.Un -> GHC.Types.True } }) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fEqForm :: GHC.Classes.Eq Completion.Form
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Completion.Form
+                  Completion.$fEqForm_$c==
+                  Completion.$fEqForm_$c/= -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fEqForm_$c/= ::
+    Completion.Form -> Completion.Form -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (a :: Completion.Form) (b :: Completion.Form) ->
+                 case Completion.$fEqForm_$c== a b of wild {
+                   GHC.Types.False -> GHC.Types.True
+                   GHC.Types.True -> GHC.Types.False }) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fEqForm_$c== ::
+    Completion.Form -> Completion.Form -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+d0f825deb020211c16fb41e4f661d11e
+  $fShowBool1 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   Completion.$fShowBool3) -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fShowBool2 :: GHC.Show.Show Completion.Bool2
+  DFunId
+  {- Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Completion.Bool2
+                  Completion.$fShowBool2_$cshowsPrec
+                  Completion.$fShowBool2_$cshow
+                  Completion.$fShowBool2_$cshowList -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fShowBool2_$cshow :: Completion.Bool2 -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: Completion.Bool2) ->
+                 case x of wild {
+                   Completion.Fa -> Completion.$fShowBool6
+                   Completion.Tr -> Completion.$fShowBool4
+                   Completion.Un -> Completion.$fShowBool1 }) -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fShowBool2_$cshowList :: [Completion.Bool2] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ Completion.Bool2
+                   Completion.$w$cshowsPrec) -}
+a3dc2501d96eb809ecdbe419c6848359
+  $fShowBool2_$cshowsPrec ::
+    GHC.Types.Int -> Completion.Bool2 -> GHC.Show.ShowS
+  {- Arity: 3, Strictness: <L,A><S,1*U><L,1*U>, Inline: [0],
+     Unfolding: InlineRule (3, True, True)
+                (\ (w :: GHC.Types.Int)
+                   (w1 :: Completion.Bool2)
+                   (w2 :: GHC.Base.String) ->
+                 Completion.$w$cshowsPrec w1 w2) -}
+41018fca5261af80457265941509b190
+  $fShowBool3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Un"#) -}
+9a2a1647b553fd09b4e11c14f73b0da3
+  $fShowBool4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   Completion.$fShowBool5) -}
+b344d8544a6bc12810b10b65f20be673
+  $fShowBool5 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Tr"#) -}
+b44ecbde1217081b84e34affd4998537
+  $fShowBool6 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   Completion.$fShowBool7) -}
+4726eb283e65e7e9cf63b3b069607bf3
+  $fShowBool7 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Fa"#) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fShowForm :: GHC.Show.Show Completion.Form
+  DFunId
+  {- Strictness: m, Inline: CONLIKE,
+     Unfolding: DFun:.
+                  @ Completion.Form
+                  Completion.$fShowForm_$cshowsPrec
+                  Completion.$fShowForm_$cshow
+                  Completion.$fShowForm_$cshowList -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fShowForm1 :: Completion.Form -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (Completion.$fShowForm_$cshowsPrec
+                   Completion.$fShowForm2) -}
+91f188aad7e8588b96766567ba7f5208
+  $fShowForm2 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 0#) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fShowForm_$cshow :: Completion.Form -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: Completion.Form) ->
+                 Completion.$fShowForm_$cshowsPrec
+                   Completion.$fShowForm2
+                   x
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fShowForm_$cshowList :: [Completion.Form] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ Completion.Form
+                   Completion.$fShowForm1) -}
+60b2429c706bb0039953da87f6d6a2c3
+  $fShowForm_$cshowsPrec ::
+    GHC.Types.Int -> Completion.Form -> GHC.Show.ShowS
+  {- Arity: 3, Strictness: <L,1*U(U)><S,1*U><L,U> -}
+874974dfb68eb7eb9fc80f0b717bc751
+  $tc'C :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   15522783814356528164##
+                   14837895044523706432##
+                   Completion.$trModule
+                   Completion.$tc'C2
+                   0#
+                   Completion.$tc'C1) -}
+c67a8f70c86bc27655d629f26cfe5e3a
+  $tc'C1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m4, Inline: [~] -}
+0d18a8b4460cd0ec458fab7cbe74b074
+  $tc'C2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'C3) -}
+f7d0ed815aef774d16fee90346275e73
+  $tc'C3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'C"#) -}
+010574413237b8667472d600be6d7e6f
+  $tc'D :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   1145017950979297839##
+                   757353983781988046##
+                   Completion.$trModule
+                   Completion.$tc'D1
+                   0#
+                   Completion.$tc'C1) -}
+1a38ecf6ce6935a269b881b820c70b90
+  $tc'D1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'D2) -}
+571f8d50610941840f3c40e54c6c5655
+  $tc'D2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'D"#) -}
+08a949ff84a81474eba62e21d9316800
+  $tc'E :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   8923640427681489565##
+                   4687283591901341899##
+                   Completion.$trModule
+                   Completion.$tc'E2
+                   0#
+                   Completion.$tc'E1) -}
+190bcd7b0ce300879864dc7955950c38
+  $tc'E1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m4, Inline: [~] -}
+cfa98116ff9cd30c91c281f7e920618d
+  $tc'E2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'E3) -}
+03e3e047dd9348354e2f3dcc1d599186
+  $tc'E3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'E"#) -}
+c15ccf4bc67c2b9b7edfbb8e7f5af27d
+  $tc'Fa :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   17466889685181017701##
+                   13319461210051726601##
+                   Completion.$trModule
+                   Completion.$tc'Fa2
+                   0#
+                   Completion.$tc'Fa1) -}
+5a79b45003c43642e72d7f345db399a8
+  $tc'Fa1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m1, Inline: [~] -}
+d5fa70e63a4379ac5e31e6d62a2bcaa4
+  $tc'Fa2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'Fa3) -}
+6eb209d90a4502a393ac74775db48ef8
+  $tc'Fa3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'Fa"#) -}
+212562820ce1e21f94cf557653cdb02e
+  $tc'N :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   4062088666452910279##
+                   13049917152062128171##
+                   Completion.$trModule
+                   Completion.$tc'N2
+                   0#
+                   Completion.$tc'N1) -}
+94407de309e19ccf0c84b7702cb289a5
+  $tc'N1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m4, Inline: [~] -}
+6571bbd29e7704f708fa533e5aa00c87
+  $tc'N2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'N3) -}
+831e907d7abca46063fd2dfdbcfd521a
+  $tc'N3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'N"#) -}
+6afda1d80f8398fd5ea5de780d0e7fd1
+  $tc'T :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   6011267159058778256##
+                   11252540423325698642##
+                   Completion.$trModule
+                   Completion.$tc'T2
+                   0#
+                   Completion.$tc'T1) -}
+c339ee251e08b741aeab21e0c070e780
+  $tc'T1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m1, Inline: [~] -}
+a0266e7819e0f9c9ae149fc8f9ea2436
+  $tc'T2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'T3) -}
+238caff88d4015e052899a4f9dff8393
+  $tc'T3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'T"#) -}
+c6a47cbcee89081e5cbca576b371391c
+  $tc'Tr :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   8983471264772374274##
+                   14140797512904986582##
+                   Completion.$trModule
+                   Completion.$tc'Tr1
+                   0#
+                   Completion.$tc'Fa1) -}
+158d6dc2d46bd870e26004226c09c4f4
+  $tc'Tr1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'Tr2) -}
+62a43fd6db9c17a6da8d3ac23a666b81
+  $tc'Tr2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'Tr"#) -}
+ea65c76d2c6e43cb49bbef3f2ef961d2
+  $tc'Un :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   2444793539217809015##
+                   4824851021953410489##
+                   Completion.$trModule
+                   Completion.$tc'Un1
+                   0#
+                   Completion.$tc'Fa1) -}
+17897191746e52cf76200cefdbdf3137
+  $tc'Un1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'Un2) -}
+b0aad6903bbeb2772a866545436343c4
+  $tc'Un2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'Un"#) -}
+a00d133142428fb645ef112fc3f97a98
+  $tc'V :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   4129488472181730082##
+                   13654679763373256330##
+                   Completion.$trModule
+                   Completion.$tc'V2
+                   0#
+                   Completion.$tc'V1) -}
+4f0770ca4ca94f73730199155f588092
+  $tc'V1 :: GHC.Types.KindRep
+  {- HasNoCafRefs, Strictness: m4, Inline: [~] -}
+36b9501d2dc87c1736295ce211e36066
+  $tc'V2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tc'V3) -}
+71b1d48d46d0f9d906cfe46d656fa7e1
+  $tc'V3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("'V"#) -}
+7137579d310184ac3f000b4b20140855
+  $tcBool1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tcBool3) -}
+657705b502eff09dccd1430f5d62d50a
+  $tcBool2 :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   7452494249709647291##
+                   15550619475929880249##
+                   Completion.$trModule
+                   Completion.$tcBool1
+                   0#
+                   GHC.Types.krep$*) -}
+b857003b49299d0d186a23cb470e75b1
+  $tcBool3 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Bool2"#) -}
+4dc7f3e5195af8a1a5b78279fdc89c7e
+  $tcForm :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   2564789790931952816##
+                   4929334820491386694##
+                   Completion.$trModule
+                   Completion.$tcForm1
+                   0#
+                   GHC.Types.krep$*) -}
+ba4c26971274a86c9e03f80cd5baf6b6
+  $tcForm1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$tcForm2) -}
+753ebdf72f82636c2d157e1017660aaa
+  $tcForm2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Form"#) -}
+801df7d9cceac7716e22229d841c1dfe
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Completion.$trModule3
+                   Completion.$trModule1) -}
+3108cd52c08e2719b747c506be0c0116
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$trModule2) -}
+d5a5e4b16e33e2a0f8791066ade49c80
+  $trModule2 :: GHC.Prim.Addr#
+  {- HasNoCafRefs, Unfolding: ("Completion"#) -}
+a33f0b4a321fd571e25a7bde990b8fb7
+  $trModule3 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS Completion.$trModule4) -}
+e52f7e96c4c8ec2fb05db18e140cb1b7
+  $trModule4 :: GHC.Prim.Addr#
+  {- HasNoCafRefs,
+     Unfolding: ("lph-0.1.0.0-9ChSTD8BH50CCOnZTmPQ4C"#) -}
+a3dc2501d96eb809ecdbe419c6848359
+  $w$cshowsPrec ::
+    Completion.Bool2 -> GHC.Base.String -> GHC.Base.String
+  {- Arity: 2, Strictness: <S,1*U><L,1*U>, Inline: [0],
+     Unfolding: (\ (w :: Completion.Bool2) (w1 :: GHC.Base.String) ->
+                 case w of wild {
+                   Completion.Fa
+                   -> GHC.Base.++ @ GHC.Types.Char Completion.$fShowBool6 w1
+                   Completion.Tr
+                   -> GHC.Base.++ @ GHC.Types.Char Completion.$fShowBool4 w1
+                   Completion.Un
+                   -> GHC.Base.++ @ GHC.Types.Char Completion.$fShowBool1 w1 }) -}
+8b0ad7f9bdc588e604810dc246e3be0d
+  $waddC ::
+    Formulas.Atom
+    -> [Formulas.Atom]
+    -> [Formulas.Atom]
+    -> (# Completion.Form, Completion.Form #)
+  {- Arity: 3, HasNoCafRefs, Strictness: <L,U><S,1*U><S,1*U>,
+     Inline: [0],
+     Unfolding: (\ (ww :: Formulas.Atom)
+                   (ww1 :: [Formulas.Atom])
+                   (ww2 :: [Formulas.Atom]) ->
+                 case ww1 of wild {
+                   []
+                   -> case ww2 of wild1 {
+                        [] -> (# Completion.V ww, Completion.T #)
+                        : ipv ipv1
+                        -> case GHC.List.$wlenAcc @ Formulas.Atom wild1 0# of ww3 {
+                             DEFAULT
+                             -> (# Completion.V ww, Completion.C (Completion.addN wild1) #)
+                             1# -> (# Completion.V ww, Completion.N (Completion.V ipv) #) } }
+                   : ipv ipv1
+                   -> case ww2 of wild1 {
+                        []
+                        -> case GHC.List.$wlenAcc @ Formulas.Atom wild 0# of ww3 {
+                             DEFAULT
+                             -> (# Completion.V ww,
+                                   Completion.C (Completion.atomsToForm wild) #)
+                             1# -> (# Completion.V ww, Completion.V ipv #) }
+                        : ipv2 ipv3
+                        -> (# Completion.V ww,
+                              Completion.C
+                                (GHC.Base.++
+                                   @ Completion.Form
+                                   (Completion.atomsToForm wild)
+                                   (Completion.addN wild1)) #) } }) -}
+2f8978c5289bdedfd79b590e76c10e8a
+  $waddDE1 ::
+    [(Completion.Form, Completion.Form)]
+    -> (# Completion.Form, Completion.Form #)
+  {- Arity: 1, Strictness: <S,U>, Inline: [0],
+     Unfolding: (\ (w :: [(Completion.Form, Completion.Form)]) ->
+                 case GHC.List.$wlenAcc
+                        @ (Completion.Form, Completion.Form)
+                        w
+                        0# of ww2 { DEFAULT ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.># ww2 1#) of wild {
+                   GHC.Types.False
+                   -> (# case w of wild1 {
+                           [] -> case GHC.List.badHead ret_ty Completion.Form of {}
+                           : x ds1 -> case x of wild2 { (,) x1 ds2 -> x1 } },
+                         case w of wild1 {
+                           [] -> case GHC.List.badHead ret_ty Completion.Form of {}
+                           : x ds1 -> case x of wild2 { (,) ds2 y -> y } } #)
+                   GHC.Types.True
+                   -> (# case w of wild1 {
+                           [] -> case GHC.List.badHead ret_ty Completion.Form of {}
+                           : x ds1 -> case x of wild2 { (,) x1 ds2 -> x1 } },
+                         Completion.D
+                           (GHC.Base.map
+                              @ (Completion.Form, Completion.Form)
+                              @ Completion.Form
+                              (Data.Tuple.snd @ Completion.Form @ Completion.Form)
+                              w) #) } }) -}
+ed3464d3da47a808e60fc5929fcf6a88
+  $waddHeadToInv ::
+    Completion.Form
+    -> [Completion.Form]
+    -> [Completion.Form]
+    -> (# [Completion.Form], [Completion.Form] #)
+  {- Arity: 3, Strictness: <S,1*U><S,U><L,U>, Inline: [0],
+     Unfolding: (\ (w :: Completion.Form)
+                   (ww :: [Completion.Form])
+                   (ww1 :: [Completion.Form]) ->
+                 case w of wild {
+                   DEFAULT
+                   -> case Completion.addHeadToInv1
+                      ret_ty (# [Completion.Form], [Completion.Form] #)
+                      of {}
+                   Completion.E a b
+                   -> let {
+                        $j :: (# [Completion.Form], [Completion.Form] #) <join 0>
+                        = case GHC.List.elem
+                                 @ Completion.Form
+                                 Completion.$fEqForm
+                                 a
+                                 ww1 of wild1 {
+                            GHC.Types.False
+                            -> case Completion.trueE wild (ww, ww1) of wild2 {
+                                 Completion.Fa -> (# ww, GHC.Types.: @ Completion.Form a ww1 #)
+                                 Completion.Tr -> (# ww, ww1 #)
+                                 Completion.Un -> (# ww, ww1 #) }
+                            GHC.Types.True -> (# ww, ww1 #) }
+                      } in
+                      case GHC.List.elem
+                             @ Completion.Form
+                             Completion.$fEqForm
+                             a
+                             ww of wild1 {
+                        GHC.Types.False
+                        -> case Completion.trueE wild (ww, ww1) of wild2 {
+                             DEFAULT -> $j
+                             Completion.Tr -> (# GHC.Types.: @ Completion.Form a ww, ww1 #) }
+                        GHC.Types.True -> $j } }) -}
+85b063594d744fcb1c5611414ea0c0d2
+  $wlvl :: GHC.Prim.Int# -> GHC.Prim.Int# -> GHC.Types.Ordering
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,U><S,U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Prim.Int#) (ww1 :: GHC.Prim.Int#) ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.==# ww ww1) of wild {
+                   GHC.Types.False
+                   -> case GHC.Prim.tagToEnum#
+                             @ GHC.Types.Bool
+                             (GHC.Prim.<# ww ww1) of wild1 {
+                        GHC.Types.False -> GHC.Types.GT GHC.Types.True -> GHC.Types.LT }
+                   GHC.Types.True -> GHC.Types.EQ }) -}
+8b5c2506b939e84b44eedb19a05dfc1a
+  $wlvl1 :: GHC.Prim.Int# -> GHC.Prim.Int# -> GHC.Types.Ordering
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,U><S,U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Prim.Int#) (ww1 :: GHC.Prim.Int#) ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.==# ww ww1) of wild {
+                   GHC.Types.False
+                   -> case GHC.Prim.tagToEnum#
+                             @ GHC.Types.Bool
+                             (GHC.Prim.<# ww ww1) of wild1 {
+                        GHC.Types.False -> GHC.Types.GT GHC.Types.True -> GHC.Types.LT }
+                   GHC.Types.True -> GHC.Types.EQ }) -}
+a3dc2501d96eb809ecdbe419c6848359
+  data Bool2 = Fa | Tr | Un
+60b2429c706bb0039953da87f6d6a2c3
+  data Form
+    = V Formulas.Atom
+    | N Completion.Form
+    | C [Completion.Form]
+    | D [Completion.Form]
+    | E Completion.Form Completion.Form
+    | T
+f43714ca171dc03eaf086feba8a8ddd9
+  addC :: Formulas.HClause -> (Completion.Form, Completion.Form)
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(LSS),1*U(U,1*U,1*U)>m,
+     Inline: [0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: Formulas.HClause) ->
+                 case w of ww { (,,) ww1 ww2 ww3 ->
+                 case Completion.$waddC ww1 ww2 ww3 of ww4 { (#,#) ww5 ww6 ->
+                 (ww5, ww6) } }) -}
+b08bca0ca5997b92981de9e07b84688c
+  addDE :: Formulas.LogicP -> [Completion.Form]
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (ds :: [Formulas.HClause]) ->
+                 case ds of wild {
+                   [] -> GHC.Types.[] @ Completion.Form
+                   : ipv ipv1
+                   -> GHC.Base.map
+                        @ [(Completion.Form, Completion.Form)]
+                        @ Completion.Form
+                        Completion.addDE1
+                        (Completion.sameHead
+                           (Data.OldList.groupBy
+                              @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                              Completion.addDE3
+                              (Data.OldList.sortBy
+                                 @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                                 Completion.addDE2
+                                 wild))) }) -}
+48dd0d4699f8ef594bc5cb37a1cc261d
+  addDE1 :: [(Completion.Form, Completion.Form)] -> Completion.Form
+  {- Arity: 1, Strictness: <S,U>m5, Inline: [0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [(Completion.Form, Completion.Form)]) ->
+                 case Completion.$waddDE1 w of ww { (#,#) ww1 ww2 ->
+                 Completion.E ww1 ww2 }) -}
+7112262051560e251cc6995e7c82723d
+  addDE2 ::
+    (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> GHC.Types.Ordering
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)><S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)>,
+     Inline: [0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))
+                   (w1 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])) ->
+                 case w of ww { (,,) ww1 ww2 ww3 ->
+                 case ww1 of ww4 { Formulas.A ww5 ->
+                 case ww5 of ww6 { GHC.Types.I# ww7 ->
+                 case w1 of ww8 { (,,) ww9 ww10 ww11 ->
+                 case ww9 of ww12 { Formulas.A ww13 ->
+                 case ww13 of ww14 { GHC.Types.I# ww15 ->
+                 Completion.$wlvl ww7 ww15 } } } } } }) -}
+6ce02d4d4f083de22f7f2619684e3921
+  addDE3 ::
+    (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)><S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (z :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))
+                   (y :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])) ->
+                 case z of wild { (,,) x ds ds1 ->
+                 case x of wild1 { Formulas.A a ->
+                 case y of wild2 { (,,) x1 ds2 ds3 ->
+                 case x1 of wild3 { Formulas.A b ->
+                 case a of wild4 { GHC.Types.I# x2 ->
+                 case b of wild5 { GHC.Types.I# y1 ->
+                 GHC.Prim.tagToEnum#
+                   @ GHC.Types.Bool
+                   (GHC.Prim.==# x2 y1) } } } } } }) -}
+81f0872ef951a28d693ed9d608df7608
+  addHeadToInv ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form])
+    -> ([Completion.Form], [Completion.Form])
+  {- Arity: 2, Strictness: <S,1*U><S(SL),1*U(U,U)>m, Inline: [0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: Completion.Form)
+                   (w1 :: ([Completion.Form], [Completion.Form])) ->
+                 case w1 of ww { (,) ww1 ww2 ->
+                 case Completion.$waddHeadToInv w ww1 ww2 of ww3 { (#,#) ww4 ww5 ->
+                 (ww4, ww5) } }) -}
+9e34b1b3ad6fc1d6486fa07b471931e6
+  addHeadToInv1 :: ([Completion.Form], [Completion.Form])
+  {- Strictness: x -}
+bff74ef94ef66c74be02f119eae7bd3d
+  addN :: [Formulas.Atom] -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+6d405ffa56c318004a4d7ce03f647f9f
+  addNToForm :: [Completion.Form] -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+9e2c9f27a5aeca98cd612f63ec25cc64
+  alwaysTrue :: Completion.Form -> Completion.Bool2
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: Completion.Form) ->
+                 case x of wild {
+                   DEFAULT -> Completion.Un
+                   Completion.N ds -> Completion.Fa
+                   Completion.E ds ds1
+                   -> case ds1 of wild1 {
+                        DEFAULT -> Completion.Un Completion.T -> Completion.Tr } }) -}
+84d43f444e44850a15db16de26a8d8f9
+  atomToForm :: Formulas.Atom -> Completion.Form
+  {- Arity: 1, HasNoCafRefs, Strictness: <L,U>m1,
+     Unfolding: InlineRule (0, True, True) Completion.V -}
+44bd02377121a13cc16fb8645819cb13
+  atomsToForm :: [Formulas.Atom] -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+3a547ccced9115e952fc68d57bddab2d
+  breakForm :: Completion.Form -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+3a48d0c40671fa65083ed35752c9790a
+  breakForms :: [Completion.Form] -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+852b8ffab2709062d8a3327fd77e6632
+  compP :: Formulas.LogicP -> [Completion.Form]
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (xs :: Formulas.LogicP) ->
+                 GHC.Base.augment
+                   @ Completion.Form
+                   (\ @ b
+                      (c :: Completion.Form -> b -> b)[OneShot]
+                      (n :: b)[OneShot] ->
+                    GHC.Base.foldr @ Completion.Form @ b c n (Completion.addDE xs))
+                   (Completion.negA xs)) -}
+368a79b995edd863517a9352088731da
+  compP' :: Formulas.LogicP -> [Completion.Form]
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: (\ (xs :: Formulas.LogicP) ->
+                 let {
+                   xs1 :: Formulas.LogicP = Completion.logicP' xs
+                 } in
+                 GHC.Base.++
+                   @ Completion.Form
+                   (Completion.addDE xs1)
+                   (Completion.negA xs1)) -}
+21daaaeec0f29750773c8d7af7730f4c
+  first :: (a, b, c) -> a
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(SLL),1*U(1*U,A,A)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ @ a @ b @ c (ds :: (a, b, c)) ->
+                 case ds of wild { (,,) x ds1 ds2 -> x }) -}
+55701e8ebb33325d1d57a58ceac70e09
+  groupByValue :: [Completion.Form] -> [[Completion.Form]]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (xs :: [Completion.Form]) ->
+                 Data.OldList.groupBy
+                   @ Completion.Form
+                   Completion.groupByValue1
+                   xs) -}
+a3d9dcd6a4cc2fbe9fa38b6533ac2bd7
+  groupByValue1 ::
+    Completion.Form -> Completion.Form -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: (\ (x :: Completion.Form) (y :: Completion.Form) ->
+                 case x of wild {
+                   DEFAULT
+                   -> case y of wild1 {
+                        DEFAULT -> GHC.Types.True
+                        Completion.N ds -> GHC.Types.False
+                        Completion.E ds ds1
+                        -> case ds1 of wild2 {
+                             DEFAULT -> GHC.Types.True Completion.T -> GHC.Types.False } }
+                   Completion.N ds
+                   -> case y of wild1 {
+                        DEFAULT -> GHC.Types.False
+                        Completion.N ds1 -> GHC.Types.True
+                        Completion.E ds1 ds2
+                        -> case ds2 of wild2 { DEFAULT -> GHC.Types.False } }
+                   Completion.E ds ds1
+                   -> case ds1 of wild1 {
+                        DEFAULT
+                        -> case y of wild2 {
+                             DEFAULT -> GHC.Types.True
+                             Completion.N ds2 -> GHC.Types.False
+                             Completion.E ds2 ds3
+                             -> case ds3 of wild3 {
+                                  DEFAULT -> GHC.Types.True Completion.T -> GHC.Types.False } }
+                        Completion.T
+                        -> case y of wild2 {
+                             DEFAULT -> GHC.Types.False
+                             Completion.E ds2 ds3
+                             -> case ds3 of wild3 {
+                                  DEFAULT -> GHC.Types.False
+                                  Completion.T -> GHC.Types.True } } } }) -}
+5c40b9bae806fac45d25e75b3c7fb816
+  groupHeads :: Formulas.LogicP -> [[Formulas.HClause]]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (xs :: Formulas.LogicP) ->
+                 Data.OldList.groupBy
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Completion.addDE3
+                   (Data.OldList.sortBy
+                      @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                      Completion.addDE2
+                      xs)) -}
+bebc1b30df19fdbd8e515ee8dbd30de8
+  interps ::
+    Formulas.LogicP
+    -> ([Completion.Form], [Completion.Form]) -> [[Completion.Form]]
+  {- Arity: 2, HasNoCafRefs, Strictness: <L,1*U><L,1*U(U,U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: Formulas.LogicP)
+                   (y :: ([Completion.Form], [Completion.Form])) ->
+                 Data.OldList.sortBy
+                   @ [Completion.Form]
+                   Completion.interps1
+                   (GHC.Types.:
+                      @ [Completion.Form]
+                      (GHC.Types.[] @ Completion.Form)
+                      (Data.OldList.nonEmptySubsequences
+                         @ Completion.Form
+                         (Completion.unForms x y)))) -}
+8db72cd34e84e04358bd4219fa98cdd8
+  interps1 ::
+    [Completion.Form] -> [Completion.Form] -> GHC.Types.Ordering
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: (\ (x :: [Completion.Form])
+                   (y :: [Completion.Form])[OneShot] ->
+                 case GHC.List.$wlenAcc @ Completion.Form x 0# of ww2 { DEFAULT ->
+                 case GHC.List.$wlenAcc @ Completion.Form y 0# of ww1 { DEFAULT ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.<# ww2 ww1) of wild {
+                   GHC.Types.False
+                   -> case GHC.Prim.tagToEnum#
+                             @ GHC.Types.Bool
+                             (GHC.Prim.==# ww2 ww1) of wild1 {
+                        GHC.Types.False -> GHC.Types.GT GHC.Types.True -> GHC.Types.EQ }
+                   GHC.Types.True -> GHC.Types.LT } } }) -}
+94718e6107fb083ff3e9c5417b46ca89
+  inv ::
+    [[Completion.Form]] -> ([Completion.Form], [Completion.Form])
+  {- Arity: 1, Strictness: <L,U>m, Inline: [0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [[Completion.Form]]) ->
+                 (Completion.inv_go1 w, Completion.inv_go w)) -}
+913fa993b3c4ffa5d08497fec471f5dd
+  inv_go :: [[Completion.Form]] -> [Completion.Form]
+  {- Arity: 1, Strictness: <S,1*U> -}
+d39f3dc130ce6f00a5a7bf7268efb088
+  inv_go1 :: [[Completion.Form]] -> [Completion.Form]
+  {- Arity: 1, Strictness: <S,1*U> -}
+11bce61bebbfd7e874114bd53b081a52
+  logicP' :: Formulas.LogicP -> Formulas.LogicP
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: (\ (xs :: Formulas.LogicP) ->
+                 let {
+                   lvl16 :: [Formulas.Atom] = Completion.negP' xs
+                 } in
+                 letrec {
+                   go :: [Formulas.HClause] -> [Formulas.HClause]
+                     {- Arity: 1, Strictness: <S,1*U> -}
+                   = \ (ds :: [Formulas.HClause]) ->
+                     case ds of wild {
+                       [] -> GHC.Types.[] @ Formulas.HClause
+                       : y ys
+                       -> case y of wild1 { (,,) x ds1 ds2 ->
+                          case Operator.isElem_$sisElem
+                                 (GHC.Types.: @ Formulas.Atom x (GHC.Types.[] @ Formulas.Atom))
+                                 lvl16 of wild2 {
+                            GHC.Types.False -> go ys
+                            GHC.Types.True
+                            -> GHC.Types.: @ Formulas.HClause wild1 (go ys) } } }
+                 } in
+                 go xs) -}
+31b884a06088143ddea2a5f6e9def77e
+  negA :: Formulas.LogicP -> [Completion.Form]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: (\ (ds :: [Formulas.HClause]) ->
+                 case ds of wild {
+                   [] -> GHC.Types.[] @ Completion.Form
+                   : ipv ipv1
+                   -> Completion.addN
+                        (Completion.negA_go
+                           (Formulas.bPHead wild)
+                           (Data.OldList.nubBy
+                              @ Formulas.Atom
+                              Formulas.$fEqAtom_$c==
+                              (GHC.Base.++
+                                 @ Formulas.Atom
+                                 (Formulas.bPHead wild)
+                                 (Formulas.bPBody wild)))) }) -}
+35f81d2e54918503dda6b319fd737ef5
+  negA_go :: [Formulas.Atom] -> [Formulas.Atom] -> [Formulas.Atom]
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+23b9beae0e02d2db0ae19e5ac1a52f82
+  negP :: Formulas.LogicP -> [Formulas.Atom]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+fbc7cd2d181ca8ad3932f42d48539d2d
+  negP' :: Formulas.LogicP -> [Formulas.Atom]
+  {- Arity: 1, Strictness: <S,U>,
+     Unfolding: (\ (xs :: Formulas.LogicP) ->
+                 let {
+                   lvl16 :: [GHC.Types.Int] = Graph.atomToInt (Completion.negP xs)
+                 } in
+                 let {
+                   g :: Data.Graph.Graph = Graph.graphG xs
+                 } in
+                 letrec {
+                   go :: [GHC.Types.Int] -> [GHC.Types.Int]
+                     {- Arity: 1, Strictness: <S,1*U> -}
+                   = \ (ds :: [GHC.Types.Int]) ->
+                     case ds of wild {
+                       [] -> GHC.Types.[] @ GHC.Types.Int
+                       : y ys
+                       -> let {
+                            z :: [GHC.Types.Int] = go ys
+                          } in
+                          letrec {
+                            go1 :: [GHC.Types.Int] -> [GHC.Types.Int]
+                              {- Arity: 1, Strictness: <S,1*U> -}
+                            = \ (ds1 :: [GHC.Types.Int]) ->
+                              case ds1 of wild1 {
+                                [] -> z
+                                : y1 ys1
+                                -> case g of ww { GHC.Arr.Array ww1 ww2 ww3 ww4 ->
+                                   case ww1 of ww5 { GHC.Types.I# ww6 ->
+                                   case ww2 of ww7 { GHC.Types.I# ww8 ->
+                                   case Data.Graph.$wpath ww6 ww8 ww4 y1 y of wild2 {
+                                     GHC.Types.False -> go1 ys1
+                                     GHC.Types.True
+                                     -> case Data.Graph.$wpath ww6 ww8 ww4 y y1 of wild3 {
+                                          GHC.Types.False -> GHC.Types.: @ GHC.Types.Int y (go1 ys1)
+                                          GHC.Types.True -> go1 ys1 } } } } } }
+                          } in
+                          go1 lvl16 }
+                 } in
+                 Data.OldList.nubBy
+                   @ Formulas.Atom
+                   Formulas.$fEqAtom_$c==
+                   (Graph.intToAtom (go (Graph.atomToInt (Formulas.bP xs))))) -}
+8afa8f53458bf4ff35a23333910125d6
+  sameHead ::
+    [[Formulas.HClause]] -> [[(Completion.Form, Completion.Form)]]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+ec68e19c5a76d637c7c34549882517f7
+  sameHead' ::
+    Formulas.LogicP -> [[(Completion.Form, Completion.Form)]]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: (\ (ds :: [Formulas.HClause]) ->
+                 case ds of wild {
+                   [] -> GHC.Types.[] @ [(Completion.Form, Completion.Form)]
+                   : ipv ipv1
+                   -> Completion.sameHead
+                        (Data.OldList.groupBy
+                           @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                           Completion.addDE3
+                           (Data.OldList.sortBy
+                              @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                              Completion.addDE2
+                              wild)) }) -}
+26fce418f01e6e4157fa69c1fa816522
+  sortHeads :: Formulas.LogicP -> Formulas.LogicP
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (xs :: Formulas.LogicP) ->
+                 Data.OldList.sortBy
+                   @ (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+                   Completion.sortHeads1
+                   xs) -}
+68c52a1d80b00b489da1f35d62c77f8f
+  sortHeads1 ::
+    (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])
+    -> GHC.Types.Ordering
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)><S(S(S(S))LL),1*U(1*U(1*U(U)),A,A)>,
+     Inline: [0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom]))
+                   (w1 :: (Formulas.Atom, [Formulas.Atom], [Formulas.Atom])) ->
+                 case w of ww { (,,) ww1 ww2 ww3 ->
+                 case ww1 of ww4 { Formulas.A ww5 ->
+                 case ww5 of ww6 { GHC.Types.I# ww7 ->
+                 case w1 of ww8 { (,,) ww9 ww10 ww11 ->
+                 case ww9 of ww12 { Formulas.A ww13 ->
+                 case ww13 of ww14 { GHC.Types.I# ww15 ->
+                 Completion.$wlvl1 ww7 ww15 } } } } } }) -}
+35b892bbde7e591a80aac671ab0e22ae
+  sorts ::
+    GHC.Classes.Ord a =>
+    (a, b1, c1) -> (a, b2, c2) -> GHC.Types.Ordering
+  {- Arity: 3, HasNoCafRefs,
+     Strictness: <S(S(C(C(S))L)LLLLLLL),U(1*U(1*C1(C1(U)),A),A,1*C1(C1(U)),A,A,A,A,A)><L,U(U,A,A)><L,U(U,A,A)>,
+     Unfolding: (\ @ a
+                   @ b
+                   @ c
+                   @ b1
+                   @ c1
+                   ($dOrd :: GHC.Classes.Ord a)
+                   (eta :: (a, b, c))
+                   (eta1 :: (a, b1, c1)) ->
+                 case GHC.Classes.==
+                        @ a
+                        (GHC.Classes.$p1Ord @ a $dOrd)
+                        (case eta of wild { (,,) x ds ds1 -> x })
+                        (case eta1 of wild { (,,) x ds ds1 -> x }) of wild {
+                   GHC.Types.False
+                   -> case GHC.Classes.<
+                             @ a
+                             $dOrd
+                             (case eta of wild1 { (,,) x ds ds1 -> x })
+                             (case eta1 of wild1 { (,,) x ds ds1 -> x }) of wild1 {
+                        GHC.Types.False -> GHC.Types.GT GHC.Types.True -> GHC.Types.LT }
+                   GHC.Types.True -> GHC.Types.EQ }) -}
+d0e456e8242c5498ac201f4803a01f67
+  trueC ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form]) -> [Completion.Bool2]
+  {- Arity: 2, Strictness: <S,1*U><L,1*U(U,U)> -}
+39a82d8a0c4a35b23313ce94e6456bcf
+  trueC' ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form]) -> Completion.Bool2
+  {- Arity: 2, Strictness: <S,U><L,U(U,U)>,
+     Unfolding: (\ (a :: Completion.Form)
+                   (x :: ([Completion.Form], [Completion.Form])) ->
+                 let {
+                   $j :: Completion.Bool2 <join 0>
+                   = Completion.trueC'_go (Completion.trueC a x)
+                 } in
+                 letrec {
+                   go :: [Completion.Bool2] -> Completion.Bool2
+                     <join 1> {- Arity: 1, Strictness: <S,1*U> -}
+                   = \ (ds :: [Completion.Bool2]) ->
+                     case ds of wild {
+                       [] -> Completion.Tr
+                       : y ys
+                       -> case y of wild1 { DEFAULT -> $j Completion.Tr -> go ys } }
+                 } in
+                 go (Completion.trueC a x)) -}
+f748f667e1beb9d4a9a9dbfad8c5a339
+  trueC'_go :: [Completion.Bool2] -> Completion.Bool2
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+0523e41c5f1db907d90db39e15c06ad9
+  trueD ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form]) -> [Completion.Bool2]
+  {- Arity: 2, Strictness: <S,1*U><L,U(U,U)> -}
+3a009f3df05aa9e73e320a7531d8b27c
+  trueD' ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form]) -> Completion.Bool2
+  {- Arity: 2, Strictness: <S,U><L,U(U,U)>,
+     Unfolding: (\ (a :: Completion.Form)
+                   (x :: ([Completion.Form], [Completion.Form])) ->
+                 let {
+                   $j :: Completion.Bool2 <join 0>
+                   = Completion.trueD'_go (Completion.trueD a x)
+                 } in
+                 letrec {
+                   go :: [Completion.Bool2] -> Completion.Bool2
+                     <join 1> {- Arity: 1, Strictness: <S,1*U> -}
+                   = \ (ds :: [Completion.Bool2]) ->
+                     case ds of wild {
+                       [] -> $j
+                       : y ys
+                       -> case y of wild1 {
+                            DEFAULT -> go ys Completion.Tr -> Completion.Tr } }
+                 } in
+                 go (Completion.trueD a x)) -}
+99b2d0ca5b065446c257436d6e2d412e
+  trueD'_go :: [Completion.Bool2] -> Completion.Bool2
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+f839d831175d3ef8bc82c70c35dfc423
+  trueE ::
+    Completion.Form
+    -> ([Completion.Form], [Completion.Form]) -> Completion.Bool2
+  {- Arity: 2, Strictness: <S,1*U><L,U(U,U)>,
+     Unfolding: (\ (ds :: Completion.Form)
+                   (x :: ([Completion.Form], [Completion.Form])) ->
+                 case ds of wild {
+                   DEFAULT -> Completion.trueE2
+                   Completion.E a b
+                   -> case b of wild1 {
+                        DEFAULT -> Completion.trueE1
+                        Completion.V c
+                        -> case x of wild2 { (,) x1 ds1 ->
+                           case GHC.List.elem
+                                  @ Completion.Form
+                                  Completion.$fEqForm
+                                  wild1
+                                  x1 of wild3 {
+                             GHC.Types.False
+                             -> case GHC.List.elem
+                                       @ Completion.Form
+                                       Completion.$fEqForm
+                                       wild1
+                                       ds1 of wild4 {
+                                  GHC.Types.False -> Completion.Un GHC.Types.True -> Completion.Fa }
+                             GHC.Types.True -> Completion.Tr } }
+                        Completion.N c
+                        -> case x of wild2 { (,) ds1 y ->
+                           case GHC.List.elem
+                                  @ Completion.Form
+                                  Completion.$fEqForm
+                                  c
+                                  y of wild3 {
+                             GHC.Types.False
+                             -> case GHC.List.elem
+                                       @ Completion.Form
+                                       Completion.$fEqForm
+                                       c
+                                       ds1 of wild4 {
+                                  GHC.Types.False -> Completion.Un GHC.Types.True -> Completion.Fa }
+                             GHC.Types.True -> Completion.Tr } }
+                        Completion.C c -> Completion.trueC' wild1 x
+                        Completion.D c -> Completion.trueD' wild1 x } }) -}
+e3a352d20809086d10173d2f000dea98
+  trueE1 :: Completion.Bool2
+  {- Strictness: x -}
+67d0f1c65ec9f9c98b5fa22068b78146
+  trueE2 :: Completion.Bool2
+  {- Strictness: x -}
+2b71177c0263d6a4d3597148faaf68c4
+  unForms ::
+    Formulas.LogicP
+    -> ([Completion.Form], [Completion.Form]) -> [Completion.Form]
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,1*U(U,U)>,
+     Unfolding: (\ (ds :: [Formulas.HClause])
+                   (ds1 :: ([Completion.Form], [Completion.Form])) ->
+                 case ds of wild {
+                   [] -> GHC.Types.[] @ Completion.Form
+                   : ipv ipv1
+                   -> case ds1 of wild1 { (,) x ds2 ->
+                      GHC.Base.++
+                        @ Completion.Form
+                        (Completion.unForms_go
+                           (GHC.Base.++ @ Completion.Form x ds2)
+                           (Data.OldList.nubBy
+                              @ Completion.Form
+                              Completion.$fEqForm_$c==
+                              (GHC.Base.++
+                                 @ Completion.Form
+                                 (Completion.atomsToForm (Formulas.bPHead wild))
+                                 (Completion.atomsToForm (Formulas.bPBodyP wild)))))
+                        (Completion.unForms_go
+                           (GHC.Base.++
+                              @ Completion.Form
+                              (Completion.addNToForm ds2)
+                              (Completion.addNToForm x))
+                           (Completion.addN (Completion.negP wild))) } }) -}
+2bf6f1e1ec21eb7ab2de80b9d00e7d51
+  unForms_go ::
+    [Completion.Form] -> [Completion.Form] -> [Completion.Form]
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+instance GHC.Classes.Eq [Completion.Bool2] = Completion.$fEqBool2
+instance GHC.Classes.Eq [Completion.Form] = Completion.$fEqForm
+instance GHC.Show.Show [Completion.Bool2] = Completion.$fShowBool2
+instance GHC.Show.Show [Completion.Form] = Completion.$fShowForm
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: none
+require own pkg trusted: False
+
