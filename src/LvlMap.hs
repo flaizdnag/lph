@@ -1,4 +1,27 @@
-module LvlMap where
+{-|
+Module      : LvlMap
+Description : Tools needed to create a level mapping function for a logic
+              program.
+Copyright   : (c) Aleksandra Cz., 2017
+                  Kinga O., 2017
+                  Andrzej G., 2017
+License     : GPL-3
+Maintainer  : andrzej.m.gajda@gmail.com
+Stability   : experimental
+Portability : POSIX
+
+Longer description
+-}
+module LvlMap
+    ( numList
+    , onlyHead
+    , onlyBody
+    , sortElems
+    , mapNum
+    , mapNum'
+    , perms
+    , replaceNum
+    ) where
 
 import Formulas
 import Graph
@@ -9,25 +32,25 @@ import Completion
 import Examples
 
 
--- generates list of subsequent numbers as long as given list
+-- | generates list of subsequent numbers as long as given list
 numList :: [Atom] -> [Int]
 numList [] = []
 numList xs = [x | x <- [1..n]]
              where n = length xs
 
--- checks if head does not appear in bodies
+-- | checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
 onlyHead [] _ = False
 onlyHead xs y = if elem y (bPBody xs) then False
                 else True
 
--- checks if atom appears only in bodies
+-- | checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
 onlyBody [] _ = False
 onlyBody xs y = if elem y (bPHead xs) then False
                 else True
 
--- sorts Bp elements into 3 lists in order: 
+-- | sorts Bp elements into 3 lists in order: 
 -- elements that appear only in heads,
 -- elements that appear both in heads and bodies
 -- elements that appear only in bodies.
@@ -37,7 +60,7 @@ sortElems xs = ([x | x <- (bPHead xs), onlyHead xs x],
                 [z | z <- (bPBody xs), onlyBody xs z])
 
 
--- replaces atoms with assigned numbers
+-- | replaces atoms with assigned numbers
 mapNum :: ([Atom], [Atom], [Atom]) -> [Int] -> ([Int], [Int], [Int])
 mapNum (a, b, c) xs = (x, y, z)
                             where
@@ -48,13 +71,13 @@ mapNum (a, b, c) xs = (x, y, z)
 mapNum' :: LogicP -> ([Int], [Int], [Int])
 mapNum' xs = mapNum (sortElems xs) (numList (bP xs))
 
--- returns permutations of list
+-- | returns permutations of list
 perms :: ([Atom], [Atom], [Atom]) -> [[Atom]]
 perms (a, b, c) = permutations b
 
---checker??
+-- checker??
 
--- replaces middle list with one of the permutations (depended on checker)
+-- | replaces middle list with one of the permutations (depended on checker)
 replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
 replaceNum (a, b, c) (x:xs) = (a, x, c)
 

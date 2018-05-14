@@ -1,4 +1,52 @@
-module Completion where
+{-|
+Module      : Completion
+Description : Tools needed to perform Clark's completion for a logic program.
+Copyright   : (c) Aleksandra Cz., 2017
+                  Kinga O., 2017
+                  Andrzej G., 2017
+License     : GPL-3
+Maintainer  : andrzej.m.gajda@gmail.com
+Stability   : experimental
+Portability : POSIX
+
+Longer description
+-}
+module Completion
+    ( Form (..)
+    , Bool2 (..)
+    , negP
+    , negP'
+    , logicP'
+    , addN
+    , atomsToForm
+    , atomToForm
+    , first
+    , sorts
+    , sortHeads
+    , groupHeads
+    , addC
+    , sameHead
+    , sameHead'
+    , addDE1
+    , addDE
+    , compP
+    , negA
+    , compP'
+    , alwaysTrue
+    , groupByValue
+    , breakForm
+    , breakForms
+    , inv
+    , trueC
+    , trueC'
+    , trueD
+    , trueD'
+    , trueE
+    , addHeadToInv
+    , addNToForm
+    , unForms
+    , interps
+    ) where
 
 import Formulas
 import Graph

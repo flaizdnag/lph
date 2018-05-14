@@ -1,25 +1,44 @@
-module Graph where
+{-|
+Module      : Graph
+Description : Tools needed to create a graph for a logic program.
+Copyright   : (c) Aleksandra Cz., 2017
+                  Kinga O., 2017
+                  Andrzej G., 2017
+License     : GPL-3
+Maintainer  : andrzej.m.gajda@gmail.com
+Stability   : experimental
+Portability : POSIX
+
+Longer description
+-}
+module Graph
+    ( atomToInt
+    , intToAtom
+    , bounds'
+    , zipEdges
+    , edges'
+    , graphG
+    , graph
+    ) where
 
 import Formulas
 import Operator
 import Data.Graph
 
---takes list of Atoms and returns list of Ints
+-- | takes list of Atoms and returns list of Ints
 atomToInt :: [Atom] -> [Int]
 atomToInt []     = []
 atomToInt (x:xs) = case x of
                         A b -> b : atomToInt xs
 
---takes list of Ints and returns list of Atoms
+-- |takes list of Ints and returns list of Atoms
 intToAtom :: [Int] -> [Atom]
 intToAtom []     = []
 intToAtom (x:xs) = case x of
                          b -> A b : intToAtom xs
 
-{-
-takes Herbrand Base and returns bounds for the graph 
-(requirement: Atoms in program have to be numbered in order)
--}
+-- | takes Herbrand Base and returns bounds for the graph (requirement: Atoms in
+-- program have to be numbered in order)
 bounds' :: LogicP -> (Int, Int)
 bounds' xs = (minimum (atomToInt (bP xs)), maximum (atomToInt (bP xs)))
 
@@ -28,12 +47,12 @@ zipEdges :: [Int] -> [Int] -> [(Int, Int)]
 zipEdges _ []     = []
 zipEdges (x:xs) (y:ys) = (x, y) : zipEdges (x:xs) ys
 
--- creates list of pairs, each containing HC Head and one element of HC Body
+-- | creates list of pairs, each containing HC Head and one element of HC Body
 edges' :: LogicP -> [(Int, Int)]
 edges' [] = []
 edges' (x:xs) = zipEdges (atomToInt (hClHead x)) (atomToInt (hClBody x)) ++ edges' xs
 
---creates a graph
+-- | creates a graph
 graphG :: LogicP -> Graph
 graphG x = buildG (bounds' x) (edges' x)
 
