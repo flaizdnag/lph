@@ -41,8 +41,11 @@ module Formulas
     , hClBodyP
     , hClBodyN
     , bPHead
+    , bPHead'
     , bPBody
+    , bPBody'
     , bPBodyP
+    , bPBodyP'
     , bP 
     ) where
 
@@ -88,9 +91,12 @@ hClBodyN (_, _, ys) = ys
 
 -- | Function that returns all heads of Horn clauses from a given logic program
 -- --- without duplicates.
-bPHead :: LogicP -> [Atom]              
+bPHead :: LogicP -> [Atom]           
 bPHead []     = []
 bPHead (x:xs) = nub (hClHead x ++ bPHead xs)
+
+bPHead' :: LogicP -> [Atom]
+bPHead' = nub . concat . map (hClHead)
 
 -- | Function that returns atoms from the bodies of all Horn clauses from a
 -- given logic program --- without duplicates.
@@ -98,15 +104,20 @@ bPBody :: LogicP -> [Atom]
 bPBody []     = []
 bPBody (x:xs) = nub (hClBodyP x ++ hClBodyN x ++ bPBody xs)
 
+bPBody' :: LogicP -> [Atom]
+bPBody' = nub . concat . map (hClBody)
+
 -- | Function that returns positive atoms from bodies of all Horn clauses form a
 -- given logic program --- without duplicates.
 bPBodyP :: LogicP -> [Atom]
 bPBodyP []     = []
 bPBodyP (x:xs) = nub (hClBodyP x ++ bPBodyP xs)
 
+bPBodyP' :: LogicP -> [Atom]
+bPBodyP' = nub . concat . map (hClBodyP)
+
 -- | Function that returns the Herbrand base of a logic program, i.e. the list
 -- of all atoms that occur in the Horn clauses from a given logic program ---
 -- without duplicates.
 bP :: LogicP -> [Atom]
-bP [] = []
 bP xs = nub (bPHead xs ++ bPBody xs)

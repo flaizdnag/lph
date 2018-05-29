@@ -51,6 +51,7 @@ module Completion
 import Formulas
 import Graph
 import Operator
+import Auxiliary
 import Data.Graph
 import Data.List
 import GHC.Exts
@@ -77,7 +78,7 @@ negP' :: LogicP -> [Atom]
 negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs), 
                                y <- atomToInt (negP xs), 
                                path g y x && not (path g x y)])
-                               where g = graphG xs
+                               where g = graph xs
 
 -- creates a program which heads belong to negP'
 logicP' :: LogicP -> LogicP

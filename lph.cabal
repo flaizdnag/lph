@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fc1eb6d5eb9a75ba8c6c0bd6f2ad0cfd564b1b7d9d2e9610c496cec51ce6f78f
+-- hash: 53d8fa75b5b6538caf5f670bee16ed226820e924df6d21005aaacdb97f92e264
 
 name:           lph
 version:        0.1.0.0
@@ -31,7 +31,9 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , hspec
   exposed-modules:
+      Auxiliary
       Completion
       Examples
       Formulas
@@ -50,6 +52,7 @@ executable lph-exe
   build-depends:
       base >=4.7 && <5
     , containers
+    , hspec
     , lph
   other-modules:
       Paths_lph
@@ -64,6 +67,7 @@ test-suite lph-test
   build-depends:
       base >=4.7 && <5
     , containers
+    , hspec
     , lph
   other-modules:
       Paths_lph
