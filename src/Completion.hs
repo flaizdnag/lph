@@ -81,8 +81,8 @@ negP []     = []
 negP (x:xs) = nub (hClBodyN x ++ negP xs)
 
 negP' :: LogicP -> [Atom]
-negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs), 
-                               y <- atomToInt (negP xs), 
+negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs),
+                               y <- atomToInt (negP xs),
                                path g x y && not (path g y x)])
                                where g = graph xs
 
@@ -261,7 +261,6 @@ trueE (E a b) x = case b of
                        C c -> trueC' (C c) x
                        D c -> trueD' (D c) x
 
-
 -- adds heads from equivalences with known value
 addHeadToI :: Form -> ([Form], [Form]) -> ([Form], [Form])
 addHeadToI (E a b) (c, d) 
@@ -306,8 +305,6 @@ check' x = if (notElem Un (check x n)) then iterI x
                 else ([],[])
                    where
                        n = (length (unE (compP x))) - 1
-                   
-                 
 
 -- adds negation to formulas
 addNToForm :: [Form] -> [Form]
@@ -329,4 +326,3 @@ unAtoms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
 -- creates list of all permutations of Formulas we can add to I
 perms :: LogicP -> ([Form], [Form]) -> [[Form]]
 perms x y = sortWith length $ subsequences (unAtoms x y)
-
