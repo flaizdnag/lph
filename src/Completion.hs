@@ -27,25 +27,31 @@ module Completion
     , addC
     , sameHead
     , sameHead'
-    , addDE1
+    , addDE'
     , addDE
     , compP
     , negA
     , compP'
-    , alwaysTrue
+    , invariants
     , groupByValue
     , breakForm
     , breakForms
-    , inv
+    , interp
+    , unE
     , trueC
     , trueC'
     , trueD
     , trueD'
     , trueE
-    , addHeadToInv
+    , addHeadToI
+    , accI
     , addNToForm
-    , unForms
-    , interps
+    , perms
+    , unAtoms
+    , iterI
+    , checkUn
+    , check
+    , check'
     ) where
 
 import Formulas
@@ -75,9 +81,9 @@ negP []     = []
 negP (x:xs) = nub (hClBodyN x ++ negP xs)
 
 negP' :: LogicP -> [Atom]
-negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs), 
-                               y <- atomToInt (negP xs), 
-                               path g y x && not (path g x y)])
+negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs),
+                               y <- atomToInt (negP xs),
+                               path g x y && not (path g y x)])
                                where g = graph xs
 
 -- creates a program which heads belong to negP'
@@ -141,15 +147,15 @@ sameHead' [] = []
 sameHead' xs = sameHead (groupHeads xs)
 
 -- adds disjunction and equivalence to one group of clauses 
-addDE1 :: [(Form, Form)] -> Form
-addDE1 x 
+addDE' :: [(Form, Form)] -> Form
+addDE' x 
         | (length x) > 1 = E (fst (head x)) (D (map snd x))
         | otherwise      = E (fst (head x)) (snd (head x))
 
 -- maps adding disjunction and equivalence to whole LogicP
 addDE :: LogicP -> [Form]
 addDE [] = []
-addDE xs = map addDE1 (sameHead' xs)
+addDE xs = map addDE' (sameHead' xs)
 
 compP :: LogicP -> [Form]
 compP xs = addDE xs ++ negA xs
@@ -164,15 +170,15 @@ compP' :: LogicP -> [Form]
 compP' xs = compP (logicP' xs)
 
 --checks if Formula is always True (T)
-alwaysTrue :: Form -> Bool2
-alwaysTrue x = case x of
+invariants :: Form -> Bool2
+invariants x = case x of
                 E _ T   -> Tr
                 N _     -> Fa
                 _       -> Un
 
 -- groups Formulas by their values [[unknown], [True], [False]]
 groupByValue :: [Form] -> [[Form]]
-groupByValue xs = groupBy (\x y -> (alwaysTrue x) == (alwaysTrue y)) xs
+groupByValue xs = groupBy (\x y -> (invariants x) == (invariants y)) xs
 
 --breaks complex formulas to variables
 breakForm :: Form -> [Form]
@@ -192,9 +198,16 @@ breakForms :: [Form] -> [Form]
 breakForms []     = []
 breakForms (x:xs) = breakForm x ++ breakForms xs
 
---generates interpretation from formulas with known value
-inv :: [[Form]] -> ([Form], [Form])
-inv xs = ([a | x <- xs, alwaysTrue (head x) == Tr, a <- (breakForms x)], [b | x <- xs, alwaysTrue (head x) == Fa, b <- (breakForms x)])
+--generates interp from formulas with known value
+interp :: LogicP -> ([Form], [Form])
+interp xs = ([a | x <- (groupByValue (compP xs)), invariants (head x) == Tr, a <- (breakForms x)], [b | x <- (groupByValue (compP xs)), invariants (head x) == Fa, b <- (breakForms x)])
+
+--returns list of formulas with unknown value
+unE :: [Form] -> [Form]
+unE []                        = []
+unE (x:xs) 
+         | invariants x == Un = x: unE xs
+         | otherwise          = unE xs
 
 --checks if conjunction is True/False/Unknown
 trueC :: Form -> ([Form], [Form]) -> [Bool2]
@@ -249,12 +262,49 @@ trueE (E a b) x = case b of
                        D c -> trueD' (D c) x
 
 -- adds heads from equivalences with known value
-addHeadToInv :: Form -> ([Form], [Form]) -> ([Form], [Form])
-addHeadToInv (E a b) (c, d) 
+addHeadToI :: Form -> ([Form], [Form]) -> ([Form], [Form])
+addHeadToI (E a b) (c, d) 
                     | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
                     | ((elem a d) == False) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
-                    | otherwise                                               = (c, d) -- add from interps?
+                    | otherwise                                               = (c, d) -- add from perms
 
+-- takes 3 arguments:
+-- -list of equivalences with unknown values
+-- -list with permutations of all atoms unused in interpretation 
+-- -current interpretation
+-- it checks if with current interpretation we can decide values 
+-- of other atoms, in result returns actualized interpretation
+accI :: [Form] -> [[Form]] -> ([Form], [Form]) -> ([Form], [Form])
+accI [] _ (a, b)                                         = (a, b)
+accI _ [] (a, b)                                         = (a, b)                
+accI (x:xs) (y:ys) (a, b) 
+                            | (trueE x ((y ++ a), b)) == Un = accI (xs ++ [x]) (y:ys) (a, b)
+                            | otherwise                     = accI xs (ys) (addHeadToI x (a, b))
+
+-- generalizes type of accInv to make it easier to use in other functions
+iterI :: LogicP -> ([Form], [Form])
+iterI x = accI (unE (compP x)) (perms x (interp x)) (interp x)
+
+-- checks if generated interpretation lets us establish value of
+-- choosen equivalence categorized ealier as unknown
+checkUn :: LogicP -> Int -> Bool2
+checkUn x n = (trueE (unE (compP x) !! n) (iterI x))
+
+-- gives a list of the values for all the equivalences 
+-- that we are able to establish with generated interpretation
+check :: LogicP -> Int -> [Bool2]
+check x (-1) = []
+check x n = (checkUn x n) : check x (n-1)
+
+-- checks if list given by function check contains any
+-- 'Un' value
+-- if not - returns generated interpretation
+-- if it does - returns empty interpretation
+check' :: LogicP -> ([Form], [Form])
+check' x = if (notElem Un (check x n)) then iterI x
+                else ([],[])
+                   where
+                       n = (length (unE (compP x))) - 1
 
 -- adds negation to formulas
 addNToForm :: [Form] -> [Form]
@@ -262,9 +312,9 @@ addNToForm []     = []
 addNToForm (x:xs) = N x : addNToForm xs
 
 -- creates a list of all Forms from the LogicP that aren't included in I
-unForms :: LogicP -> ([Form], [Form]) -> [Form]
-unForms [] _ = []
-unForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
+unAtoms :: LogicP -> ([Form], [Form]) -> [Form]
+unAtoms [] _ = []
+unAtoms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
                 where 
                         a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
                         b = fst y
@@ -274,13 +324,5 @@ unForms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
                         f = snd y
 
 -- creates list of all permutations of Formulas we can add to I
-interps :: LogicP -> ([Form], [Form]) -> [[Form]]
-interps x y = sortWith length $ subsequences (unForms x y)
-
-{-
-funkcja2 ::  Form -> ([Form], [Form]) -> ([Form], [Form])
-funkcja2 (E a b) x 
-                | trueE' (E a b) x == Un = funkcja (E a b) x
-                | trueE' (E a b) x == Fa = ([], [])
-                | otherwise              = (zwraca interpretację)
--}
+perms :: LogicP -> ([Form], [Form]) -> [[Form]]
+perms x y = sortWith length $ subsequences (unAtoms x y)

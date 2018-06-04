@@ -19,7 +19,7 @@ module LvlMap
     , sortElems
     , mapNum
     , mapNum'
-    , perms
+    , permN
     , replaceNum
     ) where
 
@@ -72,8 +72,8 @@ mapNum' :: LogicP -> ([Int], [Int], [Int])
 mapNum' xs = mapNum (sortElems xs) (numList (bP xs))
 
 -- | returns permutations of list
-perms :: ([Atom], [Atom], [Atom]) -> [[Atom]]
-perms (a, b, c) = permutations b
+permN :: ([Atom], [Atom], [Atom]) -> [[Atom]]
+permN (a, b, c) = permutations b
 
 -- checker??
 

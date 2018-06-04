@@ -14,4 +14,4 @@ Propositional logic programs are sets of Horn clauses.
 [1] 
 [2] 
 [3] 
-[4] 
+[4]
