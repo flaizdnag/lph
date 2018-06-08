@@ -50,7 +50,6 @@ zipEdges _ []           = []
 zipEdges (x:xs) (y:ys)  = (x, y) : zipEdges (x:xs) ys
 
 -- | creates list of pairs, each containing HC Head and one element of HC Body
--- TODO remove duplicates
 edges' :: LogicP -> [(Int, Int)]
 edges' [] = []
 edges' (x:xs) = nub (zipEdges (atomToInt (hClHead x)) (atomToInt (hClBody x)) ++ edges' xs)

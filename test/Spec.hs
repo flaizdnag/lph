@@ -1,6 +1,13 @@
 import Formulas
 import Operator
+import Completion
 import Test.Hspec
+
+ex1 :: LogicP
+ex1 = [ (A 1, [A 2, A 3], [A 4]),
+        (A 5, [A 6], []),
+        (A 10, [], []),
+        (A 1, [], [])]
 
 main :: IO ()
 main = hspec $ do
@@ -50,23 +57,6 @@ main = hspec $ do
 
         it "upArrow' returns model for acceptable LP" $
             upArrow' [(A 1, [A 2], []), (A 1, [A 3], []), (A 3, [], []), (A 2, [], [])] `shouldBe` [A 1, A 3, A 2]
-
-
-{-
-    describe "Funkcja crack" $ do
-        it "crack zwraca zawsze liste z elementem" $
-            crack "abc" `shouldSatisfy` (not . null)
-
-    describe "Read-show properties" $ do
-        context "read uzyte z intami" $ do
-            it "x rowny x" $ property $
-                \x -> (read . show) x == (x :: Int)
-
-    describe "Reverse" $ do
-        it "prop1 reverse" $ property $
-            \x -> (reverse . reverse) x == (x :: [Int])
-
-        it "prop1_reverse" $ property prop1_reverse
-
-        it "prop2_reverse" $ property prop2_reverse
--}
+    describe "Tests for functions in Completion module" $ do
+        it "trueD' returns the value of disjunction, where one of the elements is T" $
+            trueD' (D [C [V (A 1), N (V (A 2))], T]) ([V (A 1)], []) `shouldBe` Tr

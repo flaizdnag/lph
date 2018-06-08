@@ -19,7 +19,7 @@ module Completion
     , logicP'
     , addN
     , atomsToForm
-    , atomToForm
+    , atomToVar
     , first
     , sorts
     , sortHeads
@@ -65,46 +65,61 @@ import Examples
 
 
 data Form = V Atom 
-            | N Form        -- negation
-            | C [Form]      -- conjunction 
-            | D [Form]      -- disjunction 
-            | E Form Form   -- equivalence
-            | T             -- verum
+          | N Form        -- negation
+          | C [Form]      -- conjunction 
+          | D [Form]      -- disjunction 
+          | E Form Form   -- equivalence
+          | T             -- verum
                 deriving (Show, Eq)
 
 data Bool2 = Fa | Tr | Un
                 deriving (Show, Eq)
 
 
+-- list of all negative literals from a logic program
 negP :: LogicP -> [Atom]
 negP []     = []
 negP (x:xs) = nub (hClBodyN x ++ negP xs)
 
+-- list of atoms that atoms from negP depend on, i.e. there is a path between
+-- atoms a_i and a_j, where a_i is an element form negP
+--
+-- TODO sthing is wrong with the 'path' function: it always returns 'true' for
+-- paths between a node and itself
 negP' :: LogicP -> [Atom]
 negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs),
                                y <- atomToInt (negP xs),
-                               path g x y && not (path g y x)])
+                               path g x y])
                                where g = graph xs
 
--- creates a program which heads belong to negP'
+-- creates a program from the initial LP whose heads belong to negP'
 logicP' :: LogicP -> LogicP
 logicP' xs = [x | x <- xs, isElem (hClHead x) (negP' xs)]
 
 -- CPL
--- changes negative atoms to N Form
+-- changes a list of atoms to negated variables
 addN :: [Atom] -> [Form]
 addN x = case x of 
               []     -> []
               (y:ys) -> N (V y) : addN ys
 
--- changes positive atoms to V Atom
+atomToNVar :: Atom -> Form
+atomToNVar x = N (V x)
+
+atomsToNVar :: [Atom] -> [Form]
+atomsToNVar = map atomToNVar
+
+-- changes a list of atoms to variables
 atomsToForm :: [Atom] -> [Form]
 atomsToForm x = case x of
                     []     -> []
                     (y:ys) -> V y : atomsToForm ys
 
-atomToForm :: Atom -> Form
-atomToForm x = V x
+atomToVar :: Atom -> Form
+atomToVar x = V x
+
+atomsToVar :: [Atom] -> [Form]
+atomsToVar = map atomToVar
 
 
 -- returns first element of tuple with 3 elements
@@ -119,7 +134,7 @@ sorts a b
 
 -- sorts HClauses by their heads indexes 
 sortHeads :: LogicP -> LogicP
-sortHeads xs = sortBy sorts xs
+sortHeads = sortBy sorts
 
 -- groups HClauses with the same heads in LogicP 
 groupHeads :: LogicP -> [[HClause]]
@@ -176,11 +191,13 @@ invariants x = case x of
                 N _     -> Fa
                 _       -> Un
 
--- groups Formulas by their values [[unknown], [True], [False]]
+-- groups Formulas by their values [[Unknown], [True], [False]]
 groupByValue :: [Form] -> [[Form]]
 groupByValue xs = groupBy (\x y -> (invariants x) == (invariants y)) xs
 
---breaks complex formulas to variables
+-- breaks complex formulas to variables
+-- TODO problems with Disjunction and Equivalence, e.g.
+-- breakForm (D [N (V (A1))]) = [N (V (A 1))]
 breakForm :: Form -> [Form]
 breakForm a = case a of
                    V b   -> [V b]
@@ -200,9 +217,13 @@ breakForms (x:xs) = breakForm x ++ breakForms xs
 
 --generates interp from formulas with known value
 interp :: LogicP -> ([Form], [Form])
-interp xs = ([a | x <- (groupByValue (compP xs)), invariants (head x) == Tr, a <- (breakForms x)], [b | x <- (groupByValue (compP xs)), invariants (head x) == Fa, b <- (breakForms x)])
+interp xs = (true, false)
+    where
+        true  = [a | x <- (groupByValue (compP xs)), invariants (head x) == Tr, a <- (breakForms x)]
+        false = [b | x <- (groupByValue (compP xs)), invariants (head x) == Fa, b <- (breakForms x)]
 
---returns list of formulas with unknown value
+-- returns list of formulas with unknown value
+-- TODO Why not use 'groupByValue'?
 unE :: [Form] -> [Form]
 unE []                        = []
 unE (x:xs) 
@@ -213,12 +234,14 @@ unE (x:xs)
 trueC :: Form -> ([Form], [Form]) -> [Bool2]
 trueC (C []) _     = []
 trueC (C (a:as)) x = case a of
-                        N a -> if elem a (fst x) then Fa : (trueC (C as) x)
-                               else 
-                                   if elem a (snd x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
-                        a -> if elem a (snd x) then Fa : (trueC (C as) x)
-                               else
-                                   if elem a (fst x) then Tr : (trueC (C as) x) else Un : (trueC (C as) x)
+    N a -> if elem a (fst x) then Fa : (trueC (C as) x)
+           else 
+               if elem a (snd x) then Tr : (trueC (C as) x)
+               else Un : (trueC (C as) x)
+    a   -> if elem a (snd x) then Fa : (trueC (C as) x)
+           else
+               if elem a (fst x) then Tr : (trueC (C as) x)
+               else Un : (trueC (C as) x)
 
 
 trueC' :: Form -> ([Form], [Form]) -> Bool2
@@ -227,7 +250,8 @@ trueC' a x
          | any (Fa==) (trueC a x) = Fa
          | otherwise              = Un
 
---checks if disjunction is True/False/Unknown
+-- checks if disjunction is True/False/Unknown
+-- TODO What with 'T'? Cases have to be based on the whole list, i.e. 'a:as'?
 trueD :: Form -> ([Form], [Form]) -> [Bool2]
 trueD (D []) _ = []
 trueD (D (a:as)) x  = case (a:as) of
@@ -264,9 +288,9 @@ trueE (E a b) x = case b of
 -- adds heads from equivalences with known value
 addHeadToI :: Form -> ([Form], [Form]) -> ([Form], [Form])
 addHeadToI (E a b) (c, d) 
-                    | ((elem a c) == False) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
-                    | ((elem a d) == False) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
-                    | otherwise                                               = (c, d) -- add from perms
+    | (not (elem a c)) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
+    | (not (elem a d)) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
+    | otherwise                                          = (c, d) -- add from perms
 
 -- takes 3 arguments:
 -- -list of equivalences with unknown values
@@ -275,18 +299,18 @@ addHeadToI (E a b) (c, d)
 -- it checks if with current interpretation we can decide values 
 -- of other atoms, in result returns actualized interpretation
 accI :: [Form] -> [[Form]] -> ([Form], [Form]) -> ([Form], [Form])
-accI [] _ (a, b)                                         = (a, b)
-accI _ [] (a, b)                                         = (a, b)                
+accI [] _ (a, b) = (a, b)
+accI _ [] (a, b) = (a, b)                
 accI (x:xs) (y:ys) (a, b) 
-                            | (trueE x ((y ++ a), b)) == Un = accI (xs ++ [x]) (y:ys) (a, b)
-                            | otherwise                     = accI xs (ys) (addHeadToI x (a, b))
+    | (trueE x ((y ++ a), b)) == Un = accI (xs ++ [x]) (y:ys) (a, b)
+    | otherwise                     = accI xs (ys) (addHeadToI x (a, b))
 
 -- generalizes type of accInv to make it easier to use in other functions
 iterI :: LogicP -> ([Form], [Form])
 iterI x = accI (unE (compP x)) (perms x (interp x)) (interp x)
 
 -- checks if generated interpretation lets us establish value of
--- choosen equivalence categorized ealier as unknown
+-- chosen equivalence categorized earlier as unknown
 checkUn :: LogicP -> Int -> Bool2
 checkUn x n = (trueE (unE (compP x) !! n) (iterI x))
 
