@@ -1,0 +1,73 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 377438d78935f696aaad2e1b2e887a594cdf575922de71fbbd04e64b4aab81da
+
+name:           lph
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/flaizdnag/lph#readme>
+homepage:       https://github.com/flaizdnag/lph#readme
+bug-reports:    https://github.com/flaizdnag/lph/issues
+author:         Aleksandra Cz., Kinga O., Andrzej G.
+maintainer:     andrzej.gajda@amu.edu.pl
+copyright:      2018 Aleksandra Cz., Kinga O., Andrzej G.
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/flaizdnag/lph
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hspec
+  exposed-modules:
+      Auxiliary
+      Completion
+      Examples
+      Formulas
+      Graph
+      LvlMap
+      Operator
+  other-modules:
+      Paths_lph
+  default-language: Haskell2010
+
+executable lph-exe
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hspec
+    , lph
+  other-modules:
+      Paths_lph
+  default-language: Haskell2010
+
+test-suite lph-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hspec
+    , lph
+  other-modules:
+      Paths_lph
+  default-language: Haskell2010
