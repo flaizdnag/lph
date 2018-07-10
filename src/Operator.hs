@@ -15,6 +15,7 @@ Longer description
 module Operator
     ( opTp
     , opTp'
+    , opTp''
     , upArrow
     , upArrow'
     )where
@@ -40,6 +41,9 @@ opTp' (x:xs) ys
         where
             con_bodyP = isSublist (hClBodyP x) ys
             con_bodyN = not (isElem (hClBodyN x) ys)
+
+opTp'' :: LogicP -> [Atom] -> [Atom]
+opTp'' hcls int = nub [ head (hClHead h) | h <- hcls, isSublist (hClBodyP h) int, not (isElem (hClBodyN h) int) ]
 
 -- | iteraters Tp
 iterTp :: LogicP -> [[Atom]] -> [[Atom]]

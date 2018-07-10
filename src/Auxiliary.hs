@@ -17,6 +17,7 @@ module Auxiliary
     )where
 
 -- | checks if list is a sublist of other list
+-- intersect
 isSublist :: Eq a => [a] -> [a] -> Bool
 isSublist [] _ = True
 isSublist (x:xs) ys
