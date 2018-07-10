@@ -18,19 +18,19 @@ module Operator
     , opTp''
     , upArrow
     , upArrow'
-    )where
+    , isConsequenceA
+    ) where
 
 import Formulas
 import Auxiliary
 import Data.List
 
 -- | immediate consequence operator
--- TODO remove duplicates from the result
 opTp :: LogicP -> [Atom] -> [Atom]
 opTp [] _      = []
 opTp (x:xs) ys = case x of
                     (h, pos, neg) -> if isSublist pos ys && isElem neg ys == False
-                                     then h : opTp xs ys
+                                     then nub (h : opTp xs ys)
                                      else opTp xs ys
 
 opTp' :: LogicP -> [Atom] -> [Atom]
@@ -42,8 +42,13 @@ opTp' (x:xs) ys
             con_bodyP = isSublist (hClBodyP x) ys
             con_bodyN = not (isElem (hClBodyN x) ys)
 
+<<<<<<< HEAD
 opTp'' :: LogicP -> [Atom] -> [Atom]
 opTp'' hcls int = nub [ head (hClHead h) | h <- hcls, isSublist (hClBodyP h) int, not (isElem (hClBodyN h) int) ]
+=======
+opTp3 :: LogicP -> [Atom] -> [Atom]
+opTp3 xs i = nub [hclh | h <- xs, hclh <- hClHead h, isSublist (hClBodyP h) i, not (isElem (hClBodyN h) i)]
+>>>>>>> 58ddbba45e14f7a86bd0e8d22d68ef2456da54b3
 
 -- | iteraters Tp
 iterTp :: LogicP -> [[Atom]] -> [[Atom]]
@@ -56,6 +61,11 @@ iterTp' xs ys
     | (opTp' xs ys) == ys = ys
     | otherwise           = iterTp' xs (opTp' xs ys)
 
+iterTp3 :: LogicP -> [[Atom]] -> [[Atom]]
+iterTp3 x (y:ys) 
+               | (opTp3 x y) == y = (y:ys)
+               | otherwise       = iterTp3 x ((opTp3 x y) : y:ys)
+
 -- | initiates iterations of Tp and returns final result (Herbrand model) 
 upArrow :: LogicP -> [Atom]
 upArrow x = head (iterTp x [[]])
@@ -63,6 +73,14 @@ upArrow x = head (iterTp x [[]])
 upArrow' :: LogicP -> [Atom]
 upArrow' xs = iterTp' xs []
 
+upArrow3 :: LogicP -> [Atom]
+upArrow3 x = head (iterTp3 x [[]])
+
+-- | checks if an atom is a logical consequence of a logic program
+isConsequenceA :: LogicP -> Atom -> Bool
+isConsequenceA xs a = if elem a (upArrow xs)
+                         then True 
+                      else False
 
 
 
