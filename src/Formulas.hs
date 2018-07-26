@@ -17,8 +17,8 @@ which in turn can be defined in the following way:
 a_0 \leftarrow a_1 , ... , a_n , \sim\!a_{n+1} , ... , \sim\!a_m
 \]
 
-where \(a_0\), ..., \(a_m\) are propositions called atoms, \(\leftarrow\) is a
-simple connector and \(\sim\) represents negation as finite failure.
+where \(a_0\), ..., \(a_m\) are propositions called atoms, \(\leftarrow\) is
+a simple connector and \(\sim\) represents negation as finite failure.
 Atom \(a_0\) is called the head of a Horn clause and the rest of the atoms,
 i.e. \(a_1\), ..., \(a_m\), form the body of a Horn clause. As it can be seen in
 the example above, there are two types of literals in the body of a Horn clause:
@@ -36,30 +36,44 @@ module Formulas
     ( Atom (..)
     , HClause
     , LogicP
+    , atomIdx
+    , atomLab
     , hClHead
+    , hClBodyDup
     , hClBody
+    , hClBodyPDup
     , hClBodyP
+    , hClBodyNDup
     , hClBodyN
-    , bPHead
-    , bPHead'
-    , bPBody
-    , bPBody'
-    , bPBodyP
-    , bPBodyP'
+    , bPHeadsDup
+    , bPHeads
+    , bPBodiesDup
+    , bPBodies
+    , bPBodiesPDup
+    , bPBodiesP
+    , bPBodiesNDup
+    , bPBodiesN
+    , bPDup
     , bP 
+    , atomDef
     ) where
 
+import Auxiliary
 import Data.List
 
 -- | Atoms are basic structures for Horn clauses.
-data Atom = A Int
-            deriving Show
+data Atom = A Int [Char]
+    deriving Show
 
 instance Eq Atom where
-        A a == A b = a == b
+    A a xs == A b ys = a == b && eqLists xs ys
 
 instance Ord Atom where
-        compare (A a) (A b) = compare a b
+    A a xs < A b ys = a < b || (a == b && ltLists xs ys)
+    
+    a <= b = (a < b) || (a == b)
+    a >  b = b < a
+    a >= b = b <= a
 
 -- | We do not implement negation as finite failure --- instead, the negated
 -- atoms from the body of a Horn clause are kept in a separate list. The tuple
@@ -71,53 +85,101 @@ type HClause = (Atom, [Atom], [Atom])
 -- | Logic program is a list of Horn clauses.
 type LogicP = [HClause]
 
--- | Function that returns the head of a Horn clause.
-hClHead :: HClause -> [Atom]
-hClHead (x, _, _) = [x]
+-- | Returns the index of an atom.
+atomIdx :: Atom -> Int
+atomIdx (A n _) = n
 
--- | Function that returns atoms from the body of a Horn clause (atomic body).
+-- | Returns the label of an atom.
+atomLab :: Atom -> [Char]
+atomLab (A _ lab) = lab
+
+-- | Function that returns the head of a Horn clause.
+hClHead :: HClause -> Atom
+hClHead = first
+
+-- | Function that returns atoms from the body of a Horn clause (atomic body)
+-- with duplicates.
+hClBodyDup :: HClause -> [Atom]
+hClBodyDup a = second a ++ third a
+--
+-- | Function that returns atoms from the body of a Horn clause (atomic body)
+-- without duplicates.
 hClBody :: HClause -> [Atom]
-hClBody (_, xs, ys) = nub (xs ++ ys)
+hClBody = nub . hClBodyDup
 
 -- | Function that returns atoms from the body of a Horn clause that are not
--- preceded by negation (positive body).
+-- preceded by negation (positive body) with duplicates.
+hClBodyPDup :: HClause -> [Atom]
+hClBodyPDup = second
+
+-- | Function that returns atoms from the body of a Horn clause that are not
+-- preceded by negation (positive body) without duplicates.
 hClBodyP :: HClause -> [Atom]
-hClBodyP (_, xs, _) = xs
+hClBodyP = nub . hClBodyPDup
 
 -- | Function that returns atoms from the body of a Horn clause that are
--- preceded by negation (negative body).
+-- preceded by negation (negative body) with duplicates.
+hClBodyNDup :: HClause -> [Atom]
+hClBodyNDup = third
+
+-- | Function that returns atoms from the body of a Horn clause that are
+-- preceded by negation (negative body) without duplicates.
 hClBodyN :: HClause -> [Atom]
-hClBodyN (_, _, ys) = ys
+hClBodyN = nub . hClBodyNDup
 
 -- | Function that returns all heads of Horn clauses from a given logic program
--- --- without duplicates.
-bPHead :: LogicP -> [Atom]           
-bPHead []     = []
-bPHead (x:xs) = nub (hClHead x ++ bPHead xs)
+-- with duplicates.
+bPHeadsDup :: LogicP -> [Atom]
+bPHeadsDup = map (first)
 
-bPHead' :: LogicP -> [Atom]
-bPHead' = nub . concat . map (hClHead)
+-- | Function that returns all heads of Horn clauses from a given logic program
+-- without duplicates.
+bPHeads :: LogicP -> [Atom]
+bPHeads = nub . bPHeadsDup
 
--- | Function that returns atoms from the bodies of all Horn clauses from a
--- given logic program --- without duplicates.
-bPBody :: LogicP -> [Atom]              
-bPBody []     = []
-bPBody (x:xs) = nub (hClBodyP x ++ hClBodyN x ++ bPBody xs)
+-- | Function that returns atoms from the bodies of all Horn clauses from
+-- a given logic program with duplicates.
+bPBodiesDup :: LogicP -> [Atom]
+bPBodiesDup = concatMap hClBodyDup
 
-bPBody' :: LogicP -> [Atom]
-bPBody' = nub . concat . map (hClBody)
+-- | Function that returns atoms from the bodies of all Horn clauses from
+-- a given logic program without duplicates.
+bPBodies :: LogicP -> [Atom]
+bPBodies = nub . bPBodiesDup
 
--- | Function that returns positive atoms from bodies of all Horn clauses form a
--- given logic program --- without duplicates.
-bPBodyP :: LogicP -> [Atom]
-bPBodyP []     = []
-bPBodyP (x:xs) = nub (hClBodyP x ++ bPBodyP xs)
+-- | Function that returns positive atoms from bodies of all Horn clauses form
+-- a given logic program with duplicates.
+bPBodiesPDup :: LogicP -> [Atom]
+bPBodiesPDup = concatMap hClBodyPDup
 
-bPBodyP' :: LogicP -> [Atom]
-bPBodyP' = nub . concat . map (hClBodyP)
+-- | Function that returns positive atoms from bodies of all Horn clauses form
+-- a given logic program without duplicates.
+bPBodiesP :: LogicP -> [Atom]
+bPBodiesP = nub . bPBodiesPDup
+
+-- | Function that returns negative atoms from bodies of all Horn clauses form
+-- a given logic program with duplicates.
+bPBodiesNDup :: LogicP -> [Atom]
+bPBodiesNDup = concatMap hClBodyNDup
+
+-- | Function that returns negative atoms from bodies of all Horn clauses form
+-- a given logic program with duplicates.
+bPBodiesN :: LogicP -> [Atom]
+bPBodiesN = nub . bPBodiesNDup
 
 -- | Function that returns the Herbrand base of a logic program, i.e. the list
--- of all atoms that occur in the Horn clauses from a given logic program ---
+-- of all atoms that occur in the Horn clauses from a given logic program with
+-- duplicates.
+bPDup :: LogicP -> [Atom]
+bPDup lp = bPHeadsDup lp ++ bPBodiesDup lp
+
+-- | Function that returns the Herbrand base of a logic program, i.e. the list
+-- of all atoms that occur in the Horn clauses from a given logic program
 -- without duplicates.
 bP :: LogicP -> [Atom]
-bP xs = nub (bPHead xs ++ bPBody xs)
+bP = nub . bPDup
+
+-- | Definition of an atom is the set of all Horn clauses that have the atom as
+-- the head.
+atomDef :: Atom -> LogicP -> LogicP
+atomDef a lp = [ hcl | hcl <- lp, hClHead hcl == a ]

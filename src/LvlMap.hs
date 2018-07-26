@@ -41,13 +41,13 @@ numList xs = [x | x <- [1..n]]
 -- | checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
 onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBody xs) then False
+onlyHead xs y = if elem y (bPBodies xs) then False
                 else True
 
 -- | checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
 onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHead xs) then False
+onlyBody xs y = if elem y (bPHeads xs) then False
                 else True
 
 -- | sorts Bp elements into 3 lists in order: 
@@ -55,9 +55,9 @@ onlyBody xs y = if elem y (bPHead xs) then False
 -- elements that appear both in heads and bodies
 -- elements that appear only in bodies.
 sortElems :: LogicP -> ([Atom], [Atom], [Atom])
-sortElems xs = ([x | x <- (bPHead xs), onlyHead xs x], 
-                [y | y <- (bPHead xs), (onlyHead xs y) == False], 
-                [z | z <- (bPBody xs), onlyBody xs z])
+sortElems xs = ([x | x <- (bPHeads xs), onlyHead xs x], 
+                [y | y <- (bPHeads xs), (onlyHead xs y) == False], 
+                [z | z <- (bPBodies xs), onlyBody xs z])
 
 
 -- | replaces atoms with assigned numbers

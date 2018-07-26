@@ -9,25 +9,46 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Module that contains auxiliary functions used in other modules.
 -}
 module Auxiliary
     ( isSublist
-    , isElem
-    )where
+    , jointElem
+    , eqLists
+    , ltLists
+    , first
+    , second
+    , third
+    ) where
 
--- | checks if list is a sublist of other list
--- intersect
+import Data.List
+
+-- | Checks if list is a sublist of other list (ordering does not matter).
 isSublist :: Eq a => [a] -> [a] -> Bool
-isSublist [] _ = True
-isSublist (x:xs) ys
-                    | elem x ys = isSublist xs ys
-                    | otherwise = False
+isSublist xs ys = null (xs \\ ys)
 
+-- | Checks if list contains any element of other list (ordering does not
+-- matter).
+jointElem :: Eq a => [a] -> [a] -> Bool
+jointElem xs ys = not $ null (intersect xs ys)
 
--- | checks if list contains any element of other list
-isElem :: Eq a => [a] -> [a] -> Bool
-isElem [] _ = False
-isElem (x:xs) ys
-                | elem x ys = True
-                | otherwise = isElem xs ys
+-- | Checks if a list has the same elements as the other list (ordering does not
+-- matter).
+eqLists :: Ord a => [a] -> [a] -> Bool
+eqLists xs ys = sort xs == sort ys
+
+-- | Checks if a sorted list is ordered lower than the other list.
+ltLists :: Ord a => [a] -> [a] -> Bool
+ltLists xs ys = sort xs < sort ys
+
+-- | Returns the first element from a triple.
+first :: (a, b, c) -> a
+first (x, _, _) = x
+
+-- | Returns the second element from a triple.
+second :: (a, b, c) -> b
+second (_, x, _) = x
+
+-- | Returns the third element from a triple.
+third :: (a, b, c) -> c
+third (_, _, x) = x
