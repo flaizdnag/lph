@@ -232,6 +232,101 @@ modelSearch fs = invIter (sort fs) (([], []), [], [])
 -- even if there are formulas with unknown value.                             --
 --------------------------------------------------------------------------------
 
+-- | Function that makes models for a list of formulas where some of them have
+-- 'Un' value.
+makeModels :: [Form] -> [Interpretation]
+makeModels fs = case (modelSearch fs) of
+    (int, [])   -> [int]
+    (int, uns)  -> sortInts $ foldl1' combineInts $ map makeTr uns
+        where
+            makeTr = \x -> makeFormTr x int
+
+-- | Sorts a list of interpretations in such a way that the smallest
+-- interpretations are at the beginning of the list and the largest at the end.
+-- One interpretation in smaller than the other iff the set containing variables
+-- mapped to 'true' is smaller.
+sortInts :: [Interpretation] -> [Interpretation]
+sortInts = sortBy (\(a, _) (b, _) -> compare (length a) (length b))
+
+-- | Function that modifies a given interpretation in such a way that the
+-- given formula becomes 'true'. The result is a list of interpretations that
+-- make the formula 'true'.
+-- Note: The assumption is that the formula is evaluated as 'undecided'.
+makeFormTr :: Form -> Interpretation -> [Interpretation] 
+makeFormTr f (tr, fa) = case f of
+    V a             -> [((V a) : tr, fa)]
+    N v             -> makeFormFa v int
+    C fs            -> foldl1' combineInts $ map makeTr $ getUns fs
+    D fs            -> concatMap makeTr $ getUns fs
+    E af bf
+        | isTr af   -> makeTr bf
+        | isFa af   -> makeFa bf
+        | isTr bf   -> makeTr af
+        | isFa bf   -> makeFa af
+        | otherwise -> (combineInts (makeTr af) (makeTr bf)) ++ (combineInts (makeFa af) (makeFa bf))
+    where
+        int    = (tr, fa)
+        isTr   = \x -> eval x int == Tr
+        isFa   = \x -> eval x int == Fa
+        isUn   = \x -> eval x int == Un
+        getUns = \x -> [ y | y <- x, isUn y ]
+        makeTr = \x -> makeFormTr x int
+        makeFa = \x -> makeFormFa x int
+    
+-- | Function that modifies a given interpretation in such a way that the
+-- given formula becomes 'false'. The result is a list of interpretations that
+-- make the formula 'false'.
+-- Note: The assumption is that the formula is evaluated as 'undecided'.
+makeFormFa :: Form -> Interpretation -> [Interpretation] 
+makeFormFa f (tr, fa) = case f of
+    V a             -> [(tr, (V a) : fa)]
+    N v             -> makeFormTr v int
+    C fs            -> concatMap makeFa $ getUns fs
+    D fs            -> foldl1' combineInts $ map makeFa $ getUns fs
+    E af bf
+        | isTr af   -> makeFa bf
+        | isFa af   -> makeTr bf
+        | isTr bf   -> makeFa af
+        | isFa bf   -> makeTr af
+        | otherwise -> (combineInts (makeTr af) (makeFa bf)) ++ (combineInts (makeFa af) (makeTr bf))
+    where
+        int    = (tr, fa)
+        isTr   = \x -> eval x int == Tr
+        isFa   = \x -> eval x int == Fa
+        isUn   = \x -> eval x int == Un
+        getUns = \x -> [ y | y <- x, isUn y ]
+        makeFa = \x -> makeFormFa x int
+        makeTr = \x -> makeFormTr x int
+
+-- | Function that reduces given two lists of interpretations to a single list
+-- of interpretation, where the resulting list contains combined interpretations
+-- from of the two lists (in all possible combinations).
+combineInts :: [Interpretation] -> [Interpretation] -> [Interpretation]
+combineInts xs ys = stripM $ map combineInt $ allPairs
+    where
+        allPairs = [ (a, b) | a <- xs, b <- ys ]
+
+-- | Removes 'Just' and 'Nothing' from the list of interpretations.
+stripM :: [Maybe Interpretation] -> [Interpretation]
+stripM []     = []
+stripM (x:xs) = case x of
+    Nothing  -> stripM xs
+    Just int -> int : stripM xs
+
+-- | Function that combines two interpretations. Returns 'Nothing' if
+-- interpretations are inconsistent.
+combineInt :: (Interpretation, Interpretation) -> Maybe Interpretation
+combineInt ((atr, afa), (btr, bfa))
+    | inconsistent = Nothing
+    | otherwise    = Just (nub $ atr ++ btr, nub $ afa ++ bfa)
+    where
+        inconsistent = jointElem atr bfa || jointElem afa btr
+
+--------------------------------------------------------------------------------
+-- Older stuff (soon will disappear)                                          --
+--------------------------------------------------------------------------------
+
+{-
 -- | Function that takes an equivalence with the 'unknown' value and an
 -- interpretation, and changes the interpretation in such a way that the
 -- equivalence becomes 'true'. In order to maintain "minimality" of the
@@ -240,20 +335,18 @@ modelSearch fs = invIter (sort fs) (([], []), [], [])
 -- Note: the result may contain duplicates in both lists.
 makeETr :: Form -> Interpretation -> Maybe Interpretation
 makeETr f (tr, fa) = case f of
-    E a (V b)                                        -- if 'V b' is 'Tr', then
-        | isTr (V b)    -> Just (a : tr, fa)         -- 'a' should be 'Tr'; if
-        | isTr a        -> Just ((V b) : tr, fa)     -- 'a' is 'Tr', then 'V b'
-        | otherwise     -> Just (tr, a : (V b) : fa) -- should be 'Tr';
-                                                     -- otherwise 'V b == a',
-                                                     -- 'V b' and 'a' is 'Un' or
-                                                     -- 'V b' (or 'a') is 'Fa',
-                                                     -- wherein all those cases
-                                                     -- we want to make 'a' and
-                                                     -- 'V b' 'Fa'
-    E a (N b)
-        | isTr (N b)    -> Just (a : tr, fa)
+    E a (V b)                                        -- if 'V b' is 'Tr', then 'a' should be 'Tr';
+        | isTr (V b)    -> Just (a : tr, fa)         -- if 'a' is 'Tr', then 'V b' should be 'Tr';
+        | isTr a        -> Just ((V b) : tr, fa)     -- otherwise 'V b == a', 'V b' and 'a' is 'Un'
+        | otherwise     -> Just (tr, a : (V b) : fa) -- or 'V b' (or 'a') is 'Fa', where in all
+                                                     -- those cases we want to make
+                                                     -- 'a' and 'V b' 'Fa'
+                                                     
+    E a (N b)                                        -- the negation case is similar
+        | isTr (N b)    -> Just (a : tr, fa)         -- as the previous one
         | isTr a        -> Just (tr, b : fa)
         | otherwise     -> Just (b : tr, a : fa)
+
     E a (C as)
         | isTr (C as)   -> Just (a : tr, fa)
         | isFa (C as)   -> Just (tr, a : fa)
@@ -262,13 +355,14 @@ makeETr f (tr, fa) = case f of
         | getUns (C as) == [N a]        -> Nothing
         | elem a (getUns (C as))        -> Just (tr, a : fa)
         | otherwise                     -> Just (tr, a : (dif a as) : fa)
+    
     --E a (D as)  -> 
     where
         isTr   = \x -> eval x (tr, fa) == Tr
         isFa   = \x -> eval x (tr, fa) == Fa
         isUn   = \x -> eval x (tr, fa) == Un
         getUns = \x -> [ y | y <- breakFormLit x, isUn y ]
-        dif    = \x ys -> head . breakFormA $ head (filter (\z -> z /= x && z /= N x) ys)
+        dif    = \x ys -> head . breakFormA $ head (filter (\z -> z /= x && z /= N x) ys) -- this has to be changed
 
 -- | Function that 'breaks' complex formulas to literals, i.e. returns the list
 -- of variables and negated variables from the formula.
@@ -294,16 +388,9 @@ breakFormA a = case a of
 
 -- | Function that makes a model for the completion of a logic program, if there
 -- are still formulas with 'unknown' value after @modelSearch@.
-{-
 makeModel :: [Form] -> (Interpretation, [Form]) -> Interpretation
 makeModel fs (int, un) = 
--}
 
---------------------------------------------------------------------------------
--- Older stuff (soon will disappear)                                          --
---------------------------------------------------------------------------------
-
-{-
 -- groups Formulas by their values [[Unknown], [True], [False]]
 groupByValue :: [Form] -> [[Form]]
 groupByValue xs = groupBy (\x y -> (invariants x) == (invariants y)) xs
