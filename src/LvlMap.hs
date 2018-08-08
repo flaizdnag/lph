@@ -13,25 +13,34 @@ Portability : POSIX
 Longer description
 -}
 module LvlMap
-    ( numList
-    , onlyHead
-    , onlyBody
-    , sortElems
-    , mapNum
-    , mapNum'
-    , permN
-    , replaceNum
+    ( possibleLvLMaps
     ) where
 
 import Formulas
-import Graph
-import Operator
-import Data.Graph
 import Data.List
-import Completion
-import Examples
+import qualified Data.Map.Strict as Map
 
+-- | Generates all possible level mappings for a given logic program, where the
+-- assumption is that permutations concern only those atoms that occur as heads
+-- and in the bodies of Horn clauses.
+possibleLvLMaps :: LogicP -> [[(Atom, Int)]]
+possibleLvLMaps lp = [ xs |
+    let n   = length (bP lp),
+    let bn  = length (onlyBodies lp),
+    let hn  = length (onlyHeads lp),
+    let bs  = zip (onlyBodies lp) [1..],
+    let hs  = zip (onlyHeads lp) [n, n-1..],
+    rs      <- [ zs |
+        let remA    = bP lp \\ (onlyBodies lp ++ onlyHeads lp),
+        remIperm    <- permutations [bn+1..n-hn],
+        let zs      = zip remA remIperm ],
+    let xs  = bs ++ hs ++ rs ]
 
+--------------------------------------------------------------------------------
+-- Old code --- soon will disappear                                           --
+--------------------------------------------------------------------------------
+
+{-
 -- | generates list of subsequent numbers as long as given list
 numList :: [Atom] -> [Int]
 numList [] = []
@@ -86,3 +95,4 @@ lvlMap (x:xs) = if checker (mapNum (a, x, c))
                 then mapNum (a, x, c) 
                 else lvlMap xs
                 -}
+-}

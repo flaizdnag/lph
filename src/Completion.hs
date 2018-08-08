@@ -17,11 +17,13 @@ the completion of a logic program.
 -}
 module Completion
     ( Form (..)
-    , Interpretation
+    , IntCPL
     , Bool3
     , comp
-    , modelCheck
+    , modelCheckCPL
     , modelSearch
+    , makeModels
+    , intLPTointCPL
     ) where
 
 import Formulas
@@ -75,10 +77,10 @@ instance Ord Form where
     a >  b = b < a
     a >= b = b <= a
 
--- | Interpretation is a tuple with lists of variables: the first list contains
--- variables that are mapped to 'truth' and the second those that are mapped to
--- 'false'.
-type Interpretation = ([Form], [Form])
+-- | An interpretation is a tuple with lists of variables: the first list
+-- contains variables that are mapped to 'truth' and the second those that are
+-- mapped to 'false'.
+type IntCPL = ([Form], [Form])
 
 -- | Data type used in the functions that seek for the model of the completion
 -- of a logic program. We use three values to evaluate formulas of the classical
@@ -102,6 +104,10 @@ atomToNVar a = N (V a)
 -- | Converts a list of atoms into negated variables.
 atomsToNVar :: [Atom] -> [Form]
 atomsToNVar = map atomToNVar
+
+-- | Creates an interpretation for CPL from an interpretation for LP.
+intLPtointCPL :: IntLP -> IntCPL
+intLPtointCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
 
 -- | Converts atoms from the body of a Horn clause into a conjunction, i.e.
 -- a tuple where the first element is the head of the Horn clause and the second
@@ -151,8 +157,8 @@ comp lp = addDElp lp ++ addN lp
 -- approach, because the 'Un' value serves only informational purposes,
 -- therefore this function is different from the Łukasiewicz approach (the
 -- difference is in the evaluation of the equivalence).
-eval :: Form -> Interpretation -> Bool3
-eval f (tr, fa) = case f of
+evalCPL :: Form -> IntCPL -> Bool3
+evalCPL f (tr, fa) = case f of
     T                       -> Tr
     V a
         | elem (V a) tr     -> Tr
@@ -175,25 +181,25 @@ eval f (tr, fa) = case f of
         | sameEval x y      -> Tr
         | otherwise         -> Fa
     where
-        isTr     = \x -> eval x (tr, fa) == Tr
-        isFa     = \x -> eval x (tr, fa) == Fa
-        isUn     = \x -> eval x (tr, fa) == Un
-        sameEval = \x y -> eval x (tr, fa) == eval y (tr, fa)
-        anyTr    = any (\x -> eval x (tr, fa) == Tr)
-        anyFa    = any (\x -> eval x (tr, fa) == Fa)
-        anyUn    = any (\x -> eval x (tr, fa) == Un)
+        isTr     = \x -> evalCPL x (tr, fa) == Tr
+        isFa     = \x -> evalCPL x (tr, fa) == Fa
+        isUn     = \x -> evalCPL x (tr, fa) == Un
+        sameEval = \x y -> evalCPL x (tr, fa) == evalCPL y (tr, fa)
+        anyTr    = any (\x -> evalCPL x (tr, fa) == Tr)
+        anyFa    = any (\x -> evalCPL x (tr, fa) == Fa)
+        anyUn    = any (\x -> evalCPL x (tr, fa) == Un)
 
 -- | Function that checks if a given interpretation is a model for a list of
 -- formulas.
-modelCheck :: [Form] -> Interpretation -> Bool
-modelCheck fs int = all (\x -> eval x int == Tr) fs
+modelCheckCPL :: [Form] -> IntCPL -> Bool
+modelCheckCPL fs int = all (\x -> evalCPL x int == Tr) fs
 
 -- | Takes a list of formulas (Clark's completion), an interpretation and a list
 -- of formulas whose value is unknown, and seeks for the model for all of the
 -- formulas. It is not generalised for every type of the formula, because the
 -- completion of a logic program contains only formulas of the specific kind,
 -- i.e. negated variables and equivalences.
-invariants :: [Form] -> (Interpretation, [Form]) -> (Interpretation, [Form])
+invariants :: [Form] -> (IntCPL, [Form]) -> (IntCPL, [Form])
 invariants [] (int, un)             = (int, un)
 invariants (f:fs) ((tr, fa), un)    = case f of
     N a             -> invariants fs ((tr, a : fa), un)
@@ -204,13 +210,13 @@ invariants (f:fs) ((tr, fa), un)    = case f of
         | otherwise -> invariants fs (int, f : un)
         where
             int  = (tr, fa)
-            isTr = \x -> eval x (tr, fa) == Tr
-            isFa = \x -> eval x (tr, fa) == Fa
-            isUn = \x -> eval x (tr, fa) == Un
+            isTr = \x -> evalCPL x (tr, fa) == Tr
+            isFa = \x -> evalCPL x (tr, fa) == Fa
+            isUn = \x -> evalCPL x (tr, fa) == Un
 
 -- | Function that iterates @invariants@ till the set of formulas with unknown
 -- value is empty or does not change.
-invIter :: [Form] -> (Interpretation, [Form], [Form]) -> (Interpretation, [Form])
+invIter :: [Form] -> (IntCPL, [Form], [Form]) -> (IntCPL, [Form])
 invIter fs (int, un, done)
     | null newUn            = (newInt, newUn)
     | eqLists newUn done    = (int, un)
@@ -224,7 +230,7 @@ invIter fs (int, un, done)
 -- | Function that starts from the empty interpretation and searches for the
 -- model for the list of formulas. If it does not succeed, then it returns
 -- a "part" of the model and the list of formulas with unknown value.
-modelSearch :: [Form] -> (Interpretation, [Form])
+modelSearch :: [Form] -> (IntCPL, [Form])
 modelSearch fs = invIter (sort fs) (([], []), [], [])
 
 --------------------------------------------------------------------------------
@@ -234,7 +240,7 @@ modelSearch fs = invIter (sort fs) (([], []), [], [])
 
 -- | Function that makes models for a list of formulas where some of them have
 -- 'Un' value.
-makeModels :: [Form] -> [Interpretation]
+makeModels :: [Form] -> [IntCPL]
 makeModels fs = case (modelSearch fs) of
     (int, [])   -> [int]
     (int, uns)  -> sortInts $ foldl1' combineInts $ map makeTr uns
@@ -245,17 +251,17 @@ makeModels fs = case (modelSearch fs) of
 -- interpretations are at the beginning of the list and the largest at the end.
 -- One interpretation in smaller than the other iff the set containing variables
 -- mapped to 'true' is smaller.
-sortInts :: [Interpretation] -> [Interpretation]
+sortInts :: [IntCPL] -> [IntCPL]
 sortInts = sortBy (\(a, _) (b, _) -> compare (length a) (length b))
 
 -- | Function that modifies a given interpretation in such a way that the
 -- given formula becomes 'true'. The result is a list of interpretations that
 -- make the formula 'true'.
 -- Note: The assumption is that the formula is evaluated as 'undecided'.
-makeFormTr :: Form -> Interpretation -> [Interpretation] 
+makeFormTr :: Form -> IntCPL -> [IntCPL] 
 makeFormTr f (tr, fa) = case f of
     V a             -> [((V a) : tr, fa)]
-    N v             -> makeFormFa v int
+    N v             -> makeFa v
     C fs            -> foldl1' combineInts $ map makeTr $ getUns fs
     D fs            -> concatMap makeTr $ getUns fs
     E af bf
@@ -266,9 +272,9 @@ makeFormTr f (tr, fa) = case f of
         | otherwise -> (combineInts (makeTr af) (makeTr bf)) ++ (combineInts (makeFa af) (makeFa bf))
     where
         int    = (tr, fa)
-        isTr   = \x -> eval x int == Tr
-        isFa   = \x -> eval x int == Fa
-        isUn   = \x -> eval x int == Un
+        isTr   = \x -> evalCPL x int == Tr
+        isFa   = \x -> evalCPL x int == Fa
+        isUn   = \x -> evalCPL x int == Un
         getUns = \x -> [ y | y <- x, isUn y ]
         makeTr = \x -> makeFormTr x int
         makeFa = \x -> makeFormFa x int
@@ -277,10 +283,10 @@ makeFormTr f (tr, fa) = case f of
 -- given formula becomes 'false'. The result is a list of interpretations that
 -- make the formula 'false'.
 -- Note: The assumption is that the formula is evaluated as 'undecided'.
-makeFormFa :: Form -> Interpretation -> [Interpretation] 
+makeFormFa :: Form -> IntCPL -> [IntCPL] 
 makeFormFa f (tr, fa) = case f of
     V a             -> [(tr, (V a) : fa)]
-    N v             -> makeFormTr v int
+    N v             -> makeTr v
     C fs            -> concatMap makeFa $ getUns fs
     D fs            -> foldl1' combineInts $ map makeFa $ getUns fs
     E af bf
@@ -291,9 +297,9 @@ makeFormFa f (tr, fa) = case f of
         | otherwise -> (combineInts (makeTr af) (makeFa bf)) ++ (combineInts (makeFa af) (makeTr bf))
     where
         int    = (tr, fa)
-        isTr   = \x -> eval x int == Tr
-        isFa   = \x -> eval x int == Fa
-        isUn   = \x -> eval x int == Un
+        isTr   = \x -> evalCPL x int == Tr
+        isFa   = \x -> evalCPL x int == Fa
+        isUn   = \x -> evalCPL x int == Un
         getUns = \x -> [ y | y <- x, isUn y ]
         makeFa = \x -> makeFormFa x int
         makeTr = \x -> makeFormTr x int
@@ -301,39 +307,46 @@ makeFormFa f (tr, fa) = case f of
 -- | Function that reduces given two lists of interpretations to a single list
 -- of interpretation, where the resulting list contains combined interpretations
 -- from of the two lists (in all possible combinations).
-combineInts :: [Interpretation] -> [Interpretation] -> [Interpretation]
+combineInts :: [IntCPL] -> [IntCPL] -> [IntCPL]
 combineInts xs ys = stripM $ map combineInt $ allPairs
     where
         allPairs = [ (a, b) | a <- xs, b <- ys ]
-
--- | Removes 'Just' and 'Nothing' from the list of interpretations.
-stripM :: [Maybe Interpretation] -> [Interpretation]
-stripM []     = []
-stripM (x:xs) = case x of
-    Nothing  -> stripM xs
-    Just int -> int : stripM xs
+        stripM (x:xs) = case x of
+            Nothing  -> stripM xs
+            Just int -> int : stripM xs
 
 -- | Function that combines two interpretations. Returns 'Nothing' if
 -- interpretations are inconsistent.
-combineInt :: (Interpretation, Interpretation) -> Maybe Interpretation
+combineInt :: (IntCPL, IntCPL) -> Maybe IntCPL
 combineInt ((atr, afa), (btr, bfa))
     | inconsistent = Nothing
     | otherwise    = Just (nub $ atr ++ btr, nub $ afa ++ bfa)
     where
         inconsistent = jointElem atr bfa || jointElem afa btr
 
+-- | Converts an interpretation for a logic program into an interpretation for
+-- CPL.
+intLPTointCPL :: IntLP -> IntCPL
+intLPTointCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
 --------------------------------------------------------------------------------
 -- Older stuff (soon will disappear)                                          --
 --------------------------------------------------------------------------------
 
 {-
+-- | Removes 'Just' and 'Nothing' from the list of interpretations.
+stripM :: [Maybe IntCPL] -> [IntCPL]
+stripM []     = []
+stripM (x:xs) = case x of
+    Nothing  -> stripM xs
+    Just int -> int : stripM xs
+
 -- | Function that takes an equivalence with the 'unknown' value and an
 -- interpretation, and changes the interpretation in such a way that the
 -- equivalence becomes 'true'. In order to maintain "minimality" of the
 -- interpretation (understood as the minimal number of atoms mapped to 'true')
 -- the function tries to make atoms 'false' in the first place.
 -- Note: the result may contain duplicates in both lists.
-makeETr :: Form -> Interpretation -> Maybe Interpretation
+makeETr :: Form -> IntCPL -> Maybe IntCPL
 makeETr f (tr, fa) = case f of
     E a (V b)                                        -- if 'V b' is 'Tr', then 'a' should be 'Tr';
         | isTr (V b)    -> Just (a : tr, fa)         -- if 'a' is 'Tr', then 'V b' should be 'Tr';
@@ -358,9 +371,9 @@ makeETr f (tr, fa) = case f of
     
     --E a (D as)  -> 
     where
-        isTr   = \x -> eval x (tr, fa) == Tr
-        isFa   = \x -> eval x (tr, fa) == Fa
-        isUn   = \x -> eval x (tr, fa) == Un
+        isTr   = \x -> evalCPL x (tr, fa) == Tr
+        isFa   = \x -> evalCPL x (tr, fa) == Fa
+        isUn   = \x -> evalCPL x (tr, fa) == Un
         getUns = \x -> [ y | y <- breakFormLit x, isUn y ]
         dif    = \x ys -> head . breakFormA $ head (filter (\z -> z /= x && z /= N x) ys) -- this has to be changed
 
@@ -388,7 +401,7 @@ breakFormA a = case a of
 
 -- | Function that makes a model for the completion of a logic program, if there
 -- are still formulas with 'unknown' value after @modelSearch@.
-makeModel :: [Form] -> (Interpretation, [Form]) -> Interpretation
+makeModel :: [Form] -> (IntCPL, [Form]) -> IntCPL
 makeModel fs (int, un) = 
 
 -- groups Formulas by their values [[Unknown], [True], [False]]

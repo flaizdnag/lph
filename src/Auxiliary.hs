@@ -27,7 +27,7 @@ import Data.List
 isSublist :: Eq a => [a] -> [a] -> Bool
 isSublist xs ys = null (xs \\ ys)
 
--- | Checks if list contains any element of other list (ordering does not
+-- | Checks if a list contains any element of the other list (ordering does not
 -- matter).
 jointElem :: Eq a => [a] -> [a] -> Bool
 jointElem xs ys = not $ null (intersect xs ys)

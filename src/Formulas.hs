@@ -36,6 +36,7 @@ module Formulas
     ( Atom (..)
     , HClause
     , LogicP
+    , IntLP
     , atomIdx
     , atomLab
     , hClHead
@@ -47,8 +48,10 @@ module Formulas
     , hClBodyN
     , bPHeadsDup
     , bPHeads
+    , onlyHeads
     , bPBodiesDup
     , bPBodies
+    , onlyBodies
     , bPBodiesPDup
     , bPBodiesP
     , bPBodiesNDup
@@ -56,6 +59,9 @@ module Formulas
     , bPDup
     , bP 
     , atomDef
+    , evalAtomLP
+    , evalHCl
+    , modelCheckLP
     ) where
 
 import Auxiliary
@@ -63,7 +69,7 @@ import Data.List
 
 -- | Atoms are basic structures for Horn clauses.
 data Atom = A Int [Char]
-    deriving Show
+    deriving (Show, Read)
 
 instance Eq Atom where
     A a xs == A b ys = a == b && eqLists xs ys
@@ -84,6 +90,11 @@ type HClause = (Atom, [Atom], [Atom])
 
 -- | Logic program is a list of Horn clauses.
 type LogicP = [HClause]
+
+-- | An interpretation is a tuple with lists of atoms: the first list contains
+-- atoms that are mapped to 'truth' and the second those that are mapped to
+-- 'false'.
+type IntLP = ([Atom], [Atom])
 
 -- | Returns the index of an atom.
 atomIdx :: Atom -> Int
@@ -137,6 +148,12 @@ bPHeadsDup = map (first)
 bPHeads :: LogicP -> [Atom]
 bPHeads = nub . bPHeadsDup
 
+-- | Function that returns a list of atoms that are heads of some Horn clauses
+-- from a given logic program, and in the same time they do not occur in any
+-- body of those Horn clauses.
+onlyHeads :: LogicP -> [Atom]
+onlyHeads lp = [ a | a <- bPHeads lp, not $ elem a (bPBodies lp) ]
+
 -- | Function that returns atoms from the bodies of all Horn clauses from
 -- a given logic program with duplicates.
 bPBodiesDup :: LogicP -> [Atom]
@@ -146,6 +163,11 @@ bPBodiesDup = concatMap hClBodyDup
 -- a given logic program without duplicates.
 bPBodies :: LogicP -> [Atom]
 bPBodies = nub . bPBodiesDup
+
+-- | Function that returns a list of atoms that occur in a body of some Horn
+-- clause from a given logic program, and in the same time they do not occur in
+-- any head of those Horn clauses.
+onlyBodies lp = [ a | a <- bPBodies lp, not $ elem a (bPHeads lp) ]
 
 -- | Function that returns positive atoms from bodies of all Horn clauses form
 -- a given logic program with duplicates.
@@ -183,3 +205,31 @@ bP = nub . bPDup
 -- the head.
 atomDef :: Atom -> LogicP -> LogicP
 atomDef a lp = [ hcl | hcl <- lp, hClHead hcl == a ]
+
+--------------------------------------------------------------------------------
+-- Checking if a given interpretation is a model for atom,Horn clause, logic  --
+-- program                                                                    --
+--------------------------------------------------------------------------------
+
+-- | Takes an atom and an interpretation, and returns the value of the
+-- evaluation of the atom, i.e. 'true' or 'false'. The assumption here is that
+-- every atom has a value, therefore, if an atom does not belong to the first
+-- set of an interpretation (the set with 'true' atoms), then it belongs to the
+-- second list of the interpretation (the set with 'false' atoms).
+evalAtomLP :: Atom -> IntLP -> Bool
+evalAtomLP (A i lab) (tr, fa)
+    | elem (A i lab) tr = True
+    | otherwise         = False
+
+-- | Takes a Horn clause and an interpretation, and returns the value of the
+-- evaluation of the Horn clause.
+evalHCl :: HClause -> IntLP -> Bool
+evalHCl (h, pb, nb) (tr, _)
+    | elem h tr              = True
+    | jointElem nb tr        = True
+    | not $ isSublist pb tr  = True
+    | otherwise              = False
+
+-- | Checks if a given interpretation is a model for a given logic program.
+modelCheckLP :: LogicP -> IntLP -> Bool
+modelCheckLP lp int = all (\x -> evalHCl x int) lp
