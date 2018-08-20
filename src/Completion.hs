@@ -28,7 +28,7 @@ module Completion
 
 import Formulas
 import Auxiliary
-import Data.List
+import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
 
 -- | The CPL language.
 data Form = V Atom 
@@ -37,7 +37,7 @@ data Form = V Atom
           | D [Form]      -- disjunction 
           | E Form Form   -- equivalence
           | T             -- verum
-    deriving (Show)
+    deriving (Show, Read)
 
 instance Eq Form where
     T     == T      = True

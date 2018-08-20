@@ -21,7 +21,7 @@ module Auxiliary
     , third
     ) where
 
-import Data.List
+import Data.List ((\\), intersect, sort)
 
 -- | Checks if list is a sublist of other list (ordering does not matter).
 isSublist :: Eq a => [a] -> [a] -> Bool

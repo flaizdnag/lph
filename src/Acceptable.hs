@@ -20,7 +20,7 @@ module Acceptable
 import Formulas
 import Graph
 import Completion
-import Data.List
+import Data.List  (nub, foldl1', subsequences, sort, (\\))
 
 -- | The list of atoms that some atom occurring negatively in logic program
 -- depends on.

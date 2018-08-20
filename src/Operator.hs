@@ -20,7 +20,7 @@ module Operator
 
 import Formulas
 import Auxiliary
-import Data.List
+import Data.List (nub)
 
 -- | Immediate consequence operator Tp.
 opTp :: LogicP -> [Atom] -> [Atom]

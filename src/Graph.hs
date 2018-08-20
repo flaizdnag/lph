@@ -22,9 +22,9 @@ module Graph
 
 import Formulas
 import Operator
-import Data.Graph
-import Data.List
-import Data.Array 
+import Data.Graph   (Graph, reachable, buildG)
+import Data.List    (delete)
+import Data.Array   (assocs)
 
 -- | Takes a list of atoms and returns a list of their indexes.
 atomsToInts :: [Atom] -> [Int]

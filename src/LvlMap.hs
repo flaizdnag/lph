@@ -17,8 +17,8 @@ module LvlMap
     ) where
 
 import Formulas
-import Data.List
-import qualified Data.Map.Strict as Map
+import Data.List (permutations, (\\))
+--import qualified Data.Map.Strict as Map
 
 -- | Generates all possible level mappings for a given logic program, where the
 -- assumption is that permutations concern only those atoms that occur as heads

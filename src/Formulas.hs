@@ -65,7 +65,7 @@ module Formulas
     ) where
 
 import Auxiliary
-import Data.List
+import Data.List (nub)
 
 -- | Atoms are basic structures for Horn clauses.
 data Atom = A Int [Char]
