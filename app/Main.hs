@@ -4,6 +4,7 @@ module Main where
 
 import Formulas
 import Completion
+import Acceptable
 import Web.Scotty               (scotty, post, body, text, ActionM)
 import Data.Text.Lazy           (Text, pack, unpack)
 import Data.Text.Lazy.Encoding  (decodeUtf8)
