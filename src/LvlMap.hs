@@ -14,10 +14,11 @@ Longer description
 -}
 module LvlMap
     ( possibleLvLMaps
+    , lvlMVal
     ) where
 
 import Formulas
-import Data.List (permutations, (\\))
+import Data.List (permutations, (\\), lookup)
 --import qualified Data.Map.Strict as Map
 
 -- | Generates all possible level mappings for a given logic program, where the
@@ -30,11 +31,18 @@ possibleLvLMaps lp = [ xs |
     let hn  = length (onlyHeads lp),
     let bs  = zip (onlyBodies lp) [1..],
     let hs  = zip (onlyHeads lp) [n, n-1..],
-    rs      <- [ zs |
+    rs <- [ zs |
         let remA    = bP lp \\ (onlyBodies lp ++ onlyHeads lp),
         remIperm    <- permutations [bn+1..n-hn],
         let zs      = zip remA remIperm ],
     let xs  = bs ++ hs ++ rs ]
+
+-- | Takes an atom and a level mapping and returns the value assigned to the
+-- atom.
+lvlMVal :: Atom -> [(Atom, Int)] -> Int
+lvlMVal a lvlM = case lookup a lvlM of
+    Nothing -> 0
+    Just n  -> n
 
 --------------------------------------------------------------------------------
 -- Old code --- soon will disappear                                           --

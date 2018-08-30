@@ -27,6 +27,10 @@ main = scotty 10100 $ do
         b <- decodeUtf8 <$> body
         responseLP b comp
 
+    post "/api/isAcceptable" $ do
+        b <- decodeUtf8 <$> body
+        responseLP b isAcceptable
+
 responseLP :: Show a => Text -> (LogicP -> a) -> Web.Scotty.ActionM ()
 responseLP x f = textPackShow $ f $ readUnpackLP x
     where
