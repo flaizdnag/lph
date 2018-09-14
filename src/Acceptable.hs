@@ -24,8 +24,8 @@ import Completion
 import LvlMap
 import Data.List  (nub, foldl1', subsequences, sort, (\\), intersect)
 
--- | The list of atoms that some atom occurring negatively in logic program
--- depends on.
+-- | The list of all atoms that some atom occurring negatively in a logic
+-- program depends on.
 negP :: LogicP -> [Atom]
 negP lp = intsToAtoms $ nub (concatMap (dependsOn g) nodes)
     where

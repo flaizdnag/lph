@@ -17,8 +17,8 @@ the completion of a logic program.
 -}
 module Completion
     ( Form (..)
-    , IntCPL
-    , Bool3
+    , IntCPL (..)
+    , Bool3 (..)
     , comp
     , modelCheckCPL
     , modelSearch
