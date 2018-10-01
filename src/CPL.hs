@@ -28,16 +28,19 @@ import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
 
 
 -- | The CPL language.
-data Form = V Atom 
-          | N Form        -- negation
-          | C [Form]      -- conjunction 
-          | D [Form]      -- disjunction 
-          | E Form Form   -- equivalence
-          | T             -- verum
+data Form =
+      V Atom 
+    | N Form        -- negation
+    | C [Form]      -- conjunction 
+    | D [Form]      -- disjunction 
+    | E Form Form   -- equivalence
+    | T             -- verum
+    | F             -- falsum      
     deriving (Show, Read)
 
 instance Eq Form where
     T     == T      = True
+    F     == F      = True
     V a   == V b    = a == b
     N x   == N y    = x == y
     C xs  == C ys   = eqLists xs ys
@@ -46,6 +49,7 @@ instance Eq Form where
     _     == _      = False
 
 instance Ord Form where
+    F     < _       = True
     T     < _       = True
     V a   < V b     = a < b
     N x   < N y     = x < y
@@ -60,6 +64,7 @@ instance Ord Form where
 
 instance TwoValuedSemantic Form IntCPL where
     eval2v f int = case f of
+        F                   -> Fa2v
         T                   -> Tr2v
         V a
             | isVTr (V a)   -> Tr2v
@@ -84,6 +89,7 @@ instance TwoValuedSemantic Form IntCPL where
 
 instance ThreeValuedSemantic Form IntCPL where
     eval3v f int = case f of
+        F                      -> Fa3v
         T                      -> Tr3v
         V a
             | isVTr (V a)      -> Tr3v
@@ -117,8 +123,11 @@ instance ThreeValuedSemantic Form IntCPL where
 -- | An interpretation is a tuple with lists of variables: the first list
 -- contains variables that are mapped to 'truth' and the second those that are
 -- mapped to 'false'.
-data IntCPL = Int { trCPL :: [Form] , faCPL :: [Form] }
-    deriving (Show, Read, Eq)
+data IntCPL = IntCPL { trCPL :: [Form] , faCPL :: [Form] }
+    deriving (Read, Eq)
+
+instance Show IntCPL where
+    show (IntCPL tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
 
 
 -- | Checks if a given interpretation is a model for a given set of formulas.

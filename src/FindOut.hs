@@ -1,9 +1,7 @@
 {-|
 Module      : FindOut
 Description : Tools needed to read a logic program from a '.txt' file.
-Copyright   : (c) Aleksandra Cz., 2017
-                  Kinga O., 2017
-                  Andrzej G., 2017
+Copyright   : (c) Andrzej G., 2017
 License     : GPL-3
 Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
@@ -18,6 +16,7 @@ import System.IO
 import Control.Monad
 import Data.Char
 import Text.ParserCombinators.ReadP
+
 
 -- | Reader of the file content.
 reader :: IO ()

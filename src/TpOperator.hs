@@ -25,7 +25,7 @@ import Data.List (nub, (\\))
 
 -- | Immediate consequence operator Tp.
 opTp :: LP -> IntLP -> IntLP
-opTp lp int = Int newTr newFa
+opTp lp int = IntLP newTr newFa
     where
         newTr = nub [ clHead cl |
             cl <- lp,
@@ -42,7 +42,7 @@ iterTp lp (y:ys)
 -- | Iterates the Tp operator starting from the empty interpretation. Saves all
 -- iterations as elements of the list (newest are at the beginning of the list). 
 upArrow :: LP -> [IntLP]
-upArrow x = iterTp x [Int [] []]
+upArrow x = iterTp x [IntLP [] []]
 
 -- | Checks if an atom is a logical consequence of a logic program.
 isConsA :: Atom -> LP -> Bool

@@ -106,14 +106,15 @@ instance ThreeValuedSemantic Atom IntLP where
 -- is organised in the following way: atom, which is the head of a Horn clause,
 -- list of atoms from the body of a Horn clause that are not preceded by
 -- negation, list of atoms from the body of a Horn clause that are negated.
-data Clause = Fact { clHead :: Atom }
+data Clause =
+      Fact { clHead :: Atom }
     | Assumption { clHead :: Atom }
     | Cl
         { clHead :: Atom
         , clPAtoms :: [Atom]
         , clNAtoms :: [Atom]
         }
-    deriving (Read, Eq)
+    deriving (Read)
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of
@@ -148,6 +149,12 @@ instance ThreeValuedSemantic Clause IntLP where
             isBodyUn = \x y -> any isAUn (x :: [Atom]) || any isAUn (y :: [Atom])
             --isBodyUn = \x y -> not (isBodyTr (x :: [Atom]) (y :: [Atom])) && not (isBodyFa (x :: [Atom]) (y :: [Atom]))
 
+instance Eq Clause where
+    Fact h1       == Fact h2        = h1 == h2
+    Assumption h1 == Assumption h2  = h1 == h2
+    Cl h1 pb1 nb1 == Cl h2 pb2 nb2  = h1 == h2 && eqLists pb1 pb2 && eqLists nb1 nb2
+    _             == _              = False
+
 instance Show Clause where
     show cl = case cl of
         Fact h          -> show h ++ " <- Top"
@@ -165,11 +172,11 @@ type LP = [Clause]
 -- | An interpretation is a tuple with lists of atoms: the first list contains
 -- atoms that are mapped to 'truth' and the second those that are mapped to
 -- 'false'.
-data IntLP = Int { trLP :: [Atom] , faLP :: [Atom] }
+data IntLP = IntLP { trLP :: [Atom] , faLP :: [Atom] }
     deriving (Read, Eq)
 
 instance Show IntLP where
-    show (Int tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
+    show (IntLP tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
 
 
 clPBody :: Clause -> [Atom]

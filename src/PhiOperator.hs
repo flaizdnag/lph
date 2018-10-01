@@ -33,7 +33,7 @@ jBot lp int = filter falseBodies (lpHeads lp)
         isBodyFa    = \x -> evalBody x int == Fa3v
 
 phiOp :: LP -> IntLP -> IntLP
-phiOp lp int = Int (jTop lp int) (jBot lp int)
+phiOp lp int = IntLP (jTop lp int) (jBot lp int)
 
 stepPhiOp :: LP -> [IntLP] -> [IntLP]
 stepPhiOp lp (i:is)
@@ -41,7 +41,7 @@ stepPhiOp lp (i:is)
     | otherwise       = stepPhiOp lp ((phiOp lp i) : i:is)
 
 iterPhiOp :: LP -> [IntLP]
-iterPhiOp lp = stepPhiOp lp [Int [] []]
+iterPhiOp lp = stepPhiOp lp [IntLP [] []]
 
 findModelPhiOp :: LP -> IntLP
 findModelPhiOp = head . iterPhiOp
