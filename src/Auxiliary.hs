@@ -23,7 +23,8 @@ module Auxiliary
 
 import Data.List ((\\), intersect, sort)
 
--- | Checks if list is a sublist of other list (ordering does not matter).
+
+-- | Checks if a list is a sublist of the other list (ordering does not matter).
 isSublist :: Eq a => [a] -> [a] -> Bool
 isSublist xs ys = null (xs \\ ys)
 

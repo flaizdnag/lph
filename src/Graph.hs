@@ -20,15 +20,16 @@ module Graph
     , dependsOn
     ) where
 
-import Formulas
-import Operator
+import LogicPrograms
+import TpOperator
 import Data.Graph   (Graph, reachable, buildG)
 import Data.List    (delete)
 import Data.Array   (assocs)
 
+
 -- | Takes a list of atoms and returns a list of their indexes.
 atomsToInts :: [Atom] -> [Int]
-atomsToInts = map (atomIdx)
+atomsToInts = map idx
 
 -- | Takes a list of indexes and returns a list of atoms with empty labels.
 intsToAtoms :: [Int] -> [Atom]
@@ -38,21 +39,22 @@ intsToAtoms (x:xs) = (A x []) : intsToAtoms xs
 -- | Takes the Herbrand Base of a logic program and returns the limits for the
 -- number in the graph (requirement: Atoms in the program have to be numbered in
 -- order without any deficiencies).
-limits :: LogicP -> (Int, Int)
-limits xs = (minimum (indexes), maximum (indexes))
+limits :: LP -> (Int, Int)
+limits xs = (minimum idxs, maximum idxs)
     where
-        indexes = atomsToInts (bPDup xs)
+        idxs = atomsToInts (bpDup xs)
 
 -- | Creates a list of pairs: the head of a Horn clause and an atom from the
 -- body of the Horn clause.
-lpEdges :: LogicP -> [(Int, Int)]
-lpEdges lp = [ (headIdx, bodyAtomIdx) | h <- lp,
-                                        atom <- hClBody h,
-                                        let headIdx = atomIdx (hClHead h),
-                                        let bodyAtomIdx = atomIdx atom ]
+lpEdges :: LP -> [(Int, Int)]
+lpEdges lp = [ (headIdx, bodyAtomIdx) |
+    cl <- lp,
+    atom <- clBody cl,
+    let headIdx = idx (clHead cl),
+    let bodyAtomIdx = idx atom ]
 
 -- | Creates a graph for a logic program.
-graph :: LogicP -> Graph
+graph :: LP -> Graph
 graph x = buildG (limits x) (lpEdges x)
 
 -- | Creates a list of nodes that the given node depends on. The difference

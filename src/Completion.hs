@@ -28,59 +28,8 @@ module Completion
 
 import Formulas
 import Auxiliary
+import CPL
 import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
-
--- | The CPL language.
-data Form = V Atom 
-          | N Form        -- negation
-          | C [Form]      -- conjunction 
-          | D [Form]      -- disjunction 
-          | E Form Form   -- equivalence
-          | T             -- verum
-    deriving (Show, Read)
-
-instance Eq Form where
-    T     == T      = True
-    T     == _      = False
-    _     == T      = False
-    V a   == V b    = a == b
-    V _   == _      = False
-    _     == V _    = False
-    N x   == N y    = x == y
-    N _   == _      = False
-    _     == N _    = False
-    C xs  == C ys   = eqLists xs ys
-    C _   == _      = False
-    _     == C _    = False
-    D xs  == D ys   = eqLists xs ys
-    D _   == _      = False
-    _     == D _    = False
-    E a b == E c d  = (a == c && b == d) || (a == d && b == c)
-
-instance Ord Form where
-    T     < _       = True
-    V a   < V b     = a < b
-    V _   < _       = True
-    _     < V _     = False
-    N x   < N y     = x < y
-    N _   < _       = True
-    _     < N _     = False
-    C xs  < C ys    = sort xs < sort ys
-    C _   < _       = True
-    _     < C _     = False
-    D xs  < D ys    = sort xs < sort ys
-    D _   < _       = True
-    _     < D _     = False
-    E a b < E c d   = (a < c) -- should be enough...
-
-    a <= b = (a < b) || (a == b)
-    a >  b = b < a
-    a >= b = b <= a
-
--- | An interpretation is a tuple with lists of variables: the first list
--- contains variables that are mapped to 'truth' and the second those that are
--- mapped to 'false'.
-type IntCPL = ([Form], [Form])
 
 -- | Data type used in the functions that seek for the model of the completion
 -- of a logic program. We use three values to evaluate formulas of the classical
@@ -105,17 +54,13 @@ atomToNVar a = N (V a)
 atomsToNVar :: [Atom] -> [Form]
 atomsToNVar = map atomToNVar
 
--- | Creates an interpretation for CPL from an interpretation for LP.
-intLPtointCPL :: IntLP -> IntCPL
-intLPtointCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
-
 -- | Converts atoms from the body of a Horn clause into a conjunction, i.e.
 -- a tuple where the first element is the head of the Horn clause and the second
 -- is the conjunction of atoms converted into variables. If the body of the Horn
 -- clause contains one atom, then the conjunction is not created (the atom is
 -- only converted to variable). If the body of the Horn clause does not contain
 -- any atoms, then verum (T) is inserted as the second element of the tuple.
-addC :: HClause -> (Form, Form)
+addC :: Clause -> (Form, Form)
 addC (h, [], [])        = (V h, T)
 addC (h, [], nb) 
     | length nb == 1    = (V h, N (V (head nb)))
@@ -132,19 +77,23 @@ addDE c
     | otherwise     = E (fst (head c)) (snd (head c))
 
 -- | Creating equivalences with disjunctions for the whole logic program.
-addDElp :: LogicP -> [Form]
+addDElp :: LP -> [Form]
 addDElp = map addDE . preGrouped
     where
         preGrouped = groupBy (\x y -> fst x == fst y) . map addC . sort
 
 -- | Adding negated variables made from atoms that do not appear as heads in the
 -- logic program.
-addN :: LogicP -> [Form]
+addN :: LP -> [Form]
 addN lp = atomsToNVar ((bP lp) \\ (bPHeads lp))
 
 -- | Creating Clark's completion for a logic program.
-comp :: LogicP -> [Form]
+comp :: LP -> [Form]
 comp lp = addDElp lp ++ addN lp
+
+-- | Creates an interpretation for CPL from an interpretation for LP.
+intLPtoIntCPL :: IntLP -> IntCPL
+intLPtoIntCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
 
 --------------------------------------------------------------------------------
 -- Looking for a model for Clark's completion                                 --
@@ -324,10 +273,8 @@ combineInt ((atr, afa), (btr, bfa))
     where
         inconsistent = jointElem atr bfa || jointElem afa btr
 
--- | Converts an interpretation for a logic program into an interpretation for
--- CPL.
-intLPTointCPL :: IntLP -> IntCPL
-intLPTointCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
+
+
 --------------------------------------------------------------------------------
 -- Older stuff (soon will disappear)                                          --
 --------------------------------------------------------------------------------
@@ -414,7 +361,7 @@ breakForms []     = []
 breakForms (x:xs) = breakForm x ++ breakForms xs
 
 --generates interp from formulas with known value
-interp :: LogicP -> ([Form], [Form])
+interp :: LP -> ([Form], [Form])
 interp xs = (true, false)
     where
         true  = [a | x <- (groupByValue (compP xs)), invariants (head x) == Tr, a <- (breakForms x)]
@@ -504,17 +451,17 @@ accI (x:xs) (y:ys) (a, b)
     | otherwise                     = accI xs (ys) (addHeadToI x (a, b))
 
 -- generalizes type of accInv to make it easier to use in other functions
-iterI :: LogicP -> ([Form], [Form])
+iterI :: LP -> ([Form], [Form])
 iterI x = accI (unE (compP x)) (perms x (interp x)) (interp x)
 
 -- checks if generated interpretation lets us establish value of
 -- chosen equivalence categorized earlier as unknown
-checkUn :: LogicP -> Int -> Bool3
+checkUn :: LP -> Int -> Bool3
 checkUn x n = (trueE (unE (compP x) !! n) (iterI x))
 
 -- gives a list of the values for all the equivalences 
 -- that we are able to establish with generated interpretation
-check :: LogicP -> Int -> [Bool3]
+check :: LP -> Int -> [Bool3]
 check x (-1) = []
 check x n = (checkUn x n) : check x (n-1)
 
@@ -522,7 +469,7 @@ check x n = (checkUn x n) : check x (n-1)
 -- 'Un' value
 -- if not - returns generated interpretation
 -- if it does - returns empty interpretation
-check' :: LogicP -> ([Form], [Form])
+check' :: LP -> ([Form], [Form])
 check' x = if (notElem Un (check x n)) then iterI x
                 else ([],[])
                    where
@@ -534,7 +481,7 @@ addNToForm []     = []
 addNToForm (x:xs) = N x : addNToForm xs
 
 -- creates a list of all Forms from the LogicP that aren't included in I
-unAtoms :: LogicP -> ([Form], [Form]) -> [Form]
+unAtoms :: LP -> ([Form], [Form]) -> [Form]
 unAtoms [] _ = []
 unAtoms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
                 where 
@@ -546,6 +493,6 @@ unAtoms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e))
                         f = snd y
 
 -- creates list of all permutations of Formulas we can add to I
-perms :: LogicP -> ([Form], [Form]) -> [[Form]]
+perms :: LP -> ([Form], [Form]) -> [[Form]]
 perms x y = sortWith length $ subsequences (unAtoms x y)
 -}
