@@ -39,19 +39,6 @@ negP lp = intsToAtoms $ nub (concatMap (dependsOn g) nodes)
 logicP' :: LP -> LP
 logicP' lp = [ cl | cl <- lp, elem (clHead cl) (negP lp) ]
 
--- | Makes a list of models for a given logic program from a given list of
--- atoms. The assumption here is that the list contains atoms that are mapped to
--- 'true' and is left without a change.
-alTomsLP :: LP -> [Atom] -> [IntLP]
-alTomsLP lp as = map makeInt [ bs | bs <- subsequences ((bp lp) \\ as), isModel2vLP lp (IntLP (bs ++ as) []) ]
-    where
-        makeInt = \xs -> alTointLP xs lp
-
--- | Makes an interpretation from a list of atoms (that are assumed to be
--- 'true').
-alTointLP :: [Atom] -> LP -> IntLP
-alTointLP as lp = IntLP as ((bp lp) \\ as)
-
 -- | Makes a list of interpretation for a given logic program that are models
 -- for the logic program and in the same time are models for the Clark's
 -- completion of the negative version of the logic program ('logicP'') when
@@ -60,18 +47,23 @@ candidateInts :: LP -> [IntLP]
 candidateInts lp = concatMap makeMsLP filtered
     where
         -- creating Clark's completion for the logic program 'logicP'
-        compP'      = comp (logicP' lp)
+        compP'       = comp (logicP' lp)
         -- creating a list of all subsequences of the list of atoms 'negP'
-        subseq      = subsequences (negP lp)
+        subseq       = subsequences (negP lp)
         -- filtering the list 'subseq' an leaving only those that are models for the 'compP''
-        filtered    = filter (\as -> compP'ms as) subseq
+        filtered     = filter (\as -> compP'ms as) subseq
         -- condition for the 'filtered'; checks if a given list of atoms is a model for 'compP''
-        compP'ms    = \xs -> isModel2vCPL compP' $ intLPtoIntCPL $ alTointLP xs lp
-        -- makes a list of models for a logic program 'lp' from a given list of atoms
-        makeMsLP    = \xs -> alTomsLP lp xs
-
-notCons :: Clause -> IntLP -> [Atom]
-notCons cl int = intersect (clPBody cl) (faLP int) ++ intersect (clNBody cl) (trLP int)
+        compP'ms     = \xs -> isModel2vCPL compP' $ intLPtoIntCPL $ asToIntLP xs lp
+        -- turns a list of atoms that are assumed to be "true" into a list of
+        -- all models for a logic program, that can be obtained from the list
+        -- without modifying it
+        makeMsLP = \as -> map makeInt [ bs |
+            bs <- subsequences ((bp lp) \\ as),
+            isModel2vLP lp (IntLP (bs ++ as) []) ]
+            where
+                makeInt = \xs -> asToIntLP xs lp
+        -- turns a list of "true" atoms into an interpretation
+        asToIntLP    = \as lp -> IntLP as ((bp lp) \\ as)
 
 -- | Takes a Horn clause, a level mapping and an interpretation. Checks if the
 -- condition is fulfilled for a horn clause, i.e. ...
@@ -80,8 +72,8 @@ conditionHCl cl lvlM int
     | null areNotCons   = all isSmaller (clBodyDup cl)
     | otherwise         = any isSmaller areNotCons
     where
-        areNotCons = notCons cl int
         isSmaller  = \x -> lvlMVal x lvlM < lvlMVal (clHead cl) lvlM
+        areNotCons = intersect (clPBody cl) (faLP int) ++ intersect (clNBody cl) (trLP int)
 
 conditionLP :: LP -> [(Atom, Int)] -> IntLP -> Bool
 conditionLP lp lvlM int = all (\x -> conditionHCl x lvlM int) lp

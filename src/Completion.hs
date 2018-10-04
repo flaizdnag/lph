@@ -16,16 +16,8 @@ of a logic program, and tools to test if a given interpretation is a model for
 the completion of a logic program.
 -}
 module Completion
-    ( Form (..)
-    , IntCPL (..)
-    , Bool3 (..)
-    , comp
+    ( comp
     , intLPtoIntCPL
-{-
-    , modelSearch
-    , makeModels
-    , intLPTointCPL
--}
     ) where
 
 import LogicPrograms
@@ -33,17 +25,12 @@ import Auxiliary
 import CPL
 import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
 
--- | Data type used in the functions that seek for the model of the completion
--- of a logic program. We use three values to evaluate formulas of the classical
--- propositional logic, however this is a different approach than the standard
--- one given by Łukasiewicz, what can be seen in the @eval@ function.
-data Bool3 = Fa | Tr | Un
-    deriving (Show, Eq)
 
-
+-- | Turns a list of atoms into a list of variables.
 asToVar :: [Atom] -> [Form]
 asToVar = map (\x -> V x)
 
+-- | Turns a list of atoms into a list of negated variables.
 asToNVar :: [Atom] -> [Form]
 asToNVar = map (\x -> N (V x))
 
@@ -51,14 +38,29 @@ asToNVar = map (\x -> N (V x))
 comp :: LP -> [Form]
 comp lp = eqs ++ negVars
     where
-        dfs      = map (\x -> atomDef x lp) (lpHeads lp)
-        eqs      = map (eq . mapCon) dfs
-        eq       = \xs -> E (fst (head xs)) (D (map snd xs))
-        mapCon   = \x -> map con x
+        -- list of definitions (clauses) for all heads from the logic program;
+        -- as a result we obtain a list of lists of clauses
+        hdsDfs   = map (\x -> atomDef x lp) (lpHeads lp)
+        -- turning a clause into a tuple with head of the clause and the body of
+        -- the clause as a conjunction
         con      = \cl -> case cl of
-            Fact h          -> (V h, T)
-            Assumption h    -> (V h, F)
+            Fact h          -> (V h, C [T])
+            Assumption h    -> (V h, C [F])
             Cl h pb nb      -> (V h, C (asToVar pb ++ asToNVar nb))
+        -- mapping 'con' function over a list of clauses
+        mapCon   = \x -> map con x
+        -- turning a list of tuples with head of a clause and the body as
+        -- a conjunction into an equivalence, where one part is the head, while
+        -- the other is a disjunction of conjunctions from all of the tuples;
+        -- NOTICE: the assumption here is that the list contains tuples with the
+        -- same first element, i.e. with the same head
+        eq       = \xs -> E (fst (head xs)) (D (map snd xs))
+        -- mapping functions 'mapCon' and 'eq' (in that order) over the set of
+        -- definitions for heads from the logic program; as a result we obtain
+        -- all equivalences for the Clark's completion
+        eqs      = map (eq . mapCon) hdsDfs
+        -- creating a list of negated variables for those atoms that do not
+        -- occur as a head in the logic program
         negVars  = asToNVar ((bp lp) \\ (lpHeads lp))
 
 -- | Creates an interpretation for CPL from an interpretation for LP.
@@ -66,21 +68,6 @@ intLPtoIntCPL :: IntLP -> IntCPL
 intLPtoIntCPL int = IntCPL (asToVar (trLP int)) (asToVar (faLP int))
 
 {-
--- | Converts an atom into a variable.
-atomToVar :: Atom -> Form
-atomToVar a = V a
-
--- | Converts a list of atoms into variables.
-atomsToVar :: [Atom] -> [Form]
-atomsToVar = map atomToVar
-
--- | Converts an atom into a negated variable.
-atomToNVar :: Atom -> Form
-atomToNVar a = N (V a)
-
--- | Converts a list of atoms into negated variables.
-atomsToNVar :: [Atom] -> [Form]
-atomsToNVar = map atomToNVar
 addC :: Clause -> (Form, Form)
 addC (h, [], [])        = (V h, T)
 addC (h, [], nb) 

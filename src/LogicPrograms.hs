@@ -118,17 +118,16 @@ data Clause =
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of
-        Fact h
-            | isATr h        -> Tr2v
-            | otherwise      -> Fa2v
-        Assumption _         -> Tr2v
+        Fact h                   -> eval2v h int
+        Assumption _             -> Tr2v
         Cl h pb nb
-            | isATr h        -> Tr2v
-            | isBodyFa pb nb -> Tr2v
-            | otherwise      -> Fa2v
+            | isATr h            -> Tr2v
+            | isBodyFa pb nb     -> Tr2v
+            | otherwise          -> Fa2v
         where
             isATr = \x -> eval2v (x :: Atom) int == Tr2v
-            isBodyFa = \x y -> not (all isATr (x :: [Atom])) || not (all isATr (y :: [Atom]))
+            isAFa = \x -> eval2v (x :: Atom) int == Fa2v
+            isBodyFa = \x y -> any isAFa (x :: [Atom]) || any isAFa (y :: [Atom])
 
 instance ThreeValuedSemantic Clause IntLP where
     eval3v cl int = case cl of
@@ -147,7 +146,6 @@ instance ThreeValuedSemantic Clause IntLP where
             isBodyTr = \x y -> all isATr (x :: [Atom]) && all isATr (y :: [Atom])
             isBodyFa = \x y -> any isAFa (x :: [Atom]) || any isAFa (y :: [Atom])
             isBodyUn = \x y -> any isAUn (x :: [Atom]) || any isAUn (y :: [Atom])
-            --isBodyUn = \x y -> not (isBodyTr (x :: [Atom]) (y :: [Atom])) && not (isBodyFa (x :: [Atom]) (y :: [Atom]))
 
 instance Eq Clause where
     Fact h1       == Fact h2        = h1 == h2
