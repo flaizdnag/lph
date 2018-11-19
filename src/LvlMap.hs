@@ -13,25 +13,43 @@ Portability : POSIX
 Longer description
 -}
 module LvlMap
-    ( numList
-    , onlyHead
-    , onlyBody
-    , sortElems
-    , mapNum
-    , mapNum'
-    , permN
-    , replaceNum
+    ( possibleLvLMaps
+    , lvlMVal
     ) where
 
-import Formulas
-import Graph
-import Operator
-import Data.Graph
-import Data.List
-import Completion
-import Examples
+import LogicPrograms
+import Data.List (permutations, (\\), lookup)
+--import qualified Data.Map.Strict as Map
 
 
+-- | Generates all possible level mappings for a given logic program, where the
+-- assumption is that permutations concern only those atoms that occur as heads
+-- and in the bodies of Horn clauses.
+possibleLvLMaps :: LP -> [[(Atom, Int)]]
+possibleLvLMaps lp = [ xs |
+    let n   = length (bp lp),
+    let bn  = length (onlyBodies lp),
+    let hn  = length (onlyHeads lp),
+    let bs  = zip (onlyBodies lp) [1..],
+    let hs  = zip (onlyHeads lp) [n, n-1..],
+    rs <- [ zs |
+        let remA    = bp lp \\ (onlyBodies lp ++ onlyHeads lp),
+        remIperm    <- permutations [bn+1..n-hn],
+        let zs      = zip remA remIperm ],
+    let xs  = bs ++ hs ++ rs ]
+
+-- | Takes an atom and a level mapping and returns the value assigned to the
+-- atom.
+lvlMVal :: Atom -> [(Atom, Int)] -> Int
+lvlMVal a lvlM = case lookup a lvlM of
+    Nothing -> 0
+    Just n  -> n
+
+--------------------------------------------------------------------------------
+-- Old code --- soon will disappear                                           --
+--------------------------------------------------------------------------------
+
+{-
 -- | generates list of subsequent numbers as long as given list
 numList :: [Atom] -> [Int]
 numList [] = []
@@ -41,13 +59,13 @@ numList xs = [x | x <- [1..n]]
 -- | checks if head does not appear in bodies
 onlyHead :: LogicP -> Atom -> Bool
 onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBody xs) then False
+onlyHead xs y = if elem y (bPBodies xs) then False
                 else True
 
 -- | checks if atom appears only in bodies
 onlyBody :: LogicP -> Atom -> Bool
 onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHead xs) then False
+onlyBody xs y = if elem y (bPHeads xs) then False
                 else True
 
 -- | sorts Bp elements into 3 lists in order: 
@@ -55,9 +73,9 @@ onlyBody xs y = if elem y (bPHead xs) then False
 -- elements that appear both in heads and bodies
 -- elements that appear only in bodies.
 sortElems :: LogicP -> ([Atom], [Atom], [Atom])
-sortElems xs = ([x | x <- (bPHead xs), onlyHead xs x], 
-                [y | y <- (bPHead xs), (onlyHead xs y) == False], 
-                [z | z <- (bPBody xs), onlyBody xs z])
+sortElems xs = ([x | x <- (bPHeads xs), onlyHead xs x], 
+                [y | y <- (bPHeads xs), (onlyHead xs y) == False], 
+                [z | z <- (bPBodies xs), onlyBody xs z])
 
 
 -- | replaces atoms with assigned numbers
@@ -86,3 +104,4 @@ lvlMap (x:xs) = if checker (mapNum (a, x, c))
                 then mapNum (a, x, c) 
                 else lvlMap xs
                 -}
+-}

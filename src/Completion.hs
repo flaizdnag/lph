@@ -9,344 +9,275 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Module that contains tools needed to create Clark's completion for a logic
+program, which is a list of formulas of the classical propositional logic (CPL).
+In addition, there are also tools for searching for a model for the completion
+of a logic program, and tools to test if a given interpretation is a model for
+the completion of a logic program.
 -}
 module Completion
-    ( Form (..)
-    , Bool2 (..)
-    , negP
-    , negP'
-    , logicP'
-    , addN
-    , atomsToForm
-    , atomToVar
-    , first
-    , sorts
-    , sortHeads
-    , groupHeads
-    , addC
-    , sameHead
-    , sameHead'
-    , addDE'
-    , addDE
-    , compP
-    , negA
-    , compP'
-    , invariants
-    , groupByValue
-    , breakForm
-    , breakForms
-    , interp
-    , unE
-    , trueC
-    , trueC'
-    , trueD
-    , trueD'
-    , trueE
-    , addHeadToI
-    , accI
-    , addNToForm
-    , perms
-    , unAtoms
-    , iterI
-    , checkUn
-    , check
-    , check'
+    ( comp
+    , intLPtoIntCPL
     ) where
 
-import Formulas
-import Graph
-import Operator
+import LogicPrograms
 import Auxiliary
-import Data.Graph
-import Data.List
-import GHC.Exts
-import Examples
+import CPL
+import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
 
 
-data Form = V Atom 
-          | N Form        -- negation
-          | C [Form]      -- conjunction 
-          | D [Form]      -- disjunction 
-          | E Form Form   -- equivalence
-          | T             -- verum
-                deriving (Show, Eq)
+-- | Turns a list of atoms into a list of variables.
+asToVar :: [Atom] -> [Form]
+asToVar = map (\x -> V x)
 
-data Bool2 = Fa | Tr | Un
-                deriving (Show, Eq)
+-- | Turns a list of atoms into a list of negated variables.
+asToNVar :: [Atom] -> [Form]
+asToNVar = map (\x -> N (V x))
 
-
--- list of all negative literals from a logic program
-negP :: LogicP -> [Atom]
-negP []     = []
-negP (x:xs) = nub (hClBodyN x ++ negP xs)
-
--- list of atoms that atoms from negP depend on, i.e. there is a path between
--- atoms a_i and a_j, where a_i is an element form negP
---
--- TODO sthing is wrong with the 'path' function: it always returns 'true' for
--- paths between a node and itself
-negP' :: LogicP -> [Atom]
-negP' xs = nub (intToAtom [x | x <- atomToInt (bP xs),
-                               y <- atomToInt (negP xs),
-                               path g x y])
-                               where g = graph xs
-
--- creates a program from the initial LP whose heads belong to negP'
-logicP' :: LogicP -> LogicP
-logicP' xs = [x | x <- xs, isElem (hClHead x) (negP' xs)]
-
--- CPL
--- changes a list of atoms to negated variables
-addN :: [Atom] -> [Form]
-addN x = case x of 
-              []     -> []
-              (y:ys) -> N (V y) : addN ys
-
-atomToNVar :: Atom -> Form
-atomToNVar x = N (V x)
-
-atomsToNVar :: [Atom] -> [Form]
-atomsToNVar = map atomToNVar
-
--- changes a list of atoms to variables
-atomsToForm :: [Atom] -> [Form]
-atomsToForm x = case x of
-                    []     -> []
-                    (y:ys) -> V y : atomsToForm ys
-
-atomToVar :: Atom -> Form
-atomToVar x = V x
-
-atomsToVar :: [Atom] -> [Form]
-atomsToVar = map atomToVar
-
-
--- returns first element of tuple with 3 elements
-first :: (a, b, c) -> a
-first (x, _, _) = x
-
--- ordering for HClauses in LogicP (by their head indexes)
-sorts a b 
-           | (first a) == (first b) = EQ
-           | (first a) < (first b)  = LT
-           | otherwise = GT
-
--- sorts HClauses by their heads indexes 
-sortHeads :: LogicP -> LogicP
-sortHeads = sortBy sorts
-
--- groups HClauses with the same heads in LogicP 
-groupHeads :: LogicP -> [[HClause]]
-groupHeads xs = groupBy (\z y -> ((sorts z y) == EQ)) (sortHeads xs)
-
--- connects elements of the horn clauses body by conjunction
-addC :: HClause -> (Form, Form)
-addC (h, [], []) = (V h, T)
-addC (h, [], xs) 
-                | length xs == 1 = (V h, N (V (head xs)))
-                | otherwise      = (V h, C (addN xs))
-addC (h, ys, []) 
-                | length ys == 1 = (V h, V (head ys))
-                | otherwise      = (V h, C (atomsToForm ys))
-addC (h, ys, xs) = (V h, C (atomsToForm ys ++ addN xs))
-
-sameHead :: [[HClause]] -> [[(Form, Form)]]
-sameHead []     = []
-sameHead (x:xs) = (map addC x) : sameHead xs
-
--- gives us list of lists with same head clauses as pairs 
--- (head, conjunction of body atoms)
-sameHead' :: LogicP -> [[(Form, Form)]]
-sameHead' [] = []
-sameHead' xs = sameHead (groupHeads xs)
-
--- adds disjunction and equivalence to one group of clauses 
-addDE' :: [(Form, Form)] -> Form
-addDE' x 
-        | (length x) > 1 = E (fst (head x)) (D (map snd x))
-        | otherwise      = E (fst (head x)) (snd (head x))
-
--- maps adding disjunction and equivalence to whole LogicP
-addDE :: LogicP -> [Form]
-addDE [] = []
-addDE xs = map addDE' (sameHead' xs)
-
-compP :: LogicP -> [Form]
-compP xs = addDE xs ++ negA xs
-
--- adds negation to atoms in bodies that do not appear in heads
-negA :: LogicP -> [Form]
-negA [] = []
-negA xs = addN ((bP xs) \\ (bPHead xs))
-
--- comp P-
-compP' :: LogicP -> [Form]
-compP' xs = compP (logicP' xs)
-
---checks if Formula is always True (T)
-invariants :: Form -> Bool2
-invariants x = case x of
-                E _ T   -> Tr
-                N _     -> Fa
-                _       -> Un
-
--- groups Formulas by their values [[Unknown], [True], [False]]
-groupByValue :: [Form] -> [[Form]]
-groupByValue xs = groupBy (\x y -> (invariants x) == (invariants y)) xs
-
--- breaks complex formulas to variables
--- TODO problems with Disjunction and Equivalence, e.g.
--- breakForm (D [N (V (A1))]) = [N (V (A 1))]
-breakForm :: Form -> [Form]
-breakForm a = case a of
-                   V b   -> [V b]
-                   N b   -> [b]
-                   C b   -> b
-                   D b   -> b
---                        case b of
---                                 [V d, xs] -> [V d] ++ breakForm xs
---                                 [N d, xs] -> [N d] ++ breakForm xs
---                                 [C d, xs] -> d ++ breakForm xs
-                   E b c -> (breakForm b) ++ (breakForm c)
-                   T     -> []
-
-breakForms :: [Form] -> [Form]
-breakForms []     = []
-breakForms (x:xs) = breakForm x ++ breakForms xs
-
---generates interp from formulas with known value
-interp :: LogicP -> ([Form], [Form])
-interp xs = (true, false)
+-- | Creating Clark's completion for a logic program.
+comp :: LP -> [Form]
+comp lp = eqs ++ negVars
     where
-        true  = [a | x <- (groupByValue (compP xs)), invariants (head x) == Tr, a <- (breakForms x)]
-        false = [b | x <- (groupByValue (compP xs)), invariants (head x) == Fa, b <- (breakForms x)]
+        -- list of definitions (clauses) for all heads from the logic program;
+        -- as a result we obtain a list of lists of clauses
+        hdsDfs   = map (\x -> atomDef x lp) (lpHeads lp)
+        -- turning a clause into a tuple with head of the clause and the body of
+        -- the clause as a conjunction
+        con      = \cl -> case cl of
+            Fact h          -> (V h, C [T])
+            Assumption h    -> (V h, C [F])
+            Cl h pb nb      -> (V h, C (asToVar pb ++ asToNVar nb))
+        -- mapping 'con' function over a list of clauses
+        mapCon   = \x -> map con x
+        -- turning a list of tuples with head of a clause and the body as
+        -- a conjunction into an equivalence, where one part is the head, while
+        -- the other is a disjunction of conjunctions from all of the tuples;
+        -- NOTICE: the assumption here is that the list contains tuples with the
+        -- same first element, i.e. with the same head
+        eq       = \xs -> E (fst (head xs)) (D (map snd xs))
+        -- mapping functions 'mapCon' and 'eq' (in that order) over the set of
+        -- definitions for heads from the logic program; as a result we obtain
+        -- all equivalences for the Clark's completion
+        eqs      = map (eq . mapCon) hdsDfs
+        -- creating a list of negated variables for those atoms that do not
+        -- occur as a head in the logic program
+        negVars  = asToNVar ((bp lp) \\ (lpHeads lp))
 
--- returns list of formulas with unknown value
--- TODO Why not use 'groupByValue'?
-unE :: [Form] -> [Form]
-unE []                        = []
-unE (x:xs) 
-         | invariants x == Un = x: unE xs
-         | otherwise          = unE xs
+-- | Creates an interpretation for CPL from an interpretation for LP.
+intLPtoIntCPL :: IntLP -> IntCPL
+intLPtoIntCPL int = IntCPL (asToVar (trLP int)) (asToVar (faLP int))
 
---checks if conjunction is True/False/Unknown
-trueC :: Form -> ([Form], [Form]) -> [Bool2]
-trueC (C []) _     = []
-trueC (C (a:as)) x = case a of
-    N a -> if elem a (fst x) then Fa : (trueC (C as) x)
-           else 
-               if elem a (snd x) then Tr : (trueC (C as) x)
-               else Un : (trueC (C as) x)
-    a   -> if elem a (snd x) then Fa : (trueC (C as) x)
-           else
-               if elem a (fst x) then Tr : (trueC (C as) x)
-               else Un : (trueC (C as) x)
+{-
+addC :: Clause -> (Form, Form)
+addC (h, [], [])        = (V h, T)
+addC (h, [], nb) 
+    | length nb == 1    = (V h, N (V (head nb)))
+    | otherwise         = (V h, C (atomsToNVar nb))
+addC (h, pb, []) 
+    | length pb == 1    = (V h, V (head pb))
+    | otherwise         = (V h, C (atomsToVar pb))
+addC (h, ys, xs)        = (V h, C (atomsToVar ys ++ atomsToNVar xs))
 
+-- | Adding disjunction and equivalence to a conjunction.
+addDE :: [(Form, Form)] -> Form
+addDE c
+    | length c > 1  = E (fst (head c)) (D (map snd c))
+    | otherwise     = E (fst (head c)) (snd (head c))
 
-trueC' :: Form -> ([Form], [Form]) -> Bool2
-trueC' a x 
-         | all (Tr==) (trueC a x) = Tr
-         | any (Fa==) (trueC a x) = Fa
-         | otherwise              = Un
+-- | Creating equivalences with disjunctions for the whole logic program.
+addDElp :: LP -> [Form]
+addDElp = map addDE . preGrouped
+    where
+        preGrouped = groupBy (\x y -> fst x == fst y) . map addC . sort
 
--- checks if disjunction is True/False/Unknown
--- TODO What with 'T'? Cases have to be based on the whole list, i.e. 'a:as'?
-trueD :: Form -> ([Form], [Form]) -> [Bool2]
-trueD (D []) _ = []
-trueD (D (a:as)) x  = case (a:as) of
-                    (V b):bs -> if elem (V b) (fst x) then Tr : (trueD (D as) x)
-                                else
-                                    if elem (V b) (snd x) then Fa : (trueD (D as) x)
-                                    else Un : (trueD (D as) x)
-                    (N b):bs -> if elem b (snd x) then Tr : (trueD (D as) x) 
-                                else
-                                    if elem b (fst x) then Fa : (trueD (D as) x)
-                                    else Un : (trueD (D as) x)
-                    (C b):bs -> (trueC' (C b) x) : (trueD (D as) x)
+-- | Adding negated variables made from atoms that do not appear as heads in the
+-- logic program.
+addN :: LP -> [Form]
+addN lp = atomsToNVar ((bP lp) \\ (bPHeads lp))
 
-trueD' :: Form -> ([Form], [Form]) -> Bool2
-trueD' a x 
-         | any (Tr==) (trueD a x) = Tr
-         | all (Fa==) (trueD a x) = Fa
-         | otherwise              = Un
+-- | Creating Clark's completion for a logic program.
+comp :: LP -> [Form]
+comp lp = addDElp lp ++ addN lp
 
+-- | Creates an interpretation for CPL from an interpretation for LP.
+intLPtoIntCPL :: IntLP -> IntCPL
+intLPtoIntCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
 
+--------------------------------------------------------------------------------
+-- Looking for a model for Clark's completion                                 --
+--------------------------------------------------------------------------------
 
--- checks if equivalence is True/False/Unknown
-trueE :: Form -> ([Form], [Form]) -> Bool2
-trueE (E a b) x = case b of 
-                       V c -> if elem (V c) (fst x) then Tr 
-                              else
-                                  if elem (V c) (snd x) then Fa else Un 
-                       N c -> if elem c (snd x) then Tr
-                              else
-                                  if elem c (fst x) then Fa else Un
-                       C c -> trueC' (C c) x
-                       D c -> trueD' (D c) x
+-- | Takes a formula and an interpretation and returns the value of the formula.
+-- The interpretation is a tuple with lists of variables: 'true' in the first
+-- list and 'false' in the second list.
+-- We use three values: 'Tr', 'Fa' and 'Un', but this is not a standard
+-- approach, because the 'Un' value serves only informational purposes,
+-- therefore this function is different from the Łukasiewicz approach (the
+-- difference is in the evaluation of the equivalence).
+evalCPL :: Form -> IntCPL -> Bool3
+evalCPL f (tr, fa) = case f of
+    T                       -> Tr
+    V a
+        | elem (V a) tr     -> Tr
+        | elem (V a) fa     -> Fa
+        | otherwise         -> Un
+    N x
+        | isTr x            -> Fa
+        | isFa x            -> Tr
+        | otherwise         -> Un
+    C xs
+        | anyFa xs          -> Fa
+        | anyUn xs          -> Un
+        | otherwise         -> Tr
+    D xs
+        | anyTr xs          -> Tr
+        | anyUn xs          -> Un
+        | otherwise         -> Fa
+    E x y
+        | isUn x || isUn y  -> Un
+        | sameEval x y      -> Tr
+        | otherwise         -> Fa
+    where
+        isTr     = \x -> evalCPL x (tr, fa) == Tr
+        isFa     = \x -> evalCPL x (tr, fa) == Fa
+        isUn     = \x -> evalCPL x (tr, fa) == Un
+        sameEval = \x y -> evalCPL x (tr, fa) == evalCPL y (tr, fa)
+        anyTr    = any (\x -> evalCPL x (tr, fa) == Tr)
+        anyFa    = any (\x -> evalCPL x (tr, fa) == Fa)
+        anyUn    = any (\x -> evalCPL x (tr, fa) == Un)
 
--- adds heads from equivalences with known value
-addHeadToI :: Form -> ([Form], [Form]) -> ([Form], [Form])
-addHeadToI (E a b) (c, d) 
-    | (not (elem a c)) && ((trueE (E a b) (c, d)) == Tr) = (a : c, d)
-    | (not (elem a d)) && ((trueE (E a b) (c, d)) == Fa) = (c, a : d)
-    | otherwise                                          = (c, d) -- add from perms
+-- | Function that checks if a given interpretation is a model for a list of
+-- formulas.
+modelCheckCPL :: [Form] -> IntCPL -> Bool
+modelCheckCPL fs int = all (\x -> evalCPL x int == Tr) fs
 
--- takes 3 arguments:
--- -list of equivalences with unknown values
--- -list with permutations of all atoms unused in interpretation 
--- -current interpretation
--- it checks if with current interpretation we can decide values 
--- of other atoms, in result returns actualized interpretation
-accI :: [Form] -> [[Form]] -> ([Form], [Form]) -> ([Form], [Form])
-accI [] _ (a, b) = (a, b)
-accI _ [] (a, b) = (a, b)                
-accI (x:xs) (y:ys) (a, b) 
-    | (trueE x ((y ++ a), b)) == Un = accI (xs ++ [x]) (y:ys) (a, b)
-    | otherwise                     = accI xs (ys) (addHeadToI x (a, b))
+-- | Takes a list of formulas (Clark's completion), an interpretation and a list
+-- of formulas whose value is unknown, and seeks for the model for all of the
+-- formulas. It is not generalised for every type of the formula, because the
+-- completion of a logic program contains only formulas of the specific kind,
+-- i.e. negated variables and equivalences.
+invariants :: [Form] -> (IntCPL, [Form]) -> (IntCPL, [Form])
+invariants [] (int, un)             = (int, un)
+invariants (f:fs) ((tr, fa), un)    = case f of
+    N a             -> invariants fs ((tr, a : fa), un)
+    E a T           -> invariants fs ((a : tr, fa), un)
+    E a b
+        | isTr b    -> invariants fs ((a : tr, fa), un)
+        | isFa b    -> invariants fs ((tr, a : fa), un)
+        | otherwise -> invariants fs (int, f : un)
+        where
+            int  = (tr, fa)
+            isTr = \x -> evalCPL x (tr, fa) == Tr
+            isFa = \x -> evalCPL x (tr, fa) == Fa
+            isUn = \x -> evalCPL x (tr, fa) == Un
 
--- generalizes type of accInv to make it easier to use in other functions
-iterI :: LogicP -> ([Form], [Form])
-iterI x = accI (unE (compP x)) (perms x (interp x)) (interp x)
+-- | Function that iterates @invariants@ till the set of formulas with unknown
+-- value is empty or does not change.
+invIter :: [Form] -> (IntCPL, [Form], [Form]) -> (IntCPL, [Form])
+invIter fs (int, un, done)
+    | null newUn            = (newInt, newUn)
+    | eqLists newUn done    = (int, un)
+    | otherwise             = invIter newUn (newInt, [], newDone)
+        where
+            newInt  = fst inv
+            newUn   = snd inv
+            inv     = invariants fs (int, un)
+            newDone = union done newUn
 
--- checks if generated interpretation lets us establish value of
--- chosen equivalence categorized earlier as unknown
-checkUn :: LogicP -> Int -> Bool2
-checkUn x n = (trueE (unE (compP x) !! n) (iterI x))
+-- | Function that starts from the empty interpretation and searches for the
+-- model for the list of formulas. If it does not succeed, then it returns
+-- a "part" of the model and the list of formulas with unknown value.
+modelSearch :: [Form] -> (IntCPL, [Form])
+modelSearch fs = invIter (sort fs) (([], []), [], [])
 
--- gives a list of the values for all the equivalences 
--- that we are able to establish with generated interpretation
-check :: LogicP -> Int -> [Bool2]
-check x (-1) = []
-check x n = (checkUn x n) : check x (n-1)
+--------------------------------------------------------------------------------
+-- Next step is to write function that creates a model for a list of formulas --
+-- even if there are formulas with unknown value.                             --
+--------------------------------------------------------------------------------
 
--- checks if list given by function check contains any
--- 'Un' value
--- if not - returns generated interpretation
--- if it does - returns empty interpretation
-check' :: LogicP -> ([Form], [Form])
-check' x = if (notElem Un (check x n)) then iterI x
-                else ([],[])
-                   where
-                       n = (length (unE (compP x))) - 1
+-- | Function that makes models for a list of formulas where some of them have
+-- 'Un' value.
+makeModels :: [Form] -> [IntCPL]
+makeModels fs = case (modelSearch fs) of
+    (int, [])   -> [int]
+    (int, uns)  -> sortInts $ foldl1' combineInts $ map makeTr uns
+        where
+            makeTr = \x -> makeFormTr x int
 
--- adds negation to formulas
-addNToForm :: [Form] -> [Form]
-addNToForm []     = []
-addNToForm (x:xs) = N x : addNToForm xs
+-- | Sorts a list of interpretations in such a way that the smallest
+-- interpretations are at the beginning of the list and the largest at the end.
+-- One interpretation in smaller than the other iff the set containing variables
+-- mapped to 'true' is smaller.
+sortInts :: [IntCPL] -> [IntCPL]
+sortInts = sortBy (\(a, _) (b, _) -> compare (length a) (length b))
 
--- creates a list of all Forms from the LogicP that aren't included in I
-unAtoms :: LogicP -> ([Form], [Form]) -> [Form]
-unAtoms [] _ = []
-unAtoms x y  = (a \\ (b ++ f)) ++ (c \\ (d ++ e)) 
-                where 
-                        a = nub (atomsToForm (bPHead x) ++ atomsToForm (bPBodyP x))
-                        b = fst y
-                        c = (addN (negP x))
-                        d = addNToForm (snd y)
-                        e = addNToForm (fst y) 
-                        f = snd y
+-- | Function that modifies a given interpretation in such a way that the
+-- given formula becomes 'true'. The result is a list of interpretations that
+-- make the formula 'true'.
+-- Note: The assumption is that the formula is evaluated as 'undecided'.
+makeFormTr :: Form -> IntCPL -> [IntCPL] 
+makeFormTr f (tr, fa) = case f of
+    V a             -> [((V a) : tr, fa)]
+    N v             -> makeFa v
+    C fs            -> foldl1' combineInts $ map makeTr $ getUns fs
+    D fs            -> concatMap makeTr $ getUns fs
+    E af bf
+        | isTr af   -> makeTr bf
+        | isFa af   -> makeFa bf
+        | isTr bf   -> makeTr af
+        | isFa bf   -> makeFa af
+        | otherwise -> (combineInts (makeTr af) (makeTr bf)) ++ (combineInts (makeFa af) (makeFa bf))
+    where
+        int    = (tr, fa)
+        isTr   = \x -> evalCPL x int == Tr
+        isFa   = \x -> evalCPL x int == Fa
+        isUn   = \x -> evalCPL x int == Un
+        getUns = \x -> [ y | y <- x, isUn y ]
+        makeTr = \x -> makeFormTr x int
+        makeFa = \x -> makeFormFa x int
+    
+-- | Function that modifies a given interpretation in such a way that the
+-- given formula becomes 'false'. The result is a list of interpretations that
+-- make the formula 'false'.
+-- Note: The assumption is that the formula is evaluated as 'undecided'.
+makeFormFa :: Form -> IntCPL -> [IntCPL] 
+makeFormFa f (tr, fa) = case f of
+    V a             -> [(tr, (V a) : fa)]
+    N v             -> makeTr v
+    C fs            -> concatMap makeFa $ getUns fs
+    D fs            -> foldl1' combineInts $ map makeFa $ getUns fs
+    E af bf
+        | isTr af   -> makeFa bf
+        | isFa af   -> makeTr bf
+        | isTr bf   -> makeFa af
+        | isFa bf   -> makeTr af
+        | otherwise -> (combineInts (makeTr af) (makeFa bf)) ++ (combineInts (makeFa af) (makeTr bf))
+    where
+        int    = (tr, fa)
+        isTr   = \x -> evalCPL x int == Tr
+        isFa   = \x -> evalCPL x int == Fa
+        isUn   = \x -> evalCPL x int == Un
+        getUns = \x -> [ y | y <- x, isUn y ]
+        makeFa = \x -> makeFormFa x int
+        makeTr = \x -> makeFormTr x int
 
--- creates list of all permutations of Formulas we can add to I
-perms :: LogicP -> ([Form], [Form]) -> [[Form]]
-perms x y = sortWith length $ subsequences (unAtoms x y)
+-- | Function that reduces given two lists of interpretations to a single list
+-- of interpretation, where the resulting list contains combined interpretations
+-- from of the two lists (in all possible combinations).
+combineInts :: [IntCPL] -> [IntCPL] -> [IntCPL]
+combineInts xs ys = stripM $ map combineInt $ allPairs
+    where
+        allPairs = [ (a, b) | a <- xs, b <- ys ]
+        stripM (x:xs) = case x of
+            Nothing  -> stripM xs
+            Just int -> int : stripM xs
+
+-- | Function that combines two interpretations. Returns 'Nothing' if
+-- interpretations are inconsistent.
+combineInt :: (IntCPL, IntCPL) -> Maybe IntCPL
+combineInt ((atr, afa), (btr, bfa))
+    | inconsistent = Nothing
+    | otherwise    = Just (nub $ atr ++ btr, nub $ afa ++ bfa)
+    where
+        inconsistent = jointElem atr bfa || jointElem afa btr
+-}
