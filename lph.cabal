@@ -1,8 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.20.0.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 53d8fa75b5b6538caf5f670bee16ed226820e924df6d21005aaacdb97f92e264
+-- hash: 377438d78935f696aaad2e1b2e887a594cdf575922de71fbbd04e64b4aab81da
 
 name:           lph
 version:        0.1.0.0
@@ -16,7 +16,6 @@ license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     ChangeLog.md
     README.md
