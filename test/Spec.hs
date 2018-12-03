@@ -1,18 +1,7 @@
 import LogicPrograms
 import TpOperator
-<<<<<<< HEAD
-import Test.Hspec
-
-ex1 :: LP
-ex1 = [ (Cl (A 1 "") [A 2 "", A 3 ""] [A 4 ""]),
-        (Cl (A 5 "") [A 6 ""] []),
-        (Cl (A 10 "") [] []),
-        (Cl (A 1 "") [] [])]
-=======
 import CPL
 import Test.Hspec
-
->>>>>>> upstream/master
 
 main :: IO ()
 main = hspec $ do
@@ -54,11 +43,7 @@ main = hspec $ do
         it "upArrow returns model for acceptable LP (first item)" $
             head (upArrow [Cl (A 1 "") [A 2 ""] [A 1 ""], Cl (A 1 "") [A 1 ""] [], Cl (A 3 "") [] [], Cl (A 2 "") [] []]) `shouldBe` IntLP [A 3 "", A 2 ""] [A 1 ""]
 
-<<<<<<< HEAD
-    --describe "Tests for functions in CPL module" $ do
-      --  it "eval2v returns the value of disjunction, where one of the elements is T" $
-        --    eval2v (D [C [V (A 1 ""), N (V (A 2 ""))], T]) ([V (A 1 "")], []) `shouldBe` Tr
-=======
+
     describe "Tests for functions in CPL module" $ do
         it "isModel2vCPL checks if a given interpretation is a model for a given set of formulas (for a two-valued semantics)" $
             isModel2vCPL [E (V (A 1 "")) (C [V (A 1 ""), V (A 2 "")])] (IntCPL [V (A 1 ""), V (A 2 "")] []) `shouldBe` True
@@ -71,4 +56,3 @@ main = hspec $ do
 
         it "isModel2vCPL checks if a given interpretation is a model for a given set of formulas (for a two-valued semantics)" $
             isModel2vCPL [E (V (A 1 "")) (D [(C [V (A 1 ""), V (A 2 "")]), V (A 3 "")])] (IntCPL [V (A 3 "")] [V (A 2 "")]) `shouldBe` False
->>>>>>> upstream/master
