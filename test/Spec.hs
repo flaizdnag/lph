@@ -3,7 +3,7 @@ import TpOperator
 import CPL
 import Test.Hspec
 
-
+    
 main :: IO ()
 main = hspec $ do
     describe "Tests for funcions in LogicPrograms module" $ do
