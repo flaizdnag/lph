@@ -10,7 +10,10 @@ Portability : POSIX
 Longer description
 -}
 module FindOut
-    () where
+    ( ReportFO (..)
+    , reportToLaTeX
+    , parserFO
+    ) where
 
 import System.IO  
 import Control.Monad
