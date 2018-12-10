@@ -10,7 +10,10 @@ Portability : POSIX
 Longer description
 -}
 module FindOut
-    () where
+    ( ReportFO (..)
+    , reportToLaTeX
+    , parserFO
+    ) where
 
 import System.IO  
 import Control.Monad
@@ -62,7 +65,7 @@ getCols = do
     string "KOLUMNA 1" <|> string "KOLUMNA 2"
     eol
     item <- many1 getItem
-    count 2 eol
+    count 1 eol
     return item
 
 getSituations :: ReadP [String]
@@ -120,7 +123,8 @@ reportToLaTeX (ReportFO code col1 col2 sts graph) =
     "\\begin{enumerate}\n" ++
     itemized sts ++
     "\\end{enumerate}\n\n" ++
-    show graph
+    "Graf:\n" ++
+    graphToForest graph
 
 itemized :: [(Integer, String)] -> String
 itemized []     = ""
@@ -129,18 +133,19 @@ itemized (x:xs) = "    \\item " ++ snd x ++ "\n" ++ itemized xs
 fbf :: String -> String
 fbf s = "\\textbf{" ++ s ++ "}"
 
-{-
 graphToForest :: Graph -> String
 graphToForest g =
-    "[\n" ++
-    "0" ++ succ
-    "]"
--}
+    "\\begin{forest}\n" ++
+    "    " ++ numToNode 0 (assocs g) ++ "\n" ++
+    "\\end{forest}"
 
-graphToForest :: Int -> [(Int, [Int])] -> String
-graphToForest n x:xs =
-    | succG n x:xs == [] = "[" ++ show n ++ "]"
-    | otherwise          = "[" ++ show n ++ graphToForest  ++ "]"
+numToNode :: Int -> [(Int, [Int])] -> String
+numToNode n ls
+    | connected == [] = "[" ++ show n ++ "]"
+    | otherwise       = "[" ++ show n ++ " " ++ concatMap numsToNodes connected ++ "]"
+    where
+        connected   = succG n ls
+        numsToNodes = \x -> numToNode x ls
 
 succG :: Int -> [(Int, [Int])] -> [Int]
 succG n xs = case lookup n xs of
