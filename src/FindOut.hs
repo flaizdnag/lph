@@ -65,7 +65,7 @@ getCols = do
     string "KOLUMNA 1" <|> string "KOLUMNA 2"
     eol
     item <- many1 getItem
-    count 2 eol
+    count 1 eol
     return item
 
 getSituations :: ReadP [String]
