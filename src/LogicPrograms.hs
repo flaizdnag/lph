@@ -74,6 +74,11 @@ data Atom = A
     }
     deriving (Read)
 
+{-
+instance Read Atom where
+    read "A"
+-}
+
 instance Show Atom where
     show (A idx lab)
         | null lab  = "A" ++ show idx
