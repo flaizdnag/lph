@@ -42,8 +42,14 @@ instance Show Connection where
 
 
 data NeuralNetwork = NN
-    { neurons     :: [Neuron]
-    , connections :: [Connection]
+    { inpNeurons :: [Neuron]
+    , hidNeurons :: [Neuron]
+    , outNeurons :: [Neuron]
+    , recNeurons :: [Neuron]
+    , inpToHidConnections :: [Connection]
+    , hidToOutConnections :: [Connection]
+    , recConnections      :: [Connection]
+    , addConnections      :: [Connection]
     }
 
 instance Show NeuralNetwork where
