@@ -98,32 +98,38 @@ nnUpdFromTriple nn (cl, bdLen, sameHds) amin w ovrl = case cl of
         hidBias = w * (1 + amin) * (fromIntegral bdLen - 1) / 2
 
 
-findNeuByLabel :: Atom -> [Neuron] -> [Neuron]
-findNeuByLabel a ns = [ n | n <- ns, NeuralNetworks.label n == show a ]
-
-
 updFromFact :: Clause -> NeuralNetwork -> Float -> [Atom] -> Float -> NNupdate
-updFromFact (Fact hd) nn bias ovrl w
+updFromFact (Fact hd) nn outBias ovrl w
     | null outNeuron = 
         if (elem hd ovrl) || (not $ null inpNeuron) then
             NNupdate 
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = []
-                , outNeuToAdd      = [Neuron inpLabel "tanh" bias outIdxLabel]
+                , outNeuToAdd      = [Neuron neuLabel "tanh" outBias outIdxLabel]
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = []
                 , hidToOutConToAdd = [Connection "hidT" outIdxLabel w]
                 }
         else
             NNupdate
-                { inpNeuToAdd      = [Neuron inpLabel "const" 0.0 inpIdxLabel]
+                { inpNeuToAdd      = [Neuron neuLabel "const" 0.0 inpIdxLabel]
                 , hidNeuToAdd      = []
-                , outNeuToAdd      = [Neuron inpLabel "tanh" bias outIdxLabel]
+                , outNeuToAdd      = [Neuron neuLabel "tanh" outBias outIdxLabel]
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = []
                 , hidToOutConToAdd = [Connection "hidT" outIdxLabel w]
                 }
     | otherwise =
+        if (bias $ head $ outNeuron) > outBias then
+            NNupdate
+                { inpNeuToAdd      = []
+                , hidNeuToAdd      = []
+                , outNeuToAdd      = [Neuron neuLabel "tanh" outBias outNeuronLab]
+                , outNeuToRemove   = [head $ outNeuron]
+                , inpToHidConToAdd = []
+                , hidToOutConToAdd = [Connection "hidT" outNeuronLab w]
+                }
+        else
             NNupdate
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = []
@@ -136,13 +142,36 @@ updFromFact (Fact hd) nn bias ovrl w
         outNeuron    = findNeuByLabel hd (outLayer nn)
         outNeuronLab = NeuralNetworks.idx $ head outNeuron
         inpNeuron    = findNeuByLabel hd (inpLayer nn)
-        inpLabel     = show $ hd
+        neuLabel     = show $ hd
         inpIdxLabel  = "inp" ++ (show $ (+) 1 $ length $ inpLayer nn)
         outIdxLabel  = "out" ++ (show $ (+) 1 $ length $ outLayer nn)
 
 
 updFromClause :: Clause -> NeuralNetwork -> Float -> Float -> [Atom] -> Float -> NNupdate
-updFromClause cl nn outBias hidBias ovrl w = emptyNNupd
+updFromClause (Cl hd pBod nBod) nn outBias hidBias ovrl w
+    | null outNeuron =
+        NNupdate
+            { inpNeuToAdd      = inputNs
+            , hidNeuToAdd      = [hidNeuron]
+            , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuIdx] ++ outputNs
+            , outNeuToRemove   = []
+            , inpToHidConToAdd = []
+            , hidToOutConToAdd = [Connection outNeuIdx hidNeuIdx w]
+            }
+    where
+        hidNeuIdxNum = show $ (+) 1 $ length $ hidLayer nn
+        hidNeuIdx    = "hid" ++ hidNeuIdxNum
+        hidNeuron    = Neuron ("h" ++ hidNeuIdxNum) "tanh" hidBias hidNeuIdx
+        outNeuron    = findNeuByLabel hd (outLayer nn)
+        outNeuronLab = NeuralNetworks.idx $ head outNeuron
+        hdLabel      = show $ hd
+        outNeuIdx    = "out" ++ (show $ (+) 1 $ length $ outLayer nn)
+        inputNs      = []
+        outputNs     = []
+
+
+findNeuByLabel :: Atom -> [Neuron] -> [Neuron]
+findNeuByLabel a ns = [ n | n <- ns, NeuralNetworks.label n == show a ]
 
 
 emptyNNupd :: NNupdate
