@@ -17,7 +17,7 @@ module Translation
 
 import NeuralNetworks
 import LogicPrograms
-import Data.List (length, maximum, map, find)
+import Data.List (length, maximum, map, find, (\\))
 
 
 data NNupdate = NNupdate
@@ -76,8 +76,8 @@ overlappingAtoms lp = [ atom |
     any (\x -> LogicPrograms.idx atom == LogicPrograms.idx x && notElem 'h' (LogicPrograms.label x)) (bp lp) ]
 
 
-baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> (NeuralNetwork, Float, Float)
-baseNN lp aminF wF beta addBias r l = (NN [] [] [] [] [] [] [] [], amin, w)
+baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> NeuralNetwork
+baseNN lp aminF wF beta addBias r l = baseNNsteps triLP emptyNN amin w ovrl
     where
         bdsLen = bodiesLength lp
         clsSH  = clsSameHeads lp
@@ -87,6 +87,13 @@ baseNN lp aminF wF beta addBias r l = (NN [] [] [] [] [] [] [] [], amin, w)
         w      = wBase lp amin r l beta maxBds maxHds + wF
         triLP  = zip3 lp bdsLen clsSH
         ovrl   = overlappingAtoms lp
+
+
+baseNNsteps :: [(Clause, Int, Int)] -> NeuralNetwork -> Float -> Float -> [Atom] -> NeuralNetwork
+baseNNsteps [] nn amin w ovrl     = nn
+baseNNsteps (t:ts) nn amin w ovrl = baseNNsteps ts newNN amin w ovrl
+    where
+        newNN = mergeNNupd nn (nnUpdFromTriple nn t amin w ovrl)
 
 
 nnUpdFromTriple :: NeuralNetwork -> (Clause, Int, Int) -> Float -> Float -> [Atom] -> NNupdate
@@ -220,6 +227,19 @@ findNeuByLabel :: Atom -> [Neuron] -> Maybe Neuron
 findNeuByLabel a ns = find (\x -> NeuralNetworks.label x == show a) ns
 
 
+mergeNNupd :: NeuralNetwork -> NNupdate -> NeuralNetwork
+mergeNNupd nn nnUpd = NN 
+    { inpLayer            = inpLayer nn ++ inpNeuToAdd nnUpd
+    , hidLayer            = hidLayer nn ++ hidNeuToAdd nnUpd
+    , outLayer            = ((outLayer nn) \\ (outNeuToRemove nnUpd)) ++ outNeuToAdd nnUpd
+    , recLayer            = recLayer nn
+    , inpToHidConnections = inpToHidConnections nn ++ inpToHidConToAdd nnUpd
+    , hidToOutConnections = hidToOutConnections nn ++ hidToOutConToAdd nnUpd
+    , recConnections      = recConnections nn
+    , addConnections      = addConnections nn
+    }
+
+
 emptyNNupd :: NNupdate
 emptyNNupd = NNupdate
     { inpNeuToAdd      = []
@@ -229,6 +249,20 @@ emptyNNupd = NNupdate
     , inpToHidConToAdd = []
     , hidToOutConToAdd = []
     }
+
+
+emptyNN :: NeuralNetwork
+emptyNN = NN
+    { inpLayer            = []
+    , hidLayer            = []
+    , outLayer            = []
+    , recLayer            = []
+    , inpToHidConnections = []
+    , hidToOutConnections = []
+    , recConnections      = []
+    , addConnections      = []
+    }
+
 
 
 {-

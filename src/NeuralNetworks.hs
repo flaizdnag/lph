@@ -24,7 +24,7 @@ data Neuron = Neuron
     , bias      :: Float 
     , idx       :: String 
     }
-    deriving (Read)
+    deriving (Read, Eq)
 
 instance Show Neuron where 
     show (Neuron l aF b idx) = "(" ++ l ++ ", " ++ aF ++ ", " ++ show b ++ ", " ++ idx ++ ")"
