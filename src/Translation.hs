@@ -15,9 +15,10 @@ Portability : POSIX
 module Translation
     ( ) where
 
+import Auxiliary
 import NeuralNetworks
 import LogicPrograms
-import Data.List (length, maximum, map, find, (\\))
+import Data.List (length, maximum, map, find, (\\), delete, partition)
 
 
 data NNupdate = NNupdate
@@ -73,11 +74,11 @@ overlappingAtoms :: LP -> [Atom]
 overlappingAtoms lp = [ atom |
     atom <- bp lp,
     elem 'h' (LogicPrograms.label atom),
-    any (\x -> LogicPrograms.idx atom == LogicPrograms.idx x && notElem 'h' (LogicPrograms.label x)) (bp lp) ]
+    any (\x -> LogicPrograms.idx atom == LogicPrograms.idx x && eqLists (delete 'h' (LogicPrograms.label atom)) (LogicPrograms.label x)) (bp lp) ]
 
 
 baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> NeuralNetwork
-baseNN lp aminF wF beta addBias r l = baseNNsteps triLP emptyNN amin w ovrl
+baseNN lp aminF wF beta addBias r l = mergeNNupd (baseNNsteps triLP emptyNN amin w ovrl) (truthNN w)
     where
         bdsLen = bodiesLength lp
         clsSH  = clsSameHeads lp
@@ -87,6 +88,17 @@ baseNN lp aminF wF beta addBias r l = baseNNsteps triLP emptyNN amin w ovrl
         w      = wBase lp amin r l beta maxBds maxHds + wF
         triLP  = zip3 lp bdsLen clsSH
         ovrl   = overlappingAtoms lp
+
+
+truthNN :: Float -> NNupdate
+truthNN w = NNupdate
+    { inpNeuToAdd      = [Neuron "inpT" "const" 0.0 "inpT"]
+    , hidNeuToAdd      = [Neuron "hidT" "tanh" 0.0 "hidT"]
+    , outNeuToAdd      = []
+    , outNeuToRemove   = []
+    , inpToHidConToAdd = [Connection "inpT" "hidT" w]
+    , hidToOutConToAdd = []
+    }
 
 
 baseNNsteps :: [(Clause, Int, Int)] -> NeuralNetwork -> Float -> Float -> [Atom] -> NeuralNetwork
@@ -119,7 +131,7 @@ updFromFact (Fact hd) nn outBias ovrl w = case outNeuOld of
                 }
         | otherwise ->
             NNupdate
-                { inpNeuToAdd      = [Neuron hdLabel "const" 0.0 inpIdxLabel]
+                { inpNeuToAdd      = [Neuron hdLabel "idem" 0.0 inpIdxLabel]
                 , hidNeuToAdd      = []
                 , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outIdxLabel]
                 , outNeuToRemove   = []
@@ -205,7 +217,7 @@ createInpNeurons (a:as) idxStart inpNs = case findNeuByLabel a inpNs of
     Nothing -> mkInpNeu a : createInpNeurons as (idxStart + 1) inpNs
     Just _  -> createInpNeurons as idxStart inpNs
     where
-        mkInpNeu = \x -> Neuron (show x) "const" 0.0 ("inp" ++ show idxStart)
+        mkInpNeu = \x -> Neuron (show x) "idem" 0.0 ("inp" ++ show idxStart)
 
 
 createOutNeurons :: [Atom] -> Int -> [Neuron] -> [Neuron]
@@ -264,98 +276,22 @@ emptyNN = NN
     }
 
 
+recursiveConnections :: NeuralNetwork -> [Atom] -> NeuralNetwork
+recursiveConnections nn ovrl = emptyNN
 
-{-
-addNeurons :: [Atom] -> NeuralNetwork -> Float -> Float -> String -> NeuralNetwork
-addNeurons [] nn hidBias outBias inf = nn
-addNeurons (a:as) nn hidBias outBias inf = addNeurons as newNN hidBias outBias inf
+
+--createRecursiveConns :: [Neuron] -> [Neuron] -> [Atom] -> NNupdate
+createRecursiveConns inpLayer outLayer ovrl = divided
     where
-        newNN = addNeuron a nn hidBias outBias inf
-
-addNeuron :: Atom -> NeuralNetwork -> Float -> Float -> String -> NeuralNetwork
-addNeuron a nn hidBias outBias inf = case inf of
-    "inp"
-        | isThereNeuron (inpLayer nn) -> nn
-        | otherwise                   -> NN
-            { inpLayer            = newInpNeuron : inpLayer nn
-            , hidLayer            = hidLayer nn
-            , outLayer            = outLayer nn
-            , recLayer            = recLayer nn
-            , inpToHidConnections = inpToHidConnections nn
-            , hidToOutConnections = hidToOutConnections nn
-            , recConnections      = recConnections nn
-            , addConnections      = addConnections nn}
-    "hid"
-        | isThereNeuron (hidLayer nn) -> nn
-        | otherwise                   -> NN
-            { inpLayer            = inpLayer nn
-            , hidLayer            = newHidNeuron : hidLayer nn
-            , outLayer            = outLayer nn
-            , recLayer            = recLayer nn
-            , inpToHidConnections = inpToHidConnections nn
-            , hidToOutConnections = hidToOutConnections nn
-            , recConnections      = recConnections nn
-            , addConnections      = addConnections nn}
-    "out"
-        | isThereNeuron (outLayer nn) -> nn
-        | otherwise                   -> NN
-            { inpLayer            = inpLayer nn
-            , hidLayer            = hidLayer nn
-            , outLayer            = newOutNeuron : outLayer nn
-            , recLayer            = recLayer nn
-            , inpToHidConnections = inpToHidConnections nn
-            , hidToOutConnections = hidToOutConnections nn
-            , recConnections      = recConnections nn
-            , addConnections      = addConnections nn}
-    where
-        isThereNeuron = \nl -> any (\x -> NeuralNetworks.label x == show a) nl
-        newInpNeuron = Neuron
-            { NeuralNetworks.label = show a
-            , activFunc            = "identity"
-            , bias                 = 0.0
-            , NeuralNetworks.idx   = "inp" ++ show (length (inpLayer nn) + 1)}
-        newHidNeuron = Neuron
-            { NeuralNetworks.label = show a
-            , activFunc            = "tanh"
-            , bias                 = hidBias
-            , NeuralNetworks.idx   = "hid" ++ show (length (hidLayer nn) + 1)}
-        newOutNeuron = Neuron
-            { NeuralNetworks.label = show a
-            , activFunc            = "tanh"
-            , bias                 = outBias
-            , NeuralNetworks.idx   = "out" ++ show (length (outLayer nn) + 1)}
+        divided = partition condition outLayer
+        condition = \x -> elem (NeuralNetworks.label x) (map show ovrl) || any (\y -> eqLists y (NeuralNetworks.label x ++ "^h")) (map show ovrl)
 
 
--- | Function that returns a bias of a hidden layer neuron for a given Horn
--- clause and logic program.
-biasHidN :: Clause -> LP -> Float
-biasHidN cl lp = (((1 + amin lp) * (fromIntegral (bodyLength cl) - 1)) / 2) * w lp
+--createRecConn :: Neuron -> [Neuron] -> [Atom] 
 
--- | Function that returns a bias of an output layer neuron for a given Horn
--- clause and logic program.
-biasOutN :: Clause -> LP -> Float
-biasOutN cl lp = (((1 + amin lp) * (1 - fromIntegral (sameHeadsCl cl lp))) / 2) * w lp
-
--- | Function that converts an atom into an input layer neuron. 
-makeInpN :: Atom -> Int -> Neuron
-makeInpN (A idx lab) n = Neuron {Translation.label = "a" ++ show idx, actF = 1, bias = 0, Translation.idx = "I" ++ show n}
-
--- | Function that converts an atom into an output layer neuron. 
-makeOutN :: Atom -> Int -> Float -> Neuron
-makeOutN (A idx lab) n b = Neuron {Translation.label = "a" ++ show idx, actF = 2, bias = b, Translation.idx = "O" ++ show n}
-
--- | Function that returns a list of the input layer neurons in the neural 
--- network for a given logic program. 
-inputNeurons :: LP -> [Neuron]
-inputNeurons lp = zipWith makeInpN (bp lp) [1..]
-
--- | Function that returns a list of the output layer neurons in the neural
--- network for a given logic program. 
-outputNeurons :: LP -> [Neuron]
-outputNeurons lp = zipWith3 makeOutN (bp lp) [1..] bs
-        where 
-            bs = [ biasOutN cl lp | cl <- lp ] ++ [ 0 | _ <- onlyBodies lp ]
--}
 
 p1 :: LP
 p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
+
+p1NN :: NeuralNetwork
+p1NN = baseNN p1 0.5 0.5 1 0.0 0.05 2 
