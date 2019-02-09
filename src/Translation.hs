@@ -18,7 +18,7 @@ module Translation
 import Auxiliary
 import NeuralNetworks
 import LogicPrograms
-import Data.List (length, maximum, map, find, (\\), delete, partition)
+import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
 
 
 data NNupdate = NNupdate
@@ -70,11 +70,24 @@ wBase lp amin r l beta maxBodies maxHeads = maximum [fstCondition, sndCondition]
         sndCondition = (2 / beta) * (((log $ 1 + amin) - (log $ 1 - amin) - (r * (fromIntegral $ l + 1)) ) / ((fromIntegral maxHeads) * (amin - 1) + amin + 1))
 
 
-overlappingAtoms :: LP -> [Atom]
-overlappingAtoms lp = [ atom |
-    atom <- bp lp,
-    elem 'h' (LogicPrograms.label atom),
-    any (\x -> LogicPrograms.idx atom == LogicPrograms.idx x && eqLists (delete 'h' (LogicPrograms.label atom)) (LogicPrograms.label x)) (bp lp) ]
+overlappingAtoms :: LP -> [(Atom, Atom)]
+overlappingAtoms lp = map convert filtered
+    where
+        atoms    = filter (\x -> not $ elem 'h' (LogicPrograms.label x)) (bp lp)
+        combine  = \x -> (x, getAtomCounterpart x (bp lp))
+        filtered = filter (\(x, y) -> not $ y == Nothing) $ map combine atoms
+        convert  = \(x, Just y) -> (x, y)
+
+
+getAtomCounterpart :: Atom -> [Atom] -> Maybe Atom
+getAtomCounterpart atom atoms = find (\x -> isAtomCounterpart atom x) atoms
+
+
+isAtomCounterpart :: Atom -> Atom -> Bool
+isAtomCounterpart a1 a2 =
+    LogicPrograms.idx a1 == LogicPrograms.idx a2 && 
+    eqLists (LogicPrograms.label a1) (delete 'h' $ LogicPrograms.label a2) &&
+    not (a1 == a2)
 
 
 baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> NeuralNetwork
@@ -101,26 +114,26 @@ truthNN w = NNupdate
     }
 
 
-baseNNsteps :: [(Clause, Int, Int)] -> NeuralNetwork -> Float -> Float -> [Atom] -> NeuralNetwork
+baseNNsteps :: [(Clause, Int, Int)] -> NeuralNetwork -> Float -> Float -> [(Atom, Atom)] -> NeuralNetwork
 baseNNsteps [] nn amin w ovrl     = nn
 baseNNsteps (t:ts) nn amin w ovrl = baseNNsteps ts newNN amin w ovrl
     where
         newNN = mergeNNupd nn (nnUpdFromTriple nn t amin w ovrl)
 
 
-nnUpdFromTriple :: NeuralNetwork -> (Clause, Int, Int) -> Float -> Float -> [Atom] -> NNupdate
+nnUpdFromTriple :: NeuralNetwork -> (Clause, Int, Int) -> Float -> Float -> [(Atom, Atom)] -> NNupdate
 nnUpdFromTriple nn (cl, bdLen, sameHds) amin w ovrl = case cl of
     Fact _   -> updFromFact cl nn outBias ovrl w
-    Cl _ _ _ -> updFromClause cl nn outBias hidBias ovrl w
+    Cl _ _ _ -> updFromClause cl nn outBias hidBias w
     where
         outBias = w * (1 + amin) * (1 - fromIntegral sameHds) / 2
         hidBias = w * (1 + amin) * (fromIntegral bdLen - 1) / 2
 
 
-updFromFact :: Clause -> NeuralNetwork -> Float -> [Atom] -> Float -> NNupdate
+updFromFact :: Clause -> NeuralNetwork -> Float -> [(Atom, Atom)] -> Float -> NNupdate
 updFromFact (Fact hd) nn outBias ovrl w = case outNeuOld of
     Nothing
-        | (elem hd ovrl) || (not $ null inpNeuron) ->
+        | (elem hd ovrlH) || (not $ null inpNeuron) ->
             NNupdate 
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = []
@@ -163,10 +176,11 @@ updFromFact (Fact hd) nn outBias ovrl w = case outNeuOld of
         hdLabel      = show $ hd
         inpIdxLabel  = "inp" ++ (show $ (+) 1 $ length $ inpLayer nn)
         outIdxLabel  = "out" ++ (show $ (+) 1 $ length $ outLayer nn)
+        ovrlH        = map snd ovrl
 
 
-updFromClause :: Clause -> NeuralNetwork -> Float -> Float -> [Atom] -> Float -> NNupdate
-updFromClause (Cl hd pBod nBod) nn outBias hidBias ovrl w = case outNeuOld of
+updFromClause :: Clause -> NeuralNetwork -> Float -> Float -> Float -> NNupdate
+updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
     Nothing ->
         NNupdate
             { inpNeuToAdd      = inputNs
@@ -276,18 +290,63 @@ emptyNN = NN
     }
 
 
-recursiveConnections :: NeuralNetwork -> [Atom] -> NeuralNetwork
-recursiveConnections nn ovrl = emptyNN
-
-
---createRecursiveConns :: [Neuron] -> [Neuron] -> [Atom] -> NNupdate
-createRecursiveConns inpLayer outLayer ovrl = divided
+recursiveConnections :: NeuralNetwork -> [(Atom, Atom)] -> NeuralNetwork
+recursiveConnections nn ovrl = NN
+    { inpLayer            = inpLayer nn
+    , hidLayer            = hidLayer nn
+    , outLayer            = outLayer nn
+    , recLayer            = recursiveNs
+    , inpToHidConnections = inpToHidConnections nn
+    , hidToOutConnections = hidToOutConnections nn
+    , recConnections      = recuriveConns
+    , addConnections      = addConnections nn
+    }
     where
-        divided = partition condition outLayer
-        condition = \x -> elem (NeuralNetworks.label x) (map show ovrl) || any (\y -> eqLists y (NeuralNetworks.label x ++ "^h")) (map show ovrl)
+        remJust = \(Just x) -> x
+        tupleAToN = \(x, y) -> (remJust $ findNeuByLabel x (outLayer nn), remJust $ findNeuByLabel y (outLayer nn))
+        ovrlNs = map tupleAToN ovrl
+{-
+        ovrlNs = [ (fstN, sndN) |
+            (fstA, sndA) <- ovrl,
+            let fstN = findNeuByLabel fstA (outLayer nn),
+            let sndN = findNeuByLabel sndA (outLayer nn) ]
+-}
+        notOvrlNs = [ n |
+            n <- outLayer nn,
+            not $ elem (NeuralNetworks.label n) (map show $ fst $ unzip ovrl),
+            not $ elem (NeuralNetworks.label n) (map show $ snd $ unzip ovrl) ]
+        regularRecConns = createRecConnNormal (inpLayer nn) notOvrlNs
+        abnormalRecConns = fst $ createRecConnAbnormal (inpLayer nn) ovrlNs
+        recursiveNs = snd $ createRecConnAbnormal (inpLayer nn) ovrlNs
+        recuriveConns = regularRecConns ++ abnormalRecConns
 
 
---createRecConn :: Neuron -> [Neuron] -> [Atom] 
+createRecConnNormal :: [Neuron] -> [Neuron] -> [Connection]
+createRecConnNormal inpL outL =
+    [ Connection (NeuralNetworks.idx outN) (NeuralNetworks.idx inpN) 1 |
+        inpN <- inpL,
+        outN <- outL,
+        NeuralNetworks.label inpN == NeuralNetworks.label outN ]
+
+
+createRecConnAbnormal :: [Neuron] -> [(Neuron, Neuron)] -> ([Connection], [Neuron])
+createRecConnAbnormal inpL ovrlN = foldl1 mergeTriCN triplesCN
+    where
+        remJust    = \(Just x) -> x
+        tri        = \(x, y) -> (remJust $ find (\z -> NeuralNetworks.label x == NeuralNetworks.label z) inpL, x, y)
+        triplesN   = map tri ovrlN
+        triplesCN  = map recConnFromTriple triplesN
+        mergeTriCN = \(cs1, ns1) (cs2, ns2) -> (cs1 ++ cs2, ns1 ++ ns2)
+
+
+recConnFromTriple :: (Neuron, Neuron, Neuron) -> ([Connection], [Neuron])
+recConnFromTriple (inpN, outN1, outN2) = ([c1, c2, c3], [n])
+    where
+        n  = Neuron ("rec" ++ NeuralNetworks.label outN1) "k" 0.0 ("rec" ++ NeuralNetworks.label outN1)
+        c1 = Connection (NeuralNetworks.idx outN1) (NeuralNetworks.idx n) 1
+        c2 = Connection (NeuralNetworks.idx outN2) (NeuralNetworks.idx n) 1
+        c3 = Connection (NeuralNetworks.idx n) (NeuralNetworks.idx inpN) 1
+
 
 
 p1 :: LP
@@ -295,3 +354,10 @@ p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
 p1NN :: NeuralNetwork
 p1NN = baseNN p1 0.5 0.5 1 0.0 0.05 2 
+
+
+p2 :: LP
+p2 = p1 ++ [Fact (A 2 "h")]
+
+p2NN :: NeuralNetwork
+p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
