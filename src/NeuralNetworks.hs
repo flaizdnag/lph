@@ -24,6 +24,7 @@ data Neuron = Neuron
     , bias      :: Float 
     , idx       :: String 
     }
+    deriving (Read, Eq)
 
 instance Show Neuron where 
     show (Neuron l aF b idx) = "(" ++ l ++ ", " ++ aF ++ ", " ++ show b ++ ", " ++ idx ++ ")"
@@ -35,6 +36,7 @@ data Connection = Connection
     , to     :: String
     , weight :: Float
     }
+    deriving (Read)
 
 instance Show Connection where
     show (Connection from to w) = "(" ++ from ++ ", " ++ to ++ ", " ++ show w ++ ")"
@@ -42,15 +44,15 @@ instance Show Connection where
 
 
 data NeuralNetwork = NN
-    { inpNeurons :: [Neuron]
-    , hidNeurons :: [Neuron]
-    , outNeurons :: [Neuron]
-    , recNeurons :: [Neuron]
+    { inpLayer            :: [Neuron]
+    , hidLayer            :: [Neuron]
+    , outLayer            :: [Neuron]
+    , recLayer            :: [Neuron]
     , inpToHidConnections :: [Connection]
     , hidToOutConnections :: [Connection]
     , recConnections      :: [Connection]
     , addConnections      :: [Connection]
     }
-
-instance Show NeuralNetwork where
-    show (NN ns cs) = "(" ++ show ns ++ ", " ++ show cs ++ ")"
+    deriving (Show, Read)
+--instance Show NeuralNetwork where
+--    show (NN ns cs) = "(" ++ show ns ++ ", " ++ show cs ++ ")"
