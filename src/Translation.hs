@@ -328,9 +328,9 @@ createRecConnNormal inpL outL =
         outN <- outL,
         NeuralNetworks.label inpN == NeuralNetworks.label outN ]
 
-
+-- TODO ERROR foldl1
 createRecConnAbnormal :: [Neuron] -> [(Neuron, Neuron)] -> ([Connection], [Neuron])
-createRecConnAbnormal inpL ovrlN = foldl1 mergeTriCN triplesCN
+createRecConnAbnormal inpL ovrlN = foldl mergeTriCN ([], []) triplesCN
     where
         remJust    = \(Just x) -> x
         tri        = \(x, y) -> (remJust $ find (\z -> NeuralNetworks.label x == NeuralNetworks.label z) inpL, x, y)
@@ -361,3 +361,15 @@ p2 = p1 ++ [Fact (A 2 "h")]
 
 p2NN :: NeuralNetwork
 p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
+
+p2NNrec :: NeuralNetwork
+p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
+
+p3 :: LP
+p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
+
+p3NN :: NeuralNetwork
+p3NN = baseNN p3 0.5 0.5 1 0.0 0.05 2
+
+p3NNrec :: NeuralNetwork
+p3NNrec = recursiveConnections p3NN (overlappingAtoms p3)
