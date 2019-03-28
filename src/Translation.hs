@@ -222,8 +222,8 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
             else
                 createInpNeurons (hd : pBod ++ nBod) ((+) 1 $ length $ inpLayer nn) (inpLayer nn)
         outputNs      = \x -> createOutNeurons (pBod ++ nBod) ((+) (1 + x) $ length $ outLayer nn) (outLayer nn)
-        inpToHidConns = createInpToHidConn hidNeuIdx inputNs pBod nBod w
-
+        inpToHidConns = createInpToHidConn hidNeuIdx (inputNs ++ inpLayer nn) pBod nBod w
+        
 
 createInpNeurons :: [Atom] -> Int -> [Neuron] -> [Neuron]
 createInpNeurons [] _ _                = []
@@ -235,12 +235,12 @@ createInpNeurons (a:as) idxStart inpNs = case findNeuByLabel a inpNs of
 
 
 createOutNeurons :: [Atom] -> Int -> [Neuron] -> [Neuron]
-createOutNeurons [] _ _        = []
+createOutNeurons [] _ _                = []
 createOutNeurons (a:as) idxStart outNs = case findNeuByLabel a outNs of
-    Nothing -> mkInpNeu a : createOutNeurons as (idxStart + 1) outNs
+    Nothing -> mkOutNeu a : createOutNeurons as (idxStart + 1) outNs
     Just _  -> createOutNeurons as idxStart outNs
     where
-        mkInpNeu = \x -> Neuron (show x) "tanh" 0.0 ("out" ++ show idxStart)
+        mkOutNeu = \x -> Neuron (show x) "tanh" 0.0 ("out" ++ show idxStart)
 
 
 createInpToHidConn :: String -> [Neuron] -> [Atom] -> [Atom] -> Float -> [Connection]
@@ -298,7 +298,7 @@ recursiveConnections nn ovrl = NN
     , recLayer            = recursiveNs
     , inpToHidConnections = inpToHidConnections nn
     , hidToOutConnections = hidToOutConnections nn
-    , recConnections      = recuriveConns
+    , recConnections      = recursiveConns
     , addConnections      = addConnections nn
     }
     where
@@ -318,7 +318,7 @@ recursiveConnections nn ovrl = NN
         regularRecConns = createRecConnNormal (inpLayer nn) notOvrlNs
         abnormalRecConns = fst $ createRecConnAbnormal (inpLayer nn) ovrlNs
         recursiveNs = snd $ createRecConnAbnormal (inpLayer nn) ovrlNs
-        recuriveConns = regularRecConns ++ abnormalRecConns
+        recursiveConns = regularRecConns ++ abnormalRecConns
 
 
 createRecConnNormal :: [Neuron] -> [Neuron] -> [Connection]
@@ -348,6 +348,59 @@ recConnFromTriple (inpN, outN1, outN2) = ([c1, c2, c3], [n])
         c3 = Connection (NeuralNetworks.idx n) (NeuralNetworks.idx inpN) 1
 
 
+additionalConnections :: NeuralNetwork -> Int -> Float -> Float -> NeuralNetwork
+additionalConnections nn l ba w = case addConnsFromTriple of 
+    (hidNeurons, inpToHidConns, hidToOutConns) -> NN
+        { inpLayer            = inpLayer nn
+        , hidLayer            = hidLayer nn ++ hidNeurons
+        , outLayer            = outLayer nn
+        , recLayer            = recLayer nn
+        , inpToHidConnections = inpToHidConnections nn
+        , hidToOutConnections = hidToOutConnections nn
+        , recConnections      = recConnections nn
+        , addConnections      = inpToHidConns ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) w
+        }
+    where
+        addConnsFromTriple = case unzip3 mkAddConns of (ns, xs, ys) -> (ns, concat xs, ys)
+        mkAddConns = makeAddConns nn (outLayer nn) l ba w (length $ hidLayer nn) 
+
+
+hidTToOutConns :: NeuralNetwork -> [Neuron] -> Float -> [Connection]
+hidTToOutConns _ [] _      = []
+hidTToOutConns nn (n:ns) w = case findConnByNeu n (hidToOutConnections nn) of 
+    Nothing -> Connection "hidT" (NeuralNetworks.idx n) w : hidTToOutConns nn ns w
+    Just _  -> hidTToOutConns nn ns w
+
+
+makeAddConns :: NeuralNetwork -> [Neuron] -> Int -> Float -> Float -> Int -> [(Neuron, [Connection], Connection)]
+makeAddConns _ [] _ _ _ _              = []
+makeAddConns nn (n:ns) l ba w idxStart = case findConnByNeu n (hidToOutConnections nn) of 
+    Nothing -> lNeu ++ makeAddConns nn ns l ba w (idxStart + l)
+    Just _  -> makeAddConns nn ns l ba w idxStart
+    where 
+        lNeu = createLNs nn n l ba w idxStart
+
+
+createLNs :: NeuralNetwork -> Neuron -> Int -> Float -> Float -> Int -> [(Neuron, [Connection], Connection)]
+createLNs _ _ 0 _ _ _          = []
+createLNs nn n l ba w idxStart = (mkAddHidNeu, mkInpToHidConns, mkHidToOutConn) : createLNs nn n (l-1) ba w (idxStart + 1)
+    where 
+        mkAddHidNeu     = Neuron ("ha" ++ show idxStart) "tanh" ba ("hid" ++ show idxStart)
+        mkInpToHidConns = case findInpOut nn n of
+            Nothing     -> []
+            Just inpNeu -> [ Connection (NeuralNetworks.idx inp) addHidNeuIdx w | inp <- (inpLayer nn \\ [inpNeu, inpT]) ]
+        mkHidToOutConn  = Connection addHidNeuIdx (NeuralNetworks.idx n) w
+        addHidNeuIdx    = NeuralNetworks.idx mkAddHidNeu
+        inpT            = last $ inpLayer nn
+
+
+findConnByNeu :: Neuron -> [Connection] -> Maybe Connection 
+findConnByNeu outNeu hidToOutConns = find (\x -> from x == "hidT" && NeuralNetworks.idx outNeu == to x) hidToOutConns
+
+
+findInpOut :: NeuralNetwork -> Neuron -> Maybe Neuron
+findInpOut nn n = find (\x -> NeuralNetworks.label x == NeuralNetworks.label n) (inpLayer nn) 
+
 
 p1 :: LP
 p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
@@ -365,6 +418,9 @@ p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
 p2NNrec :: NeuralNetwork
 p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
 
+p2NNadd :: NeuralNetwork
+p2NNadd = additionalConnections p2NNrec 2 0.4 4
+
 p3 :: LP
 p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
 
@@ -373,3 +429,6 @@ p3NN = baseNN p3 0.5 0.5 1 0.0 0.05 2
 
 p3NNrec :: NeuralNetwork
 p3NNrec = recursiveConnections p3NN (overlappingAtoms p3)
+
+p3NNadd :: NeuralNetwork
+p3NNadd = additionalConnections p3NNrec 2 0.4 4
