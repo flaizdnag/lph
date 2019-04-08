@@ -51,8 +51,6 @@ data NeuralNetwork = NN
     , inpToHidConnections :: [Connection]
     , hidToOutConnections :: [Connection]
     , recConnections      :: [Connection]
-    , addConnections      :: [Connection]
+--    , addConnections      :: [Connection]
     }
     deriving (Show, Read)
---instance Show NeuralNetwork where
---    show (NN ns cs) = "(" ++ show ns ++ ", " ++ show cs ++ ")"
