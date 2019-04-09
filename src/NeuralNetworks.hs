@@ -55,5 +55,13 @@ data NeuralNetwork = NN
     }
     deriving (Show, Read)
 
-pythonPrintNeuron :: Neuron -> String
-pythonPrintNeuron (Neuron l af b i) = "(" ++ "\"" ++ l ++ "\", " ++ "\"" ++ af ++ "\", " ++ show b ++ ", " ++ "\"" ++ i ++ "\"" ++ ")"
+
+showNNPython :: NeuralNetwork -> IO()
+showNNPython (NN iL hL oL rL ihC hoC rC) =
+    mapM_ putStrLn ["{\"inpLayer\" = [" ++ showNs iL ++ 
+                    ", \"hidLayer\" = [" ++ showNs hL ++ 
+                    ", \"outLayer\" = [" ++ showNs oL ++ 
+                    ", \"recLayer\" = [" ++ showNs rL ++ 
+                   "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
+                   ", \"hidToOutConnections\" = [" ++ showConns hoC ++ 
+                   ", \"recConnections\" = [" ++ showConns rC ++ "}"]

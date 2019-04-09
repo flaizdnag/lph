@@ -416,16 +416,6 @@ showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) 
     _ -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ "), " ++ showConns xs
 
 
-showNNPython :: NeuralNetwork -> IO()
-showNNPython (NN iL hL oL rL ihC hoC rC) = mapM_ putStrLn ["{\"inpLayer\" = [" ++ showNs iL ++ 
-                                                           ", \"hidLayer\" = [" ++ showNs hL ++ 
-                                                           ", \"outLayer\" = [" ++ showNs oL ++ 
-                                                           ", \"recLayer\" = [" ++ showNs rL ++ 
-                                                           "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
-                                                           ", \"hidToOutConnections\" = [" ++ showConns hoC ++ 
-                                                           ", \"recConnections\" = [" ++ showConns rC ++ "}"]
-
-
 p1 :: LP
 p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
