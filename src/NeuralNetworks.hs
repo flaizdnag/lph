@@ -54,5 +54,6 @@ data NeuralNetwork = NN
     , addConnections      :: [Connection]
     }
     deriving (Show, Read)
---instance Show NeuralNetwork where
---    show (NN ns cs) = "(" ++ show ns ++ ", " ++ show cs ++ ")"
+
+pythonPrintNeuron :: Neuron -> String
+pythonPrintNeuron (Neuron l af b i) = "(" ++ "\"" ++ l ++ "\", " ++ "\"" ++ af ++ "\", " ++ show b ++ ", " ++ "\"" ++ i ++ "\"" ++ ")"
