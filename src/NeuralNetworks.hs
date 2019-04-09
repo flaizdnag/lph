@@ -51,7 +51,7 @@ data NeuralNetwork = NN
     , inpToHidConnections :: [Connection]
     , hidToOutConnections :: [Connection]
     , recConnections      :: [Connection]
-    , addConnections      :: [Connection]
+--    , addConnections      :: [Connection]
     }
     deriving (Show, Read)
 
