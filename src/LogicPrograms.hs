@@ -74,10 +74,15 @@ data Atom = A
     }
     deriving (Read)
 
+{-
+instance Read Atom where
+    read "A"
+-}
+
 instance Show Atom where
     show (A idx lab)
         | null lab  = "A" ++ show idx
-        | otherwise = "A" ++ show idx ++ "^" ++ show lab
+        | otherwise = "A" ++ show idx ++ "^" ++ lab
 
 instance Eq Atom where
     A a xs == A b ys = a == b && eqLists xs ys
