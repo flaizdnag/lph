@@ -80,42 +80,42 @@ intLPtoIntCPL int = IntCPL (asToVar (trLP int)) (asToVar (faLP int))
 -- therefore this function is different from the Łukasiewicz approach (the
 -- difference is in the evaluation of the equivalence).
 -- !!change 3 values to Just True/False/Nothing
-evalCPL :: Form -> IntCPL -> ThreeValues
+evalCPL :: Form -> IntCPL -> Maybe Bool
 evalCPL f (IntCPL tr fa) = case f of
-    T                       -> Tr3v
+    T                       -> Just True
     V a
-        | elem (V a) tr     -> Tr3v
-        | elem (V a) fa     -> Fa3v
-        | otherwise         -> Un3v
+        | elem (V a) tr     -> Just True
+        | elem (V a) fa     -> Just False
+        | otherwise         -> Nothing
     N x
-        | isTr x            -> Fa3v
-        | isFa x            -> Tr3v
-        | otherwise         -> Un3v
+        | isTr x            -> Just False
+        | isFa x            -> Just True
+        | otherwise         -> Nothing
     C xs
-        | anyFa xs          -> Fa3v
-        | anyUn xs          -> Un3v
-        | otherwise         -> Tr3v
+        | anyFa xs          -> Just False
+        | anyUn xs          -> Nothing
+        | otherwise         -> Just True
     D xs
-        | anyTr xs          -> Tr3v
-        | anyUn xs          -> Un3v
-        | otherwise         -> Fa3v
+        | anyTr xs          -> Just True
+        | anyUn xs          -> Nothing
+        | otherwise         -> Just False
     E x y
-        | isUn x || isUn y  -> Un3v
-        | sameEval x y      -> Tr3v
-        | otherwise         -> Fa3v
+        | isUn x || isUn y  -> Nothing
+        | sameEval x y      -> Just True
+        | otherwise         -> Just False
     where
-        isTr     = \x -> evalCPL x (IntCPL tr fa) == Tr3v
-        isFa     = \x -> evalCPL x (IntCPL tr fa) == Fa3v
-        isUn     = \x -> evalCPL x (IntCPL tr fa) == Un3v
+        isTr     = \x -> evalCPL x (IntCPL tr fa) == Just True
+        isFa     = \x -> evalCPL x (IntCPL tr fa) == Just False
+        isUn     = \x -> evalCPL x (IntCPL tr fa) == Nothing
         sameEval = \x y -> evalCPL x (IntCPL tr fa) == evalCPL y (IntCPL tr fa)
-        anyTr    = any (\x -> evalCPL x (IntCPL tr fa) == Tr3v)
-        anyFa    = any (\x -> evalCPL x (IntCPL tr fa) == Fa3v)
-        anyUn    = any (\x -> evalCPL x (IntCPL tr fa) == Un3v)
+        anyTr    = any (\x -> evalCPL x (IntCPL tr fa) == Just True)
+        anyFa    = any (\x -> evalCPL x (IntCPL tr fa) == Just False)
+        anyUn    = any (\x -> evalCPL x (IntCPL tr fa) == Nothing)
 
 -- | Function that checks if a given interpretation is a model for a list of
 -- formulas.
 modelCheckCPL :: [Form] -> IntCPL -> Bool
-modelCheckCPL fs int = all (\x -> evalCPL x int == Tr3v) fs
+modelCheckCPL fs int = all (\x -> evalCPL x int == Just True) fs
 
 -- | Takes a list of formulas (Clark's completion), an interpretation and a list
 -- of formulas whose value is unknown, and seeks for the model for all of the
@@ -133,9 +133,9 @@ invariants (f:fs) ((IntCPL tr fa), un)    = case f of
         | otherwise -> invariants fs (int, f : un)
         where
             int  = (IntCPL tr fa)
-            isTr = \x -> evalCPL x (IntCPL tr fa) == Tr3v
-            isFa = \x -> evalCPL x (IntCPL tr fa) == Fa3v
-            isUn = \x -> evalCPL x (IntCPL tr fa) == Un3v
+            isTr = \x -> evalCPL x (IntCPL tr fa) == Just True
+            isFa = \x -> evalCPL x (IntCPL tr fa) == Just False
+            isUn = \x -> evalCPL x (IntCPL tr fa) == Nothing
 
 -- | Function that iterates @invariants@ till the set of formulas with unknown
 -- value is empty or does not change.
@@ -195,9 +195,9 @@ makeFormTr f (IntCPL tr fa) = case f of
         | otherwise -> (combineInts (makeTr af) (makeTr bf)) ++ (combineInts (makeFa af) (makeFa bf))
     where
         int    = (IntCPL tr fa)
-        isTr   = \x -> evalCPL x int == Tr3v
-        isFa   = \x -> evalCPL x int == Fa3v
-        isUn   = \x -> evalCPL x int == Un3v
+        isTr   = \x -> evalCPL x int == Just True
+        isFa   = \x -> evalCPL x int == Just False
+        isUn   = \x -> evalCPL x int == Nothing
         getUns = \x -> [ y | y <- x, isUn y ]
         makeTr = \x -> makeFormTr x int
         makeFa = \x -> makeFormFa x int
@@ -220,9 +220,9 @@ makeFormFa f (IntCPL tr fa) = case f of
         | otherwise -> (combineInts (makeTr af) (makeFa bf)) ++ (combineInts (makeFa af) (makeTr bf))
     where
         int    = (IntCPL tr fa)
-        isTr   = \x -> evalCPL x int == Tr3v
-        isFa   = \x -> evalCPL x int == Fa3v
-        isUn   = \x -> evalCPL x int == Un3v
+        isTr   = \x -> evalCPL x int == Just True
+        isFa   = \x -> evalCPL x int == Just False
+        isUn   = \x -> evalCPL x int == Nothing
         getUns = \x -> [ y | y <- x, isUn y ]
         makeFa = \x -> makeFormFa x int
         makeTr = \x -> makeFormTr x int
@@ -246,3 +246,6 @@ combineInt ((IntCPL atr afa), (IntCPL btr bfa))
     | otherwise    = Just (IntCPL (nub $ atr ++ btr) (nub $ afa ++ bfa))
     where
         inconsistent = jointElem atr bfa || jointElem afa btr
+
+p1a :: LP
+p1a = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
