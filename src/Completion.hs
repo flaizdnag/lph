@@ -22,6 +22,7 @@ module Completion
 
 import LogicPrograms
 import Auxiliary
+import ThreeValuedSem
 import CPL
 import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
 
@@ -67,42 +68,6 @@ comp lp = eqs ++ negVars
 intLPtoIntCPL :: IntLP -> IntCPL
 intLPtoIntCPL int = IntCPL (asToVar (trLP int)) (asToVar (faLP int))
 
-{-
-addC :: Clause -> (Form, Form)
-addC (h, [], [])        = (V h, T)
-addC (h, [], nb) 
-    | length nb == 1    = (V h, N (V (head nb)))
-    | otherwise         = (V h, C (atomsToNVar nb))
-addC (h, pb, []) 
-    | length pb == 1    = (V h, V (head pb))
-    | otherwise         = (V h, C (atomsToVar pb))
-addC (h, ys, xs)        = (V h, C (atomsToVar ys ++ atomsToNVar xs))
-
--- | Adding disjunction and equivalence to a conjunction.
-addDE :: [(Form, Form)] -> Form
-addDE c
-    | length c > 1  = E (fst (head c)) (D (map snd c))
-    | otherwise     = E (fst (head c)) (snd (head c))
-
--- | Creating equivalences with disjunctions for the whole logic program.
-addDElp :: LP -> [Form]
-addDElp = map addDE . preGrouped
-    where
-        preGrouped = groupBy (\x y -> fst x == fst y) . map addC . sort
-
--- | Adding negated variables made from atoms that do not appear as heads in the
--- logic program.
-addN :: LP -> [Form]
-addN lp = atomsToNVar ((bP lp) \\ (bPHeads lp))
-
--- | Creating Clark's completion for a logic program.
-comp :: LP -> [Form]
-comp lp = addDElp lp ++ addN lp
-
--- | Creates an interpretation for CPL from an interpretation for LP.
-intLPtoIntCPL :: IntLP -> IntCPL
-intLPtoIntCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
-
 --------------------------------------------------------------------------------
 -- Looking for a model for Clark's completion                                 --
 --------------------------------------------------------------------------------
@@ -114,42 +79,43 @@ intLPtoIntCPL (tr, fa) = (atomsToVar tr, atomsToVar fa)
 -- approach, because the 'Un' value serves only informational purposes,
 -- therefore this function is different from the Łukasiewicz approach (the
 -- difference is in the evaluation of the equivalence).
-evalCPL :: Form -> IntCPL -> Bool3
-evalCPL f (tr, fa) = case f of
-    T                       -> Tr
+-- !!change 3 values to Just True/False/Nothing
+evalCPL :: Form -> IntCPL -> Maybe Bool
+evalCPL f (IntCPL tr fa) = case f of
+    T                       -> Just True
     V a
-        | elem (V a) tr     -> Tr
-        | elem (V a) fa     -> Fa
-        | otherwise         -> Un
+        | elem (V a) tr     -> Just True
+        | elem (V a) fa     -> Just False
+        | otherwise         -> Nothing
     N x
-        | isTr x            -> Fa
-        | isFa x            -> Tr
-        | otherwise         -> Un
+        | isTr x            -> Just False
+        | isFa x            -> Just True
+        | otherwise         -> Nothing
     C xs
-        | anyFa xs          -> Fa
-        | anyUn xs          -> Un
-        | otherwise         -> Tr
+        | anyFa xs          -> Just False
+        | anyUn xs          -> Nothing
+        | otherwise         -> Just True
     D xs
-        | anyTr xs          -> Tr
-        | anyUn xs          -> Un
-        | otherwise         -> Fa
+        | anyTr xs          -> Just True
+        | anyUn xs          -> Nothing
+        | otherwise         -> Just False
     E x y
-        | isUn x || isUn y  -> Un
-        | sameEval x y      -> Tr
-        | otherwise         -> Fa
+        | isUn x || isUn y  -> Nothing
+        | sameEval x y      -> Just True
+        | otherwise         -> Just False
     where
-        isTr     = \x -> evalCPL x (tr, fa) == Tr
-        isFa     = \x -> evalCPL x (tr, fa) == Fa
-        isUn     = \x -> evalCPL x (tr, fa) == Un
-        sameEval = \x y -> evalCPL x (tr, fa) == evalCPL y (tr, fa)
-        anyTr    = any (\x -> evalCPL x (tr, fa) == Tr)
-        anyFa    = any (\x -> evalCPL x (tr, fa) == Fa)
-        anyUn    = any (\x -> evalCPL x (tr, fa) == Un)
+        isTr     = \x -> evalCPL x (IntCPL tr fa) == Just True
+        isFa     = \x -> evalCPL x (IntCPL tr fa) == Just False
+        isUn     = \x -> evalCPL x (IntCPL tr fa) == Nothing
+        sameEval = \x y -> evalCPL x (IntCPL tr fa) == evalCPL y (IntCPL tr fa)
+        anyTr    = any (\x -> evalCPL x (IntCPL tr fa) == Just True)
+        anyFa    = any (\x -> evalCPL x (IntCPL tr fa) == Just False)
+        anyUn    = any (\x -> evalCPL x (IntCPL tr fa) == Nothing)
 
 -- | Function that checks if a given interpretation is a model for a list of
 -- formulas.
 modelCheckCPL :: [Form] -> IntCPL -> Bool
-modelCheckCPL fs int = all (\x -> evalCPL x int == Tr) fs
+modelCheckCPL fs int = all (\x -> evalCPL x int == Just True) fs
 
 -- | Takes a list of formulas (Clark's completion), an interpretation and a list
 -- of formulas whose value is unknown, and seeks for the model for all of the
@@ -158,18 +124,18 @@ modelCheckCPL fs int = all (\x -> evalCPL x int == Tr) fs
 -- i.e. negated variables and equivalences.
 invariants :: [Form] -> (IntCPL, [Form]) -> (IntCPL, [Form])
 invariants [] (int, un)             = (int, un)
-invariants (f:fs) ((tr, fa), un)    = case f of
-    N a             -> invariants fs ((tr, a : fa), un)
-    E a T           -> invariants fs ((a : tr, fa), un)
+invariants (f:fs) ((IntCPL tr fa), un)    = case f of
+    N a             -> invariants fs ((IntCPL tr (a : fa)), un)
+    E a T           -> invariants fs ((IntCPL  (a : tr) fa), un)
     E a b
-        | isTr b    -> invariants fs ((a : tr, fa), un)
-        | isFa b    -> invariants fs ((tr, a : fa), un)
+        | isTr b    -> invariants fs ((IntCPL (a : tr) fa), un)
+        | isFa b    -> invariants fs ((IntCPL tr (a : fa)), un)
         | otherwise -> invariants fs (int, f : un)
         where
-            int  = (tr, fa)
-            isTr = \x -> evalCPL x (tr, fa) == Tr
-            isFa = \x -> evalCPL x (tr, fa) == Fa
-            isUn = \x -> evalCPL x (tr, fa) == Un
+            int  = (IntCPL tr fa)
+            isTr = \x -> evalCPL x (IntCPL tr fa) == Just True
+            isFa = \x -> evalCPL x (IntCPL tr fa) == Just False
+            isUn = \x -> evalCPL x (IntCPL tr fa) == Nothing
 
 -- | Function that iterates @invariants@ till the set of formulas with unknown
 -- value is empty or does not change.
@@ -188,7 +154,7 @@ invIter fs (int, un, done)
 -- model for the list of formulas. If it does not succeed, then it returns
 -- a "part" of the model and the list of formulas with unknown value.
 modelSearch :: [Form] -> (IntCPL, [Form])
-modelSearch fs = invIter (sort fs) (([], []), [], [])
+modelSearch fs = invIter (sort fs) ((IntCPL [] []), [], [])
 
 --------------------------------------------------------------------------------
 -- Next step is to write function that creates a model for a list of formulas --
@@ -209,15 +175,15 @@ makeModels fs = case (modelSearch fs) of
 -- One interpretation in smaller than the other iff the set containing variables
 -- mapped to 'true' is smaller.
 sortInts :: [IntCPL] -> [IntCPL]
-sortInts = sortBy (\(a, _) (b, _) -> compare (length a) (length b))
+sortInts = sortBy (\(IntCPL a _) (IntCPL b _) -> compare (length a) (length b))
 
 -- | Function that modifies a given interpretation in such a way that the
 -- given formula becomes 'true'. The result is a list of interpretations that
 -- make the formula 'true'.
 -- Note: The assumption is that the formula is evaluated as 'undecided'.
 makeFormTr :: Form -> IntCPL -> [IntCPL] 
-makeFormTr f (tr, fa) = case f of
-    V a             -> [((V a) : tr, fa)]
+makeFormTr f (IntCPL tr fa) = case f of
+    V a             -> [IntCPL ((V a) : tr) fa]
     N v             -> makeFa v
     C fs            -> foldl1' combineInts $ map makeTr $ getUns fs
     D fs            -> concatMap makeTr $ getUns fs
@@ -228,10 +194,10 @@ makeFormTr f (tr, fa) = case f of
         | isFa bf   -> makeFa af
         | otherwise -> (combineInts (makeTr af) (makeTr bf)) ++ (combineInts (makeFa af) (makeFa bf))
     where
-        int    = (tr, fa)
-        isTr   = \x -> evalCPL x int == Tr
-        isFa   = \x -> evalCPL x int == Fa
-        isUn   = \x -> evalCPL x int == Un
+        int    = (IntCPL tr fa)
+        isTr   = \x -> evalCPL x int == Just True
+        isFa   = \x -> evalCPL x int == Just False
+        isUn   = \x -> evalCPL x int == Nothing
         getUns = \x -> [ y | y <- x, isUn y ]
         makeTr = \x -> makeFormTr x int
         makeFa = \x -> makeFormFa x int
@@ -241,8 +207,8 @@ makeFormTr f (tr, fa) = case f of
 -- make the formula 'false'.
 -- Note: The assumption is that the formula is evaluated as 'undecided'.
 makeFormFa :: Form -> IntCPL -> [IntCPL] 
-makeFormFa f (tr, fa) = case f of
-    V a             -> [(tr, (V a) : fa)]
+makeFormFa f (IntCPL tr fa) = case f of
+    V a             -> [IntCPL tr ((V a) : fa)]
     N v             -> makeTr v
     C fs            -> concatMap makeFa $ getUns fs
     D fs            -> foldl1' combineInts $ map makeFa $ getUns fs
@@ -253,10 +219,10 @@ makeFormFa f (tr, fa) = case f of
         | isFa bf   -> makeTr af
         | otherwise -> (combineInts (makeTr af) (makeFa bf)) ++ (combineInts (makeFa af) (makeTr bf))
     where
-        int    = (tr, fa)
-        isTr   = \x -> evalCPL x int == Tr
-        isFa   = \x -> evalCPL x int == Fa
-        isUn   = \x -> evalCPL x int == Un
+        int    = (IntCPL tr fa)
+        isTr   = \x -> evalCPL x int == Just True
+        isFa   = \x -> evalCPL x int == Just False
+        isUn   = \x -> evalCPL x int == Nothing
         getUns = \x -> [ y | y <- x, isUn y ]
         makeFa = \x -> makeFormFa x int
         makeTr = \x -> makeFormTr x int
@@ -275,9 +241,11 @@ combineInts xs ys = stripM $ map combineInt $ allPairs
 -- | Function that combines two interpretations. Returns 'Nothing' if
 -- interpretations are inconsistent.
 combineInt :: (IntCPL, IntCPL) -> Maybe IntCPL
-combineInt ((atr, afa), (btr, bfa))
+combineInt ((IntCPL atr afa), (IntCPL btr bfa))
     | inconsistent = Nothing
-    | otherwise    = Just (nub $ atr ++ btr, nub $ afa ++ bfa)
+    | otherwise    = Just (IntCPL (nub $ atr ++ btr) (nub $ afa ++ bfa))
     where
         inconsistent = jointElem atr bfa || jointElem afa btr
--}
+
+p1a :: LP
+p1a = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
