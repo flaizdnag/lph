@@ -18,6 +18,8 @@ the completion of a logic program.
 module Completion
     ( comp
     , intLPtoIntCPL
+    , makeModels
+    , modelCheckCPL
     ) where
 
 import LogicPrograms
@@ -79,7 +81,6 @@ intLPtoIntCPL int = IntCPL (asToVar (trLP int)) (asToVar (faLP int))
 -- approach, because the 'Un' value serves only informational purposes,
 -- therefore this function is different from the Łukasiewicz approach (the
 -- difference is in the evaluation of the equivalence).
--- !!change 3 values to Just True/False/Nothing
 evalCPL :: Form -> IntCPL -> Maybe Bool
 evalCPL f (IntCPL tr fa) = case f of
     T                       -> Just True
