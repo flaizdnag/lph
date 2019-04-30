@@ -59,6 +59,7 @@ module LogicPrograms
     , isModel2vLP
     , isModel3vLP
     , evalBody
+    , lpSymDifference
     ) where
 
 import Auxiliary
@@ -292,3 +293,9 @@ isModel2vLP lp int = all (\x -> eval2v x int == Tr2v) lp
 -- | Checks if a given interpretation is a model for a given logic program.
 isModel3vLP :: LP -> IntLP -> Bool
 isModel3vLP lp int = all (\x -> eval3v x int == Tr3v) lp
+
+-- | Symmetric difference between two logic programs (without atoms with 'h' in
+-- the upper index).
+lpSymDifference :: LP -> LP -> LP
+lpSymDifference lp1 lp2 =
+    [ a | a <- symDifference lp1 lp2, not $ elem 'h' (label $ clHead a) ]
