@@ -299,3 +299,19 @@ isModel3vLP lp int = all (\x -> eval3v x int == Tr3v) lp
 lpSymDifference :: LP -> LP -> LP
 lpSymDifference lp1 lp2 =
     [ a | a <- symDifference lp1 lp2, not $ elem 'h' (label $ clHead a) ]
+
+-- | Modifies a logic program w.r.t. a clause 'h', i.e. atoms from the body of
+-- 'h' are added to the logic program as facts, if they are not preceded by
+-- negation, and as assumptions, if they are preceded by negation.
+modifiedLP :: LP -> Clause -> LP
+modifiedLP lp cl = case cl of
+    Fact _       -> lp
+    Assumption _ -> lp
+    Cl h pb nb   -> lp ++ facts ++ assumptions
+        where
+            makeFact x       = Fact (A (idx x) (label x ++ "h"))
+            makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
+            filteredPB       = filter (\x -> not $ elem (Assumption x) lp) pb
+            filteredNB       = filter (\x -> not $ elem (Fact x) lp) nb
+            facts            = map makeFact filteredPB
+            assumptions      = map makeAssumption filteredNB
