@@ -19,6 +19,7 @@ module Auxiliary
     , first
     , second
     , third
+    , symDifference
     ) where
 
 import Data.List ((\\), intersect, sort)
@@ -53,3 +54,7 @@ second (_, x, _) = x
 -- | Returns the third element from a triple.
 third :: (a, b, c) -> c
 third (_, _, x) = x
+
+-- | Symmetric difference between two lists.
+symDifference :: Eq a => [a] -> [a] -> [a]
+symDifference xs ys = (xs \\ ys) ++ (ys \\ xs)
