@@ -20,7 +20,7 @@ import NeuralNetworks
 import LogicPrograms
 import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
 import Data.Char 
-
+import System.Random
 
 data NNupdate = NNupdate
     { inpNeuToAdd      :: [Neuron]
@@ -349,51 +349,56 @@ recConnFromTriple (inpN, outN1, outN2) = ([c1, c2, c3], [n])
         c3 = Connection (NeuralNetworks.idx n) (NeuralNetworks.idx inpN) 1
 
 
-additionalConnections :: NeuralNetwork -> Int -> Float -> Float -> NeuralNetwork
-additionalConnections nn l ba w = case addConnsFromTriple of 
+additionalConnections :: NeuralNetwork -> Int -> Float -> [Float] -> NeuralNetwork
+additionalConnections nn l ba rs = case addConnsFromTriple of 
     (hidNeurons, inpToHidConns, hidToOutConns) -> NN
         { inpLayer            = inpLayer nn
         , hidLayer            = hidLayer nn ++ hidNeurons
         , outLayer            = outLayer nn
         , recLayer            = recLayer nn
         , inpToHidConnections = inpToHidConnections nn ++ inpToHidConns
-        , hidToOutConnections = hidToOutConnections nn ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) w
+        , hidToOutConnections = hidToOutConnections nn ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) rs
         , recConnections      = recConnections nn
---        , addConnections      = inpToHidConns ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) w
+--        , addConnections      = inpToHidConns ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) r
         }
     where
         addConnsFromTriple = case unzip3 mkAddConns of (ns, xs, ys) -> (ns, concat xs, ys)
-        mkAddConns = makeAddConns nn (outLayer nn) l ba w (length $ hidLayer nn) 
+        mkAddConns         = makeAddConns nn (outLayer nn) l ba (drop outLayerLen rs) hidLayerLen
+        hidLayerLen        = length $ hidLayer nn
+        outLayerLen        = length $ outLayer nn
 
 
-hidTToOutConns :: NeuralNetwork -> [Neuron] -> Float -> [Connection]
+hidTToOutConns :: NeuralNetwork -> [Neuron] -> [Float] -> [Connection]
 hidTToOutConns _ [] _      = []
-hidTToOutConns nn (n:ns) w = case findConnByNeu n (hidToOutConnections nn) of 
-    Nothing -> Connection "hidT" (NeuralNetworks.idx n) w : hidTToOutConns nn ns w
-    Just _  -> hidTToOutConns nn ns w
+hidTToOutConns nn (n:ns) (r:rs) = case findConnByNeu n (hidToOutConnections nn) of 
+    Nothing -> Connection "hidT" (NeuralNetworks.idx n) r : hidTToOutConns nn ns rs
+    Just _  -> hidTToOutConns nn ns (r:rs)
 
 
-makeAddConns :: NeuralNetwork -> [Neuron] -> Int -> Float -> Float -> Int -> [(Neuron, [Connection], Connection)]
+makeAddConns :: NeuralNetwork -> [Neuron] -> Int -> Float -> [Float] -> Int -> [(Neuron, [Connection], Connection)]
 makeAddConns _ [] _ _ _ _              = []
-makeAddConns nn (n:ns) l ba w idxStart = case findConnByNeu n (hidToOutConnections nn) of 
-    Nothing -> lNeu ++ makeAddConns nn ns l ba w (idxStart + l)
-    Just _  -> makeAddConns nn ns l ba w idxStart
+makeAddConns nn (n:ns) l ba rs idxStart = case findConnByNeu n (hidToOutConnections nn) of 
+    Nothing -> lNeu ++ makeAddConns nn ns l ba newrs (idxStart + l)
+    Just _  -> makeAddConns nn ns l ba newrs idxStart
     where 
-        lNeu = createLNs nn n l ba w idxStart
+        lNeu   = createLNs nn n l ba rs idxStart
+        newrs  = drop (l * (inpLen - 2) + 1) rs
+        inpLen = length (inpLayer nn)
 
 
-createLNs :: NeuralNetwork -> Neuron -> Int -> Float -> Float -> Int -> [(Neuron, [Connection], Connection)]
-createLNs _ _ 0 _ _ _          = []
-createLNs nn n l ba w idxStart = (mkAddHidNeu, mkInpToHidConns, mkHidToOutConn) : createLNs nn n (l-1) ba w (idxStart + 1)
+createLNs :: NeuralNetwork -> Neuron -> Int -> Float -> [Float] -> Int -> [(Neuron, [Connection], Connection)]
+createLNs _ _ 0 _ _ _               = []
+createLNs nn n l ba (r:rs) idxStart = (mkAddHidNeu, mkInpToHidConns, mkHidToOutConn) : createLNs nn n (l-1) ba newrs (idxStart + 1)
     where 
         mkAddHidNeu     = Neuron ("ha" ++ show idxStart) "tanh" ba ("hid" ++ show idxStart)
         mkInpToHidConns = case findInpOut nn n of
             Nothing     -> []
-            Just inpNeu -> [ Connection (NeuralNetworks.idx inp) addHidNeuIdx w | inp <- (inpLayer nn \\ [inpNeu, inpT]) ]
-        mkHidToOutConn  = Connection addHidNeuIdx (NeuralNetworks.idx n) w
+            Just inpNeu -> [ Connection (NeuralNetworks.idx inp) addHidNeuIdx w | (w, inp) <- zip rs (inpLayer nn \\ [inpNeu, inpT]) ]
+        mkHidToOutConn  = Connection addHidNeuIdx (NeuralNetworks.idx n) r
         addHidNeuIdx    = NeuralNetworks.idx mkAddHidNeu
         inpT            = last $ inpLayer nn
-
+        newrs           = drop (l * (inpLen-1)^2) rs
+        inpLen          = length (inpLayer nn)
 
 findConnByNeu :: Neuron -> [Connection] -> Maybe Connection 
 findConnByNeu outNeu hidToOutConns = find (\x -> from x == "hidT" && NeuralNetworks.idx outNeu == to x) hidToOutConns
@@ -402,6 +407,15 @@ findConnByNeu outNeu hidToOutConns = find (\x -> from x == "hidT" && NeuralNetwo
 findInpOut :: NeuralNetwork -> Neuron -> Maybe Neuron
 findInpOut nn n = find (\x -> NeuralNetworks.label x == NeuralNetworks.label n) (inpLayer nn) 
 
+
+rand :: Float -> IO [Float]
+rand r = newStdGen >>= return . randomRs (-r, r)
+
+
+main :: NeuralNetwork -> Int -> Float -> Float -> IO()
+main nn l ba r = do 
+    rs <- rand r
+    print $ additionalConnections nn l ba rs
 
 
 p1 :: LP
@@ -420,8 +434,8 @@ p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
 p2NNrec :: NeuralNetwork
 p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
 
-p2NNadd :: NeuralNetwork
-p2NNadd = additionalConnections p2NNrec 2 0.4 4
+p2NNadd :: IO()
+p2NNadd = main p2NNrec 2 0.4 4
 
 p3 :: LP
 p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
@@ -432,5 +446,29 @@ p3NN = baseNN p3 0.5 0.5 1 0.0 0.05 2
 p3NNrec :: NeuralNetwork
 p3NNrec = recursiveConnections p3NN (overlappingAtoms p3)
 
-p3NNadd :: NeuralNetwork
-p3NNadd = additionalConnections p3NNrec 2 0.4 4
+p3NNadd :: IO()
+p3NNadd = main p3NNrec 2 0.4 4
+
+p4 :: LP 
+p4 = [Cl (A 1 "")[A 2 "", A 3 ""][], Cl (A 2 "")[A 3 ""][], Cl (A 2 "")[A 1 ""][]]
+
+p4NN :: NeuralNetwork
+p4NN = baseNN p4 0.5 0.5 1 0.0 0.05 2
+
+p4NNrec :: NeuralNetwork
+p4NNrec = recursiveConnections p4NN (overlappingAtoms p4)
+
+p4NNadd :: IO()
+p4NNadd = main p4NNrec 2 0.0 0.2
+
+p5 :: LP
+p5 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 2 "") [A 4 ""] [], Fact (A 4 "")]
+
+p5NN :: NeuralNetwork
+p5NN = baseNN p5 0.5 0.5 1 0.0 0.05 2
+
+p5NNrec :: NeuralNetwork
+p5NNrec = recursiveConnections p5NN (overlappingAtoms p5)
+
+p5NNadd :: IO()
+p5NNadd = main p5NNrec 1 0.4 0.2
