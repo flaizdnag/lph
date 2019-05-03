@@ -263,7 +263,6 @@ mergeNNupd nn nnUpd = NN
     , inpToHidConnections = inpToHidConnections nn ++ inpToHidConToAdd nnUpd
     , hidToOutConnections = hidToOutConnections nn ++ hidToOutConToAdd nnUpd
     , recConnections      = recConnections nn
---    , addConnections      = addConnections nn
     }
 
 
@@ -287,7 +286,6 @@ emptyNN = NN
     , inpToHidConnections = []
     , hidToOutConnections = []
     , recConnections      = []
---    , addConnections      = []
     }
 
 
@@ -300,18 +298,11 @@ recursiveConnections nn ovrl = NN
     , inpToHidConnections = inpToHidConnections nn
     , hidToOutConnections = hidToOutConnections nn
     , recConnections      = recursiveConns
---    , addConnections      = addConnections nn
     }
     where
         remJust = \(Just x) -> x
         tupleAToN = \(x, y) -> (remJust $ findNeuByLabel x (outLayer nn), remJust $ findNeuByLabel y (outLayer nn))
         ovrlNs = map tupleAToN ovrl
-{-
-        ovrlNs = [ (fstN, sndN) |
-            (fstA, sndA) <- ovrl,
-            let fstN = findNeuByLabel fstA (outLayer nn),
-            let sndN = findNeuByLabel sndA (outLayer nn) ]
--}
         notOvrlNs = [ n |
             n <- outLayer nn,
             not $ elem (NeuralNetworks.label n) (map show $ fst $ unzip ovrl),
@@ -329,7 +320,7 @@ createRecConnNormal inpL outL =
         outN <- outL,
         NeuralNetworks.label inpN == NeuralNetworks.label outN ]
 
--- TODO ERROR foldl1
+
 createRecConnAbnormal :: [Neuron] -> [(Neuron, Neuron)] -> ([Connection], [Neuron])
 createRecConnAbnormal inpL ovrlN = foldl mergeTriCN ([], []) triplesCN
     where
@@ -359,7 +350,10 @@ additionalConnections nn l ba rs = case addConnsFromTriple of
         , inpToHidConnections = inpToHidConnections nn ++ inpToHidConns
         , hidToOutConnections = hidToOutConnections nn ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) rs
         , recConnections      = recConnections nn
+<<<<<<< HEAD
 --        , addConnections      = inpToHidConns ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) r
+=======
+>>>>>>> upstream/master
         }
     where
         addConnsFromTriple = case unzip3 mkAddConns of (ns, xs, ys) -> (ns, concat xs, ys)
@@ -412,11 +406,15 @@ rand :: Float -> IO [Float]
 rand r = newStdGen >>= return . randomRs (-r, r)
 
 
-main :: NeuralNetwork -> Int -> Float -> Float -> IO()
-main nn l ba r = do 
+additionalConnectionsIO :: NeuralNetwork -> Int -> Float -> Float -> IO NeuralNetwork
+additionalConnectionsIO nn l ba r = do 
     rs <- rand r
-    print $ additionalConnections nn l ba rs
+    return (additionalConnections nn l ba rs)
 
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 p1 :: LP
 p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
@@ -434,8 +432,8 @@ p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
 p2NNrec :: NeuralNetwork
 p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
 
-p2NNadd :: IO()
-p2NNadd = main p2NNrec 2 0.4 4
+p2NNadd :: IO NeuralNetwork
+p2NNadd = additionalConnectionsIO p2NNrec 2 0.4 4
 
 p3 :: LP
 p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
@@ -446,8 +444,8 @@ p3NN = baseNN p3 0.5 0.5 1 0.0 0.05 2
 p3NNrec :: NeuralNetwork
 p3NNrec = recursiveConnections p3NN (overlappingAtoms p3)
 
-p3NNadd :: IO()
-p3NNadd = main p3NNrec 2 0.4 4
+p3NNadd :: IO NeuralNetwork
+p3NNadd = additionalConnectionsIO p3NNrec 2 0.4 4
 
 p4 :: LP 
 p4 = [Cl (A 1 "")[A 2 "", A 3 ""][], Cl (A 2 "")[A 3 ""][], Cl (A 2 "")[A 1 ""][]]
@@ -458,8 +456,8 @@ p4NN = baseNN p4 0.5 0.5 1 0.0 0.05 2
 p4NNrec :: NeuralNetwork
 p4NNrec = recursiveConnections p4NN (overlappingAtoms p4)
 
-p4NNadd :: IO()
-p4NNadd = main p4NNrec 2 0.0 0.2
+p4NNadd :: IO NeuralNetwork
+p4NNadd = additionalConnectionsIO p4NNrec 2 0.0 0.2
 
 p5 :: LP
 p5 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 2 "") [A 4 ""] [], Fact (A 4 "")]
@@ -470,5 +468,5 @@ p5NN = baseNN p5 0.5 0.5 1 0.0 0.05 2
 p5NNrec :: NeuralNetwork
 p5NNrec = recursiveConnections p5NN (overlappingAtoms p5)
 
-p5NNadd :: IO()
-p5NNadd = main p5NNrec 1 0.4 0.2
+p5NNadd :: IO NeuralNetwork
+p5NNadd = additionalConnectionsIO p5NNrec 1 0.4 0.2
