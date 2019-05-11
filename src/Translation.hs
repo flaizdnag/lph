@@ -411,7 +411,6 @@ additionalConnectionsIO nn l ba r = do
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 p1 :: LP
 p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
@@ -429,7 +428,7 @@ p2NNrec :: NeuralNetwork
 p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
 
 p2NNadd :: IO NeuralNetwork
-p2NNadd = additionalConnectionsIO p2NNrec 2 0.4 4
+p2NNadd = additionalConnectionsIO p2NNrec 1 0.0 0.05
 
 p3 :: LP
 p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]

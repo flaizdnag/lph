@@ -27,6 +27,7 @@ dependencies:
 - scotty
 - text
 - aeson
+- random
 
 library:
   source-dirs: src

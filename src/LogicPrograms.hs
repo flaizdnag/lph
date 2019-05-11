@@ -57,15 +57,18 @@ module LogicPrograms
     , bp
     , atomDef
     , isModel2vLP
-    , isModel3vLP
-    , evalBody
+    , isModelLukasiewiczLP
+    , evalBodyLukasiewicz
     , lpSymDifference
+    , modifiedLP
+    , intsLPgenerator
+    , getCountermodelsLuk
     ) where
 
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
-import Data.List (nub, intercalate)
+import Data.List (nub, intercalate, subsequences, intersect)
 
 
 -- | Atoms are basic structures for Horn clauses.
@@ -100,8 +103,8 @@ instance TwoValuedSemantic Atom IntLP where
         | elem a (trLP int) = Tr2v
         | otherwise         = Fa2v
 
-instance ThreeValuedSemantic Atom IntLP where
-    eval3v a int
+instance LukasiewiczSemantic Atom IntLP where
+    evalLukasiewicz a int
         | elem a (trLP int) = Tr3v
         | elem a (faLP int) = Fa3v
         | otherwise         = Un3v
@@ -124,34 +127,34 @@ data Clause =
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of
-        Fact h                   -> eval2v h int
-        Assumption _             -> Tr2v
+        Fact h               -> eval2v h int
+        Assumption _         -> Tr2v
         Cl h pb nb
-            | isATr h            -> Tr2v
-            | isBodyFa pb nb     -> Tr2v
-            | otherwise          -> Fa2v
+            | isAtomTr h     -> Tr2v
+            | isBodyFa pb nb -> Tr2v
+            | otherwise      -> Fa2v
         where
-            isATr = \x -> eval2v (x :: Atom) int == Tr2v
-            isAFa = \x -> eval2v (x :: Atom) int == Fa2v
-            isBodyFa = \x y -> any isAFa (x :: [Atom]) || any isAFa (y :: [Atom])
+            isAtomTr x   = eval2v (x :: Atom) int == Tr2v
+            isAtomFa x   = eval2v (x :: Atom) int == Fa2v
+            isBodyFa x y = any isAtomFa (x :: [Atom]) || any isAtomTr (y :: [Atom])
 
-instance ThreeValuedSemantic Clause IntLP where
-    eval3v cl int = case cl of
-        Fact h                          -> eval3v h int
-        Assumption _                    -> Tr3v
+instance LukasiewiczSemantic Clause IntLP where
+    evalLukasiewicz cl int = case cl of
+        Fact h                             -> evalLukasiewicz h int
+        Assumption _                       -> Tr3v
         Cl h pb nb
-            | isATr h                   -> Tr3v
-            | isBodyFa pb nb            -> Tr3v
-            | isAUn h && isBodyUn pb nb -> Tr3v
-            | isAFa h && isBodyTr pb nb -> Fa3v
-            | otherwise                 -> Un3v
+            | isAtomTr h                   -> Tr3v
+            | isBodyFa pb nb               -> Tr3v
+            | isAtomUn h && isBodyUn pb nb -> Tr3v
+            | isAtomFa h && isBodyTr pb nb -> Fa3v
+            | otherwise                    -> Un3v
         where
-            isATr = \x -> eval3v (x :: Atom) int == Tr3v
-            isAFa = \x -> eval3v (x :: Atom) int == Fa3v
-            isAUn = \x -> eval3v (x :: Atom) int == Un3v
-            isBodyTr = \x y -> all isATr (x :: [Atom]) && all isATr (y :: [Atom])
-            isBodyFa = \x y -> any isAFa (x :: [Atom]) || any isAFa (y :: [Atom])
-            isBodyUn = \x y -> any isAUn (x :: [Atom]) || any isAUn (y :: [Atom])
+            isAtomTr x   = evalLukasiewicz (x :: Atom) int == Tr3v
+            isAtomFa x   = evalLukasiewicz (x :: Atom) int == Fa3v
+            isAtomUn x   = evalLukasiewicz (x :: Atom) int == Un3v
+            isBodyTr x y = all isAtomTr (x :: [Atom]) && all isAtomFa (y :: [Atom])
+            isBodyFa x y = any isAtomFa (x :: [Atom]) || any isAtomTr (y :: [Atom])
+            isBodyUn x y = any isAtomUn (x :: [Atom]) || any isAtomUn (y :: [Atom])
 
 instance Eq Clause where
     Fact h1       == Fact h2        = h1 == h2
@@ -273,8 +276,8 @@ bp = nub . bpDup
 atomDef :: Atom -> LP -> LP
 atomDef a lp = [ cl | cl <- lp, clHead cl == a ]
 
-evalBody :: Clause -> IntLP -> ThreeValues
-evalBody cl int = case cl of
+evalBodyLukasiewicz :: Clause -> IntLP -> ThreeValues
+evalBodyLukasiewicz cl int = case cl of
     Fact _                           -> Tr3v
     Assumption _                     -> Fa3v
     Cl h pb nb
@@ -282,17 +285,17 @@ evalBody cl int = case cl of
         | any isUn (pb ++ nb)        -> Un3v
         | otherwise                  -> Tr3v
             where
-                isTr = \x -> eval3v x int == Tr3v
-                isFa = \x -> eval3v x int == Fa3v
-                isUn = \x -> eval3v x int == Un3v
+                isTr x = evalLukasiewicz (x :: Atom) int == Tr3v
+                isFa x = evalLukasiewicz (x :: Atom) int == Fa3v
+                isUn x = evalLukasiewicz (x :: Atom) int == Un3v
 
 -- | Checks if a given interpretation is a model for a given logic program.
 isModel2vLP :: LP -> IntLP -> Bool
 isModel2vLP lp int = all (\x -> eval2v x int == Tr2v) lp
 
 -- | Checks if a given interpretation is a model for a given logic program.
-isModel3vLP :: LP -> IntLP -> Bool
-isModel3vLP lp int = all (\x -> eval3v x int == Tr3v) lp
+isModelLukasiewiczLP :: LP -> IntLP -> Bool
+isModelLukasiewiczLP lp int = all (\x -> evalLukasiewicz x int == Tr3v) lp
 
 -- | Symmetric difference between two logic programs (without atoms with 'h' in
 -- the upper index).
@@ -311,7 +314,49 @@ modifiedLP lp cl = case cl of
         where
             makeFact x       = Fact (A (idx x) (label x ++ "h"))
             makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
-            filteredPB       = filter (\x -> not $ elem (Assumption x) lp) pb
-            filteredNB       = filter (\x -> not $ elem (Fact x) lp) nb
-            facts            = map makeFact filteredPB
-            assumptions      = map makeAssumption filteredNB
+            --filteredPB       = filter (\x -> not $ elem (Assumption x) lp) pb
+            --filteredNB       = filter (\x -> not $ elem (Fact x) lp) nb
+            facts            = map makeFact pb
+            assumptions      = map makeAssumption nb
+
+intsLPgenerator :: [Atom] -> [IntLP]
+intsLPgenerator as =
+    [ IntLP x y | x <- powerAs, y <- powerAs, (null $ intersect y x) && (null $ intersect x y) ]
+    where
+        powerAs = subsequences as
+
+getCountermodelsLuk :: LP -> Clause -> [IntLP]
+getCountermodelsLuk lp cl = filter condition (intsLPgenerator $ bp $ cl : lp)
+    where
+        condition x = isModelLukasiewiczLP lp x && (not $ isModelLukasiewiczLP [cl] x)
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+lp1 :: LP
+lp1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+
+cl1 :: Clause
+cl1 = Cl (A 2 "") [A 1 ""] [A 3 ""]
+
+lp2 :: LP
+lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] [], Assumption (A 1 "")]
+
+lp3 ::LP
+lp3 = [Assumption (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl2 :: Clause
+cl2 = Cl (A 2 "") [A 1 ""] []
+
+lp4 :: LP
+lp4 = [Fact (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl3 :: Clause
+cl3 = Cl (A 2 "") [] [A 1 ""]
+
+lp5 :: LP
+lp5 = [Cl (A 1 "") [] [A 2 ""], Assumption (A 2 "")]
+
+cl4 :: Clause
+cl4 = Fact (A 1 "")

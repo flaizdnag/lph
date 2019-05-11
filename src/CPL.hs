@@ -17,7 +17,7 @@ module CPL
     ( Form (..)
     , IntCPL (..)
     , isModel2vCPL
-    , isModel3vCPL
+    , isModelLukasiewiczCPL
     ) where
 
 import LogicPrograms
@@ -82,13 +82,13 @@ instance TwoValuedSemantic Form IntCPL where
             | sameEval x y  -> Tr2v
             | otherwise     -> Fa2v
         where
-            isVTr    = \x -> elem (x :: Form) (trCPL int)
-            isTr     = \x -> eval2v (x :: Form) int == Tr2v
-            isFa     = \x -> eval2v (x :: Form) int == Fa2v
-            sameEval = \x y -> eval2v (x :: Form) int == eval2v (y :: Form) int
+            isVTr x      = elem (x :: Form) (trCPL int)
+            isTr x       = eval2v (x :: Form) int == Tr2v
+            isFa x       = eval2v (x :: Form) int == Fa2v
+            sameEval x y = eval2v (x :: Form) int == eval2v (y :: Form) int
 
-instance ThreeValuedSemantic Form IntCPL where
-    eval3v f int = case f of
+instance LukasiewiczSemantic Form IntCPL where
+    evalLukasiewicz f int = case f of
         F                      -> Fa3v
         T                      -> Tr3v
         V a
@@ -112,12 +112,12 @@ instance ThreeValuedSemantic Form IntCPL where
             | isUn x || isUn y -> Un3v
             | otherwise        -> Fa3v
         where
-            isVTr    = \x -> elem (x :: Form) (trCPL int)
-            isVFa    = \x -> elem (x :: Form) (faCPL int)
-            isTr     = \x -> eval3v (x :: Form) int == Tr3v
-            isFa     = \x -> eval3v (x :: Form) int == Fa3v
-            isUn     = \x -> eval3v (x :: Form) int == Un3v
-            sameEval = \x y -> eval3v (x :: Form) int == eval3v (y :: Form) int
+            isVTr x      = elem (x :: Form) (trCPL int)
+            isVFa x      = elem (x :: Form) (faCPL int)
+            isTr x       = evalLukasiewicz (x :: Form) int == Tr3v
+            isFa x       = evalLukasiewicz (x :: Form) int == Fa3v
+            isUn x       = evalLukasiewicz (x :: Form) int == Un3v
+            sameEval x y = evalLukasiewicz (x :: Form) int == evalLukasiewicz (y :: Form) int
 
 
 -- | An interpretation is a tuple with lists of variables: the first list
@@ -135,5 +135,5 @@ isModel2vCPL :: [Form] -> IntCPL -> Bool
 isModel2vCPL set int = all (\x -> eval2v x int == Tr2v) set
 
 -- | Checks if a given interpretation is a model for a given set of formulas.
-isModel3vCPL :: [Form] -> IntCPL -> Bool
-isModel3vCPL set int = all (\x -> eval3v x int == Tr3v) set
+isModelLukasiewiczCPL :: [Form] -> IntCPL -> Bool
+isModelLukasiewiczCPL set int = all (\x -> evalLukasiewicz x int == Tr3v) set
