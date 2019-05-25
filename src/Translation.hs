@@ -350,10 +350,6 @@ additionalConnections nn l ba rs = case addConnsFromTriple of
         , inpToHidConnections = inpToHidConnections nn ++ inpToHidConns
         , hidToOutConnections = hidToOutConnections nn ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) rs
         , recConnections      = recConnections nn
-<<<<<<< HEAD
---        , addConnections      = inpToHidConns ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) r
-=======
->>>>>>> upstream/master
         }
     where
         addConnsFromTriple = case unzip3 mkAddConns of (ns, xs, ys) -> (ns, concat xs, ys)
