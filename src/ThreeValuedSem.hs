@@ -13,12 +13,17 @@ Longer description
 -}
 module ThreeValuedSem
     ( ThreeValues (..)
-    , ThreeValuedSemantic (..)
+    , StrongKleeneSemantics (..)
+    , LukasiewiczSemantic (..)
     ) where
 
 
-class ThreeValuedSemantic a b where
-    eval3v :: a -> b -> ThreeValues
+class StrongKleeneSemantics a b where
+    evalStrKleene :: a -> b -> ThreeValues
+
+
+class LukasiewiczSemantic a b where
+    evalLukasiewicz :: a -> b -> ThreeValues
 
 
 data ThreeValues = Tr3v | Fa3v | Un3v
