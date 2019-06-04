@@ -13,7 +13,16 @@ Portability : POSIX
 ...
 -}
 module Translation
-    ( ) where
+    ( NNupdate(..) 
+    , bodyLength
+    , bodiesLength
+    , clSameHeads
+    , clsSameHeads
+    , emptyNN
+    , emptyNNupd
+    , mergeNNupd
+    , recursiveConnections
+    ) where
 
 import Auxiliary
 import NeuralNetworks

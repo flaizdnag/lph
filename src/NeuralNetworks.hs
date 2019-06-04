@@ -15,6 +15,9 @@ module NeuralNetworks
     ( Neuron (..)
     , Connection (..)
     , NeuralNetwork (..)
+    , showNNPython
+    , showNs
+    , showConns
     ) where
 
 
@@ -70,7 +73,7 @@ showNNPython (NN iL hL oL rL ihC hoC rC) = mapM_ putStrLn [
 showNs :: [Neuron] -> String
 showNs []                       = "], "
 showNs ((Neuron l aF b idx):xs) = case length ((Neuron l aF b idx):xs) of 
-    1 -> "(" ++ show l ++ ", " ++ show aF ++ ", " ++ show b ++ ", " ++ show idx ++ ")]"
+    1 -> "(" ++ show l ++ ", " ++ show aF ++ ", " ++ show b ++ ", " ++ show idx ++ ")], "
     _ -> "(" ++ show l ++ ", " ++ show aF ++ ", " ++ show b ++ ", " ++ show idx ++ "), " ++ showNs xs
 
 
