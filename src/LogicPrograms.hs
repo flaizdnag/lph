@@ -3,7 +3,7 @@
 {-|
 Module      : LogicPrograms
 Description : Logic programs with basic properties as Herbrand base or parts of
-              Horn clauses.
+              clauses.
 Copyright   : (c) Aleksandra Cz., 2017-
                   Kinga O., 2017-
                   Andrzej G., 2017-
@@ -12,8 +12,8 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Logic programs in the propositional case are defined as sets of Horn clauses,
-which in turn can be defined in the following way:
+Logic programs in the propositional case are defined as sets of clauses, which
+in turn can be defined in the following way:
 
 \[
 a_0 \leftarrow a_1 , ... , a_n , \sim\!a_{n+1} , ... , \sim\!a_m
@@ -21,18 +21,18 @@ a_0 \leftarrow a_1 , ... , a_n , \sim\!a_{n+1} , ... , \sim\!a_m
 
 where \(a_0\), ..., \(a_m\) are propositions called atoms, \(\leftarrow\) is
 a simple connector and \(\sim\) represents negation as finite failure.
-Atom \(a_0\) is called the head of a Horn clause and the rest of the atoms,
-i.e. \(a_1\), ..., \(a_m\), form the body of a Horn clause. As it can be seen in
-the example above, there are two types of literals in the body of a Horn clause:
-atoms and negated atoms. Since the negated atoms occur only in the body of a
-Horn clause, we decided to implement a Horn clause as a tuple with atom (the
-head of a Horn clause), a list of atoms that occur without the negation in the
-body of a Horn clause, and a list of atoms that occur with negation in the body
-of a Horn clause, instead of defining the negation itself.
+Atom \(a_0\) is called the head of a clause and the rest of the atoms, i.e.
+\(a_1\), ..., \(a_m\), form the body of a clause. As it can be seen in the
+example above, there are two types of literals in the body of a clause: atoms
+and negated atoms. Since the negated atoms occur only in the body of a clause,
+we decided to implement a clause as a tuple with atom (the head of a clause), a
+list of atoms that occur without the negation in the body of a clause, and a
+list of atoms that occur with negation in the body of a clause, instead of
+defining the negation itself.
 
-This module contains definitions of types for atoms, Horn clauses and logic
-programs, as well as functions that provide essential properties of Horn clauses
-and logic programs.
+This module contains definitions of types for atoms, clauses and logic programs,
+as well as functions that provide essential properties of clauses and logic
+programs.
 -}
 module LogicPrograms
     ( Atom (..)
@@ -71,7 +71,7 @@ import ThreeValuedSem
 import Data.List (nub, intercalate, subsequences, intersect)
 
 
--- | Atoms are basic structures for Horn clauses.
+-- | Atoms are basic structures for clauses.
 data Atom = A
     { idx :: Int
     , label :: [Char]
@@ -111,10 +111,10 @@ instance LukasiewiczSemantic Atom IntLP where
 
 
 -- | We do not implement negation as finite failure---instead, the negated
--- atoms from the body of a Horn clause are kept in a separate list. The tuple
--- is organised in the following way: atom, which is the head of a Horn clause,
--- list of atoms from the body of a Horn clause that are not preceded by
--- negation, list of atoms from the body of a Horn clause that are negated.
+-- atoms from the body of a clause are kept in a separate list. The tuple is
+-- organised in the following way: atom, which is the head of a clause, list of
+-- atoms from the body of a clause that are not preceded by negation, list of
+-- atoms from the body of a clause that are negated.
 data Clause =
       Fact { clHead :: Atom }
     | Assumption { clHead :: Atom }
@@ -127,34 +127,32 @@ data Clause =
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of
-        Fact h               -> eval2v h int
-        Assumption _         -> Tr2v
-        Cl h pb nb
-            | isAtomTr h     -> Tr2v
-            | isBodyFa pb nb -> Tr2v
-            | otherwise      -> Fa2v
+        Fact h                 -> eval2v h int
+        Assumption _           -> Tr2v
+        _
+            | headTr || bodyFa -> Tr2v
+            | otherwise        -> Fa2v
         where
-            isAtomTr x   = eval2v (x :: Atom) int == Tr2v
-            isAtomFa x   = eval2v (x :: Atom) int == Fa2v
-            isBodyFa x y = any isAtomFa (x :: [Atom]) || any isAtomTr (y :: [Atom])
+            headTr = eval2v (clHead cl) int == Tr2v
+            bodyFa = evalBody2v cl int == Tr2v
 
 instance LukasiewiczSemantic Clause IntLP where
     evalLukasiewicz cl int = case cl of
-        Fact h                             -> evalLukasiewicz h int
-        Assumption _                       -> Tr3v
-        Cl h pb nb
-            | isAtomTr h                   -> Tr3v
-            | isBodyFa pb nb               -> Tr3v
-            | isAtomUn h && isBodyUn pb nb -> Tr3v
-            | isAtomFa h && isBodyTr pb nb -> Fa3v
-            | otherwise                    -> Un3v
+        Fact h                 -> evalLukasiewicz h int
+        Assumption _           -> Tr3v
+        _
+            | headTr           -> Tr3v
+            | bodyFa           -> Tr3v
+            | headUn && bodyUn -> Tr3v
+            | headFa && bodyTr -> Fa3v
+            | otherwise        -> Un3v
         where
-            isAtomTr x   = evalLukasiewicz (x :: Atom) int == Tr3v
-            isAtomFa x   = evalLukasiewicz (x :: Atom) int == Fa3v
-            isAtomUn x   = evalLukasiewicz (x :: Atom) int == Un3v
-            isBodyTr x y = all isAtomTr (x :: [Atom]) && all isAtomFa (y :: [Atom])
-            isBodyFa x y = any isAtomFa (x :: [Atom]) || any isAtomTr (y :: [Atom])
-            isBodyUn x y = any isAtomUn (x :: [Atom]) || any isAtomUn (y :: [Atom])
+            headTr = evalLukasiewicz (clHead cl) int == Tr3v
+            headFa = evalLukasiewicz (clHead cl) int == Fa3v
+            headUn = evalLukasiewicz (clHead cl) int == Un3v 
+            bodyTr = evalBodyLukasiewicz cl int == Tr3v
+            bodyFa = evalBodyLukasiewicz cl int == Fa3v
+            bodyUn = evalBodyLukasiewicz cl int == Un3v
 
 instance Eq Clause where
     Fact h1       == Fact h2        = h1 == h2
@@ -172,7 +170,7 @@ instance Show Clause where
             | otherwise -> show h ++ " <- " ++ intercalate ", " (map show pb) ++ ", ~" ++ intercalate ", ~" (map show nb)
 
 
--- | Logic program is a list of Horn clauses.
+-- | Logic program is a list of clauses.
 type LP = [Clause]
 
 
@@ -192,11 +190,13 @@ clPBody cl = case cl of
     Fact _       -> []
     Assumption _ -> []
 
+
 clNBody :: Clause -> [Atom]
 clNBody cl = case cl of
     Cl _ _ _     -> clNAtoms cl
     Fact _       -> []
     Assumption _ -> []
+
 
 clBodyDup :: Clause -> [Atom]
 clBodyDup cl = case cl of
@@ -204,104 +204,149 @@ clBodyDup cl = case cl of
     Fact _       -> []
     Assumption _ -> []
 
+
 clBody :: Clause -> [Atom]
 clBody = nub . clBodyDup
 
--- | Function that returns all heads of Horn clauses from a given logic program
--- with duplicates.
+
+-- | All heads of clauses from a given logic program with duplicates.
 lpHeadsDup :: LP -> [Atom]
 lpHeadsDup = map clHead
 
--- | Function that returns all heads of Horn clauses from a given logic program
--- without duplicates.
+
+-- | All heads of clauses from a given logic program without duplicates.
 lpHeads :: LP -> [Atom]
 lpHeads = nub . lpHeadsDup
 
--- | Function that returns atoms from the bodies of all Horn clauses from
--- a given logic program with duplicates.
+
+-- | Atoms from the bodies of all clauses from a given logic program with
+-- duplicates.
 lpBodiesDup :: LP -> [Atom]
 lpBodiesDup = concatMap clBodyDup
 
--- | Function that returns atoms from the bodies of all Horn clauses from
--- a given logic program without duplicates.
+
+-- | Atoms from the bodies of all clauses from a given logic program without
+-- duplicates.
 lpBodies :: LP -> [Atom]
 lpBodies = nub . lpBodiesDup
 
--- | Function that returns a list of atoms that are heads of some Horn clauses
--- from a given logic program, and in the same time they do not occur in any
--- body of those Horn clauses.
+
+-- | A list of atoms that are heads of some clauses from a given logic program,
+-- and in the same time they do not occur in any body of those clauses.
 onlyHeads :: LP -> [Atom]
 onlyHeads lp = [ a | a <- lpHeads lp, not $ elem a (lpBodiesDup lp) ]
 
--- | Function that returns a list of atoms that occur in a body of some Horn
--- clause from a given logic program, and in the same time they do not occur in
--- any head of those Horn clauses.
+
+-- | A list of atoms that occur in a body of some clause from a given logic
+-- program, and in the same time they do not occur in any head of those clauses.
 onlyBodies :: LP -> [Atom]
 onlyBodies lp = [ a | a <- lpBodies lp, not $ elem a (lpHeads lp) ]
 
--- | Function that returns positive atoms from bodies of all Horn clauses form
--- a given logic program with duplicates.
+
+-- | Positive atoms from bodies of all clauses form a given logic program with
+-- duplicates.
 lpPBodiesDup :: LP -> [Atom]
 lpPBodiesDup = concatMap clPBody
 
--- | Function that returns positive atoms from bodies of all Horn clauses form
--- a given logic program without duplicates.
+
+-- | Positive atoms from bodies of all clauses form a given logic program
+-- without duplicates.
 lpPBodies :: LP -> [Atom]
 lpPBodies = nub . lpPBodiesDup
 
--- | Function that returns negative atoms from bodies of all Horn clauses form
--- a given logic program with duplicates.
+
+-- | Negative atoms from bodies of all clauses form a given logic program with
+-- duplicates.
 lpNBodiesDup :: LP -> [Atom]
 lpNBodiesDup = concatMap clNBody
 
--- | Function that returns negative atoms from bodies of all Horn clauses form
--- a given logic program with duplicates.
+
+-- | Negative atoms from bodies of all clauses form a given logic program with
+-- duplicates.
 lpNBodies :: LP -> [Atom]
 lpNBodies = nub . lpNBodiesDup
 
--- | Function that returns the Herbrand base of a logic program, i.e. the list
--- of all atoms that occur in the Horn clauses from a given logic program with
--- duplicates.
+
+-- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
+-- in the clauses from a given logic program (with duplicates).
 bpDup :: LP -> [Atom]
 bpDup lp = lpHeadsDup lp ++ lpBodiesDup lp
 
--- | Function that returns the Herbrand base of a logic program, i.e. the list
--- of all atoms that occur in the Horn clauses from a given logic program
--- without duplicates.
+
+-- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
+-- in the clauses from a given logic program (without duplicates).
 bp :: LP -> [Atom]
 bp = nub . bpDup
 
--- | Definition of an atom is the set of all Horn clauses that have the atom as
--- the head.
+
+-- | Definition of an atom is the set of all clauses that have the atom as the
+-- head.
 atomDef :: Atom -> LP -> LP
 atomDef a lp = [ cl | cl <- lp, clHead cl == a ]
 
+
+-- | Evaluates the body of a clause in the two-valued semantic.
+evalBody2v :: Clause -> IntLP -> TwoValues
+evalBody2v cl int = case cl of
+    Fact _                           -> Tr2v
+    Assumption _                     -> Fa2v
+    Cl _ pb nb
+        | any isFa pb || any isTr nb -> Fa2v
+        | otherwise                  -> Tr2v
+    where
+        isTr x = eval2v (x :: Atom) int == Tr2v
+        isFa x = eval2v (x :: Atom) int == Fa2v
+
+
+-- | Evaluates the body of a clause in the Lukasiewicz semantic.
 evalBodyLukasiewicz :: Clause -> IntLP -> ThreeValues
 evalBodyLukasiewicz cl int = case cl of
     Fact _                           -> Tr3v
     Assumption _                     -> Fa3v
-    Cl h pb nb
+    Cl _ pb nb
         | any isFa pb || any isTr nb -> Fa3v
         | any isUn (pb ++ nb)        -> Un3v
         | otherwise                  -> Tr3v
-            where
-                isTr x = evalLukasiewicz (x :: Atom) int == Tr3v
-                isFa x = evalLukasiewicz (x :: Atom) int == Fa3v
-                isUn x = evalLukasiewicz (x :: Atom) int == Un3v
+    where
+        isTr x = evalLukasiewicz (x :: Atom) int == Tr3v
+        isFa x = evalLukasiewicz (x :: Atom) int == Fa3v
+        isUn x = evalLukasiewicz (x :: Atom) int == Un3v
 
--- | Checks if a given interpretation is a model for a given logic program.
+
+-- | Checks if a given interpretation is a model for a given logic program in
+-- two-valued semantic.
 isModel2vLP :: LP -> IntLP -> Bool
 isModel2vLP lp int = all (\x -> eval2v x int == Tr2v) lp
 
--- | Checks if a given interpretation is a model for a given logic program.
+
+-- | Checks if a given interpretation is a model for a given logic program in
+-- Lukasiewicz semantic.
 isModelLukasiewiczLP :: LP -> IntLP -> Bool
 isModelLukasiewiczLP lp int = all (\x -> evalLukasiewicz x int == Tr3v) lp
+
+
+-- | Generator of all possible interpretations from a given set of atoms.
+intsLPgenerator :: [Atom] -> [IntLP]
+intsLPgenerator as =
+    [ IntLP x y | x <- powerAs, y <- powerAs, (null $ intersect y x) && (null $ intersect x y) ]
+    where
+        powerAs = subsequences as
+
+
+-- | Generates all models of a given logic program that are not models of
+-- a given clause (for Lukasiewicz semantic).
+getCountermodelsLuk :: LP -> Clause -> [IntLP]
+getCountermodelsLuk lp cl = filter countermodels (intsLPgenerator $ bp $ cl : lp)
+    where
+        countermodels x = isModelLukasiewiczLP lp x && (not $ isModelLukasiewiczLP [cl] x)
+
 
 -- | Symmetric difference between two logic programs (without atoms with 'h' in
 -- the upper index).
 lpSymDifference :: LP -> LP -> LP
 lpSymDifference lp1 lp2 =
     [ a | a <- symDifference lp1 lp2, not $ elem 'h' (label $ clHead a) ]
+
 
 -- | Modifies a logic program w.r.t. a clause 'h', i.e. atoms from the body of
 -- 'h' are added to the logic program as facts, if they are not preceded by
@@ -310,53 +355,9 @@ modifiedLP :: LP -> Clause -> LP
 modifiedLP lp cl = case cl of
     Fact _       -> lp
     Assumption _ -> lp
-    Cl h pb nb   -> lp ++ facts ++ assumptions
+    Cl _ pb nb   -> lp ++ facts ++ assumptions
         where
             makeFact x       = Fact (A (idx x) (label x ++ "h"))
             makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
-            --filteredPB       = filter (\x -> not $ elem (Assumption x) lp) pb
-            --filteredNB       = filter (\x -> not $ elem (Fact x) lp) nb
             facts            = map makeFact pb
             assumptions      = map makeAssumption nb
-
-intsLPgenerator :: [Atom] -> [IntLP]
-intsLPgenerator as =
-    [ IntLP x y | x <- powerAs, y <- powerAs, (null $ intersect y x) && (null $ intersect x y) ]
-    where
-        powerAs = subsequences as
-
-getCountermodelsLuk :: LP -> Clause -> [IntLP]
-getCountermodelsLuk lp cl = filter condition (intsLPgenerator $ bp $ cl : lp)
-    where
-        condition x = isModelLukasiewiczLP lp x && (not $ isModelLukasiewiczLP [cl] x)
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-lp1 :: LP
-lp1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
-
-cl1 :: Clause
-cl1 = Cl (A 2 "") [A 1 ""] [A 3 ""]
-
-lp2 :: LP
-lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] [], Assumption (A 1 "")]
-
-lp3 ::LP
-lp3 = [Assumption (A 1 ""), Cl (A 2 "") [A 1 ""] []]
-
-cl2 :: Clause
-cl2 = Cl (A 2 "") [A 1 ""] []
-
-lp4 :: LP
-lp4 = [Fact (A 1 ""), Cl (A 2 "") [A 1 ""] []]
-
-cl3 :: Clause
-cl3 = Cl (A 2 "") [] [A 1 ""]
-
-lp5 :: LP
-lp5 = [Cl (A 1 "") [] [A 2 ""], Assumption (A 2 "")]
-
-cl4 :: Clause
-cl4 = Fact (A 1 "")

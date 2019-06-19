@@ -16,6 +16,48 @@ module Examples () where
 import LogicPrograms
 
 
+-- from LogicPrograms
+lp1 :: LP
+lp1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+
+cl1 :: Clause
+cl1 = Cl (A 2 "") [A 1 ""] [A 3 ""]
+
+lp2 :: LP
+lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] [], Assumption (A 1 "")]
+
+lp3 ::LP
+lp3 = [Assumption (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl2 :: Clause
+cl2 = Cl (A 2 "") [A 1 ""] []
+
+lp4 :: LP
+lp4 = [Fact (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl3 :: Clause
+cl3 = Cl (A 2 "") [] [A 1 ""]
+
+lp5 :: LP
+lp5 = [Cl (A 1 "") [] [A 2 ""], Assumption (A 2 "")]
+
+cl4 :: Clause
+cl4 = Fact (A 1 "")
+
+lp6 :: LP
+lp6 = [Fact (A 1 ""), Cl (A 2 "") [] [A 1 ""]]
+
+cl5 :: Clause
+cl5 = Cl (A 2 "") [] [A 1 "", A 3 ""]
+
+
+
+
+
+
+
+
+
 exl = [(A 1, [A 2], [A 3]), (A 4, [A 6], [A 5]), (A 4, [A 1], [A 7]), (A 2, [], [])]
 ex1 = [(A 1, [], []), (A 2, [], [A 3]), (A 4, [A 1], [A 3])]
 ex1a = [(A 1, [], []), (A 2, [], [A 3]), (A 4, [A 1, A 3], [])]
