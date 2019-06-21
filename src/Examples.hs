@@ -50,9 +50,48 @@ lp6 = [Fact (A 1 ""), Cl (A 2 "") [] [A 1 ""]]
 cl5 :: Clause
 cl5 = Cl (A 2 "") [] [A 1 "", A 3 ""]
 
+-- from Completion
+
+p1a :: LP
+p1a = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
+
+-- from PhiOperator
+lp1' :: LP
+lp1' = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+
+cl1' :: Clause
+cl1' = Cl (A 2 "") [A 1 ""] [A 3 ""]
+
+lp2' :: LP
+lp2' = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] [], Assumption (A 1 "")]
+
+lp3' ::LP
+lp3' = [Assumption (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl2' :: Clause
+cl2' = Cl (A 2 "") [A 1 ""] []
+
+lp4' :: LP
+lp4' = [Fact (A 1 ""), Cl (A 2 "") [A 1 ""] []]
+
+cl3' :: Clause
+cl3' = Cl (A 2 "") [] [A 1 ""]
+
+cl4' :: Clause
+cl4' = Cl (A 2 "") [] [A 1 "", A 3 ""]
 
 
+p3 :: LP
+p3 = [Cl (A 1 "") [A 2 ""] [], Cl (A 1 "") [A 3 ""] [], Assumption (A 3 "")]
 
+p4 :: LP
+p4 = [Fact (A 3 ""), Assumption (A 3 "")]
+
+p5 :: LP
+p5 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Assumption (A 3 ""), Fact (A 2 "")]
+
+p6 :: LP
+p6 = [Cl (A 1 "") [A 2 ""] []]
 
 
 

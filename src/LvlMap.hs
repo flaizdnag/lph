@@ -19,7 +19,6 @@ module LvlMap
 
 import LogicPrograms
 import Data.List (permutations, (\\), lookup)
---import qualified Data.Map.Strict as Map
 
 
 -- | Generates all possible level mappings for a given logic program, where the
@@ -38,70 +37,10 @@ possibleLvLMaps lp = [ xs |
         let zs      = zip remA remIperm ],
     let xs  = bs ++ hs ++ rs ]
 
+
 -- | Takes an atom and a level mapping and returns the value assigned to the
 -- atom.
 lvlMVal :: Atom -> [(Atom, Int)] -> Int
 lvlMVal a lvlM = case lookup a lvlM of
-    Nothing -> 0
+    Nothing -> -404
     Just n  -> n
-
---------------------------------------------------------------------------------
--- Old code --- soon will disappear                                           --
---------------------------------------------------------------------------------
-
-{-
--- | generates list of subsequent numbers as long as given list
-numList :: [Atom] -> [Int]
-numList [] = []
-numList xs = [x | x <- [1..n]]
-             where n = length xs
-
--- | checks if head does not appear in bodies
-onlyHead :: LogicP -> Atom -> Bool
-onlyHead [] _ = False
-onlyHead xs y = if elem y (bPBodies xs) then False
-                else True
-
--- | checks if atom appears only in bodies
-onlyBody :: LogicP -> Atom -> Bool
-onlyBody [] _ = False
-onlyBody xs y = if elem y (bPHeads xs) then False
-                else True
-
--- | sorts Bp elements into 3 lists in order: 
--- elements that appear only in heads,
--- elements that appear both in heads and bodies
--- elements that appear only in bodies.
-sortElems :: LogicP -> ([Atom], [Atom], [Atom])
-sortElems xs = ([x | x <- (bPHeads xs), onlyHead xs x], 
-                [y | y <- (bPHeads xs), (onlyHead xs y) == False], 
-                [z | z <- (bPBodies xs), onlyBody xs z])
-
-
--- | replaces atoms with assigned numbers
-mapNum :: ([Atom], [Atom], [Atom]) -> [Int] -> ([Int], [Int], [Int])
-mapNum (a, b, c) xs = (x, y, z)
-                            where
-                                z = (take (length c) xs)
-                                x = (drop ((length xs) - (length a)) xs)
-                                y = (xs \\ (x ++ z))
-
-mapNum' :: LogicP -> ([Int], [Int], [Int])
-mapNum' xs = mapNum (sortElems xs) (numList (bP xs))
-
--- | returns permutations of list
-permN :: ([Atom], [Atom], [Atom]) -> [[Atom]]
-permN (a, b, c) = permutations b
-
--- checker??
-
--- | replaces middle list with one of the permutations (depended on checker)
-replaceNum :: ([Atom], [Atom], [Atom]) -> [[Atom]] -> ([Atom], [Atom], [Atom])
-replaceNum (a, b, c) (x:xs) = (a, x, c)
-
-{-
-lvlMap (x:xs) = if checker (mapNum (a, x, c)) 
-                then mapNum (a, x, c) 
-                else lvlMap xs
-                -}
--}

@@ -134,6 +134,7 @@ instance Show IntCPL where
 isModel2vCPL :: [Form] -> IntCPL -> Bool
 isModel2vCPL set int = all (\x -> eval2v x int == Tr2v) set
 
+
 -- | Checks if a given interpretation is a model for a given set of formulas.
 isModelLukasiewiczCPL :: [Form] -> IntCPL -> Bool
 isModelLukasiewiczCPL set int = all (\x -> evalLukasiewicz x int == Tr3v) set

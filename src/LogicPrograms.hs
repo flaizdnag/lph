@@ -58,6 +58,7 @@ module LogicPrograms
     , atomDef
     , isModel2vLP
     , isModelLukasiewiczLP
+    , evalBody2v
     , evalBodyLukasiewicz
     , lpSymDifference
     , modifiedLP
