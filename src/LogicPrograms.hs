@@ -176,10 +176,21 @@ type LP = [Clause]
 -- atoms that are mapped to 'truth' and the second those that are mapped to
 -- 'false'.
 data IntLP = IntLP { trLP :: [Atom] , faLP :: [Atom] }
-    deriving (Read, Eq)
+    deriving (Read)
 
 instance Show IntLP where
     show (IntLP tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
+
+instance Eq IntLP where
+    IntLP tr1 fa1 == IntLP tr2 fa2 = eqLists tr1 tr2 && eqLists fa1 fa2
+
+instance Ord IntLP where
+    IntLP tr1 fa1 < IntLP tr2 fa2 =
+        isProperSublist tr1 tr2 && isProperSublist fa1 fa2
+
+    a <= b = (a < b) || (a == b)
+    a >  b = b < a
+    a >= b = b <= a
 
 
 clPBody :: Clause -> [Atom]
