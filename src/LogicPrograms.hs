@@ -184,6 +184,7 @@ instance Show IntLP where
 instance Eq IntLP where
     IntLP tr1 fa1 == IntLP tr2 fa2 = eqLists tr1 tr2 && eqLists fa1 fa2
 
+-- | The ordering of interpretations is knowledge-based ordering.
 instance Ord IntLP where
     IntLP tr1 fa1 < IntLP tr2 fa2 =
         isProperSublist tr1 tr2 && isProperSublist fa1 fa2
