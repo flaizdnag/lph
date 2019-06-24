@@ -14,7 +14,7 @@ Longer description
 -}
 module LvlMap
     ( possibleLvLMaps
-    , lvlMVal
+    , lvlMapValue
     ) where
 
 import LogicPrograms
@@ -40,7 +40,7 @@ possibleLvLMaps lp = [ xs |
 
 -- | Takes an atom and a level mapping and returns the value assigned to the
 -- atom.
-lvlMVal :: Atom -> [(Atom, Int)] -> Int
-lvlMVal a lvlM = case lookup a lvlM of
+lvlMapValue :: Atom -> [(Atom, Int)] -> Int
+lvlMapValue a lvlM = case lookup a lvlM of
     Nothing -> -404
     Just n  -> n

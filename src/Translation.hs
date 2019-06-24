@@ -31,6 +31,8 @@ import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
 import Data.Char 
 import System.Random
 
+
+-- | A special type for neural networks updates handling.
 data NNupdate = NNupdate
     { inpNeuToAdd      :: [Neuron]
     , hidNeuToAdd      :: [Neuron]
@@ -42,37 +44,35 @@ data NNupdate = NNupdate
     deriving (Show, Read)
 
 
--- | Function that returns length of the body of a given Horn clause.
+-- | The length of the body of a given clause.
 bodyLength :: Clause -> Int 
 bodyLength = length . clBody
 
 
--- | Function that returns lengths of all bodies of Horn clauses from a given
--- logic program. 
+-- | Lengths of all bodies of clauses from a given logic program. 
 bodiesLength :: LP -> [Int] 
 bodiesLength = map bodyLength
 
 
--- | Function that returns the number of Horn clauses that have the same atom
--- in their head as the given Horn clause.
+-- | The number of clauses that have the same atom in their head as the given
+-- clause.
 clSameHeads :: Clause -> LP -> Int 
 clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
 
 
--- | Function that returns the number of Horn clauses that have the same atom
--- in their head as the given Horn clause for every Horn clause in a given 
--- logic program. 
+-- | The number of clauses that have the same atom in their head as the given
+-- clause for every clause in a given logic program. 
 clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (\x -> clSameHeads x lp) lp
 
 
--- | Function that returns the base for the value A_min. 
+-- | The base for the value A_min. 
 aminBase :: LP -> Int -> Float
 aminBase lp maxBH = (fromIntegral (maxBH - 1) / fromIntegral (maxBH + 1))
 
 
--- | Function that returns weight of the connections in neural network for 
--- a given logic program. 
+-- | The base for weight of the connections in neural network for a given logic
+-- program. 
 wBase :: LP -> Float -> Float -> Int -> Float -> Int -> Int -> Float
 wBase lp amin r l beta maxBodies maxHeads = maximum [fstCondition, sndCondition]
     where
@@ -80,24 +80,16 @@ wBase lp amin r l beta maxBodies maxHeads = maximum [fstCondition, sndCondition]
         sndCondition = (2 / beta) * (((log $ 1 + amin) - (log $ 1 - amin) - (r * (fromIntegral $ l + 1)) ) / ((fromIntegral maxHeads) * (amin - 1) + amin + 1))
 
 
+-- | List of atoms that "overlap", i.e. atoms that have the same index number
+-- but one of them has label with "h" and the other does not.
 overlappingAtoms :: LP -> [(Atom, Atom)]
-overlappingAtoms lp = map convert filtered
+overlappingAtoms lp = [ (atom, atomCouterpart) |
+    atom <- snd partitionedAtoms,
+    atomCouterpart <- fst partitionedAtoms,
+    LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart ]
     where
-        atoms    = filter (\x -> not $ elem 'h' (LogicPrograms.label x)) (bp lp)
-        combine  = \x -> (x, getAtomCounterpart x (bp lp))
-        filtered = filter (\(x, y) -> not $ y == Nothing) $ map combine atoms
-        convert  = \(x, Just y) -> (x, y)
-
-
-getAtomCounterpart :: Atom -> [Atom] -> Maybe Atom
-getAtomCounterpart atom atoms = find (\x -> isAtomCounterpart atom x) atoms
-
-
-isAtomCounterpart :: Atom -> Atom -> Bool
-isAtomCounterpart a1 a2 =
-    LogicPrograms.idx a1 == LogicPrograms.idx a2 && 
-    eqLists (LogicPrograms.label a1) (delete 'h' $ LogicPrograms.label a2) &&
-    not (a1 == a2)
+        -- atoms with "h" in the label and atoms without "h" in the label
+        partitionedAtoms = partition (\x -> elem 'h' (LogicPrograms.label x)) (bp lp)
 
 
 baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> NeuralNetwork
@@ -415,62 +407,3 @@ additionalConnectionsIO :: NeuralNetwork -> Int -> Float -> Float -> IO NeuralNe
 additionalConnectionsIO nn l ba r = do 
     rs <- rand r
     return (additionalConnections nn l ba rs)
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-p1 :: LP
-p1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
-
-p1NN :: NeuralNetwork
-p1NN = baseNN p1 0.5 0.5 1 0.0 0.05 2 
-
-
-p2 :: LP
-p2 = p1 ++ [Fact (A 2 "h")]
-
-p2NN :: NeuralNetwork
-p2NN = baseNN p2 0.5 0.5 1 0.0 0.05 2
-
-p2NNrec :: NeuralNetwork
-p2NNrec = recursiveConnections p2NN (overlappingAtoms p2)
-
-p2NNadd :: IO NeuralNetwork
-p2NNadd = additionalConnectionsIO p2NNrec 1 0.0 0.05
-
-p3 :: LP
-p3 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
-
-p3NN :: NeuralNetwork
-p3NN = baseNN p3 0.5 0.5 1 0.0 0.05 2
-
-p3NNrec :: NeuralNetwork
-p3NNrec = recursiveConnections p3NN (overlappingAtoms p3)
-
-p3NNadd :: IO NeuralNetwork
-p3NNadd = additionalConnectionsIO p3NNrec 2 0.4 4
-
-p4 :: LP 
-p4 = [Cl (A 1 "")[A 2 "", A 3 ""][], Cl (A 2 "")[A 3 ""][], Cl (A 2 "")[A 1 ""][]]
-
-p4NN :: NeuralNetwork
-p4NN = baseNN p4 0.5 0.5 1 0.0 0.05 2
-
-p4NNrec :: NeuralNetwork
-p4NNrec = recursiveConnections p4NN (overlappingAtoms p4)
-
-p4NNadd :: IO NeuralNetwork
-p4NNadd = additionalConnectionsIO p4NNrec 2 0.0 0.2
-
-p5 :: LP
-p5 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 2 "") [A 4 ""] [], Fact (A 4 "")]
-
-p5NN :: NeuralNetwork
-p5NN = baseNN p5 0.5 0.5 1 0.0 0.05 2
-
-p5NNrec :: NeuralNetwork
-p5NNrec = recursiveConnections p5NN (overlappingAtoms p5)
-
-p5NNadd :: IO NeuralNetwork
-p5NNadd = additionalConnectionsIO p5NNrec 1 0.4 0.2

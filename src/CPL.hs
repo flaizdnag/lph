@@ -24,7 +24,7 @@ import LogicPrograms
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
-import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
+import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub, intercalate)
 
 
 -- | The CPL language.
@@ -36,7 +36,21 @@ data Form =
     | E Form Form   -- equivalence
     | T             -- verum
     | F             -- falsum      
-    deriving (Show, Read)
+    deriving (Read)
+
+instance Show Form where
+    show form = case form of
+        T -> "T"
+        F -> "F"
+        V a -> show a
+        N f -> "~" ++ show f
+        C (x:xs)
+            | null xs -> show x
+            | otherwise -> intercalate " & " (map show (x:xs))
+        D (x:xs)
+            | null xs -> show x
+            | otherwise -> intercalate " v " (map show (x:xs))
+        E f1 f2 -> show f1 ++ " <-> " ++ show f2
 
 instance Eq Form where
     T     == T      = True

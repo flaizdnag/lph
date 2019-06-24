@@ -33,7 +33,6 @@ instance Show Neuron where
     show (Neuron l aF b idx) = "(" ++ l ++ ", " ++ aF ++ ", " ++ show b ++ ", " ++ idx ++ ")"
 
 
-
 data Connection = Connection
     { from   :: String
     , to     :: String
@@ -43,7 +42,6 @@ data Connection = Connection
 
 instance Show Connection where
     show (Connection from to w) = "(" ++ from ++ ", " ++ to ++ ", " ++ show w ++ ")"
-
 
 
 data NeuralNetwork = NN
@@ -69,7 +67,6 @@ showNNPython (NN iL hL oL rL ihC hoC rC) = mapM_ putStrLn [
     ", \"recConnections\" = [" ++ showConns rC ++ "}"]
 
 
-
 showNs :: [Neuron] -> String
 showNs []                       = "], "
 showNs ((Neuron l aF b idx):xs) = case length ((Neuron l aF b idx):xs) of 
@@ -82,4 +79,3 @@ showConns []                          = "]"
 showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) of 
     1 -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ ")]"
     _ -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ "), " ++ showConns xs
-

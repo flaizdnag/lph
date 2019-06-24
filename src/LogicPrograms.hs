@@ -73,10 +73,7 @@ import Data.List (nub, intercalate, subsequences, intersect)
 
 
 -- | Atoms are basic structures for clauses.
-data Atom = A
-    { idx :: Int
-    , label :: [Char]
-    }
+data Atom = A { idx :: Int, label :: [Char] }
     deriving (Read)
 
 {-

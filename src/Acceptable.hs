@@ -79,7 +79,7 @@ conditionHCl cl lvlM int
     | null areNotCons   = all isSmaller (clBodyDup cl)
     | otherwise         = any isSmaller areNotCons
     where
-        isSmaller x = lvlMVal x lvlM < lvlMVal (clHead cl) lvlM
+        isSmaller x = lvlMapValue x lvlM < lvlMapValue (clHead cl) lvlM
         areNotCons  = intersect (clPBody cl) (faLP int) ++ intersect (clNBody cl) (trLP int)
 
 

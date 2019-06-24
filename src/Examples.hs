@@ -93,6 +93,62 @@ p5 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Assumption (A 3 ""), Fact (A 2 "")]
 p6 :: LP
 p6 = [Cl (A 1 "") [A 2 ""] []]
 
+-- from Translation
+p1'' :: LP
+p1'' = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
+
+--p1NN'' :: NeuralNetwork
+--p1NN'' = baseNN p1 0.5 0.5 1 0.0 0.05 2 
+
+
+p2'' :: LP
+p2'' = p1'' ++ [Fact (A 2 "h")]
+
+--p2NN'' :: NeuralNetwork
+--p2NN'' = baseNN p2 0.5 0.5 1 0.0 0.05 2
+
+--p2NNrec'' :: NeuralNetwork
+--p2NNrec'' = recursiveConnections p2NN (overlappingAtoms p2)
+
+--p2NNadd'' :: IO NeuralNetwork
+--p2NNadd'' = additionalConnectionsIO p2NNrec 1 0.0 0.05
+
+p3'' :: LP
+p3'' = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
+
+--p3NN'' :: NeuralNetwork
+--p3NN'' = baseNN p3 0.5 0.5 1 0.0 0.05 2
+
+--p3NNrec'' :: NeuralNetwork
+--p3NNrec'' = recursiveConnections p3NN (overlappingAtoms p3)
+
+--p3NNadd'' :: IO NeuralNetwork
+--p3NNadd'' = additionalConnectionsIO p3NNrec 2 0.4 4
+
+p4'' :: LP 
+p4'' = [Cl (A 1 "")[A 2 "", A 3 ""][], Cl (A 2 "")[A 3 ""][], Cl (A 2 "")[A 1 ""][]]
+
+--p4NN'' :: NeuralNetwork
+--p4NN'' = baseNN p4 0.5 0.5 1 0.0 0.05 2
+
+--p4NNrec'' :: NeuralNetwork
+--p4NNrec'' = recursiveConnections p4NN (overlappingAtoms p4)
+
+--p4NNadd'' :: IO NeuralNetwork
+--p4NNadd'' = additionalConnectionsIO p4NNrec 2 0.0 0.2
+
+p5'' :: LP
+p5'' = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 2 "") [A 4 ""] [], Fact (A 4 "")]
+
+--p5NN'' :: NeuralNetwork
+--p5NN'' = baseNN p5 0.5 0.5 1 0.0 0.05 2
+
+--p5NNrec'' :: NeuralNetwork
+--p5NNrec'' = recursiveConnections p5NN (overlappingAtoms p5)
+
+--p5NNadd'' :: IO NeuralNetwork
+--p5NNadd'' = additionalConnectionsIO p5NNrec 1 0.4 0.2
+
 
 
 
