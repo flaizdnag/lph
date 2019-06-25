@@ -62,14 +62,16 @@ module LogicPrograms
     , evalBodyLukasiewicz
     , lpSymDifference
     , modifiedLP
-    , intsLPgenerator
-    , getCountermodelsLuk
+    , intsLPgenerator2v
+    , intsLPgeneratorLuk
+    , getCounterModelsLuk
+    , getCounterModels2v
     ) where
 
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
-import Data.List (nub, intercalate, subsequences, intersect)
+import Data.List (nub, intercalate, subsequences, intersect, (\\))
 
 
 -- | Atoms are basic structures for clauses.
@@ -132,7 +134,7 @@ instance TwoValuedSemantic Clause IntLP where
             | otherwise        -> Fa2v
         where
             headTr = eval2v (clHead cl) int == Tr2v
-            bodyFa = evalBody2v cl int == Tr2v
+            bodyFa = evalBody2v cl int == Fa2v
 
 instance LukasiewiczSemantic Clause IntLP where
     evalLukasiewicz cl int = case cl of
@@ -335,18 +337,36 @@ isModelLukasiewiczLP :: LP -> IntLP -> Bool
 isModelLukasiewiczLP lp int = all (\x -> evalLukasiewicz x int == Tr3v) lp
 
 
--- | Generator of all possible interpretations from a given set of atoms.
-intsLPgenerator :: [Atom] -> [IntLP]
-intsLPgenerator as =
+-- | Generator of all possible interpretations from a given set of atoms (in
+-- 2-valued semantic).
+intsLPgenerator2v :: [Atom] -> [IntLP]
+intsLPgenerator2v as =
+    [ IntLP x (as \\ x) | x <- powerAs ]
+    where
+        powerAs = subsequences as
+
+
+-- | Generator of all possible interpretations from a given set of atoms (in
+-- Lukasiewicz semantic).
+intsLPgeneratorLuk :: [Atom] -> [IntLP]
+intsLPgeneratorLuk as =
     [ IntLP x y | x <- powerAs, y <- powerAs, (null $ intersect y x) && (null $ intersect x y) ]
     where
         powerAs = subsequences as
 
 
 -- | Generates all models of a given logic program that are not models of
+-- a given clause (for 2-valued semantic).
+getCounterModels2v :: LP -> Clause -> [IntLP]
+getCounterModels2v lp cl = filter countermodels (intsLPgenerator2v $ bp $ cl : lp)
+    where
+        countermodels x = isModel2vLP lp x && (not $ isModel2vLP [cl] x)
+
+
+-- | Generates all models of a given logic program that are not models of
 -- a given clause (for Lukasiewicz semantic).
-getCountermodelsLuk :: LP -> Clause -> [IntLP]
-getCountermodelsLuk lp cl = filter countermodels (intsLPgenerator $ bp $ cl : lp)
+getCounterModelsLuk :: LP -> Clause -> [IntLP]
+getCounterModelsLuk lp cl = filter countermodels (intsLPgeneratorLuk $ bp $ cl : lp)
     where
         countermodels x = isModelLukasiewiczLP lp x && (not $ isModelLukasiewiczLP [cl] x)
 

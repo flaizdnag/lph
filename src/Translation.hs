@@ -18,6 +18,9 @@ module Translation
     , bodiesLength
     , clSameHeads
     , clsSameHeads
+    , overlappingAtoms
+    , baseNN
+    , additionalConnectionsIO
     , emptyNN
     , emptyNNupd
     , mergeNNupd

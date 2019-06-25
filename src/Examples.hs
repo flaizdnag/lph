@@ -11,11 +11,78 @@ Portability : POSIX
 
 Longer description
 -}
-module Examples () where
+module Examples
+    ( lp1
+    , lp2
+    , cl1
+    , cl2
+    , cl3
+    , cl4
+    , cl5
+    , lp2NN
+    , lp2NNrec
+    , lp2NNadd
+    ) where
 
 import LogicPrograms
+import NeuralNetworks
+import Translation
+
+-- P1 = {
+--      A2 <- A1 , A4
+--      A1 <- A3
+--      A5 <-
+-- }
+lp1 :: LP
+lp1 = [Cl (A 2 "") [A 1 "", A 4 ""] [], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
 
+-- cl1 : A2 <- A3 , A4
+cl1 :: Clause
+cl1 = Cl (A 2 "") [A 3 "", A 4 ""] []
+
+
+-- cl2 : A2 <- A3 , A4 , A6
+cl2 :: Clause
+cl2 = Cl (A 2 "") [A 3 "", A 4 "", A 6 ""] []
+
+
+-- cl3 : A6 <- A3 , A4
+cl3 :: Clause
+cl3 = Cl (A 6 "") [A 3 "", A 4 ""] []
+
+
+-- P2 = {
+--      A2 <- A1 , ~A4
+--      A3 <- A1
+-- }
+lp2 :: LP
+lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+
+lp2NN :: NeuralNetwork
+lp2NN = Translation.baseNN lp2 0.5 0.5 1 0.0 0.05 2
+
+lp2NNrec :: NeuralNetwork
+lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
+
+lp2NNadd :: IO NeuralNetwork
+lp2NNadd = additionalConnectionsIO lp2NNrec 1 0.4 0.2
+
+
+-- cl4 : A2 <- A1 , ~A4
+cl4 :: Clause
+cl4 = Cl (A 2 "") [A 1 ""] [A 4 ""]
+
+
+-- cl5 : A2 <- A1 , ~A3
+cl5 :: Clause
+cl5 = Cl (A 2 "") [A 1 ""] [A 3 ""]
+
+
+
+
+
+{-
 -- from LogicPrograms
 lp1 :: LP
 lp1 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
@@ -182,4 +249,5 @@ p1 = [(A 1, [A 2], [A 3]), (A 1, [], [A 4]), (A 2, [A 5], []), (A 5, [], [])]
 trueE (E (V (A 1)) (D [C [V (A 2),N (V (A 3))]])) ([V (A 5)],[V (A 3),V (A 4)])
 interpretation [[E (V (A 1)) (D [C [V (A 2),N (V (A 3))],N (V (A 4))]),E (V (A 2)) (V (A 5))],[E (V (A 5)) T],[N (V (A 3)),N (V (A 4))]]
 interpretation (groupByValue (compP p1))
+-}
 -}

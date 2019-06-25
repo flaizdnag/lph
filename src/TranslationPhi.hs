@@ -233,7 +233,7 @@ createInpToHidConnBot hidIdx inpNs pBod nBod w =
     [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Bot") == NeuralNetworks.label n) pBod ] ++
     [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Top") == NeuralNetworks.label n) nBod ]
 
-
+{-
 p1 :: LP
 p1 = [Cl (A 1 "") [A 2 ""] [A 3 ""], Assumption (A 3 "")]
 
@@ -260,3 +260,4 @@ p5NN = baseNN p5 1
 
 p5NNrec :: NeuralNetwork
 p5NNrec = recursiveConnections p5NN []
+-}
