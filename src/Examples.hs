@@ -26,7 +26,8 @@ module Examples
 
 import LogicPrograms
 import NeuralNetworks
-import Translation
+import TranslationTp
+
 
 -- P1 = {
 --      A2 <- A1 , A4
@@ -60,7 +61,7 @@ lp2 :: LP
 lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
 lp2NN :: NeuralNetwork
-lp2NN = Translation.baseNN lp2 0.5 0.5 1 0.0 0.05 2
+lp2NN = TranslationTp.baseNN lp2 0.5 0.5 1 0.0 0.05 2
 
 lp2NNrec :: NeuralNetwork
 lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)

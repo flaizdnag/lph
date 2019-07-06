@@ -22,7 +22,7 @@ import LogicPrograms
 import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
 import Data.Char 
 import System.Random
-import Translation
+import TranslationTp
 
 
 -- | NNupdate that contains Top and Bottom neurons for the input layer.
