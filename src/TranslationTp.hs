@@ -12,7 +12,7 @@ Portability : POSIX
 
 ...
 -}
-module Translation
+module TranslationTp
     ( NNupdate(..) 
     , bodyLength
     , bodiesLength
