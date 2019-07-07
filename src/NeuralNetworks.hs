@@ -15,9 +15,9 @@ module NeuralNetworks
     ( Neuron (..)
     , Connection (..)
     , NeuralNetwork (..)
-    , showNNPython
     , showNs
     , showConns
+    , nnToPythonString
     ) where
 
 
@@ -56,17 +56,6 @@ data NeuralNetwork = NN
     deriving (Show, Read)
 
 
-showNNPython :: NeuralNetwork -> IO()
-showNNPython (NN iL hL oL rL ihC hoC rC) = mapM_ putStrLn [
-    "{\"inpLayer\" = [" ++ showNs iL ++ 
-    ", \"hidLayer\" = [" ++ showNs hL ++ 
-    ", \"outLayer\" = [" ++ showNs oL ++ 
-    ", \"recLayer\" = [" ++ showNs rL ++ 
-    "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
-    ", \"hidToOutConnections\" = [" ++ showConns hoC ++ 
-    ", \"recConnections\" = [" ++ showConns rC ++ "}"]
-
-
 showNs :: [Neuron] -> String
 showNs []                       = "], "
 showNs ((Neuron l aF b idx):xs) = case length ((Neuron l aF b idx):xs) of 
@@ -79,3 +68,14 @@ showConns []                          = "]"
 showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) of 
     1 -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ ")]"
     _ -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ "), " ++ showConns xs
+
+
+nnToPythonString :: NeuralNetwork -> String
+nnToPythonString (NN iL hL oL rL ihC hoC rC) =
+    "{\"inpLayer\" = [" ++ showNs iL ++ 
+    ", \"hidLayer\" = [" ++ showNs hL ++ 
+    ", \"outLayer\" = [" ++ showNs oL ++ 
+    ", \"recLayer\" = [" ++ showNs rL ++ 
+    "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
+    ", \"hidToOutConnections\" = [" ++ showConns hoC ++ 
+    ", \"recConnections\" = [" ++ showConns rC ++ "}"

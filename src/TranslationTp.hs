@@ -25,6 +25,7 @@ module TranslationTp
     , emptyNNupd
     , mergeNNupd
     , recursiveConnections
+    , showNNPython
     ) where
 
 import Auxiliary
@@ -410,3 +411,9 @@ additionalConnectionsIO :: NeuralNetwork -> Int -> Float -> Float -> IO NeuralNe
 additionalConnectionsIO nn l ba r = do 
     rs <- rand r
     return (additionalConnections nn l ba rs)
+
+
+showNNPython :: NeuralNetwork -> IO String
+showNNPython x = do
+    nn <- additionalConnectionsIO x 1 0.4 0.2
+    return $ nnToPythonString nn
