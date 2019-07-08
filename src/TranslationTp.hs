@@ -13,7 +13,8 @@ Portability : POSIX
 ...
 -}
 module TranslationTp
-    ( NNupdate(..) 
+    ( NNupdate (..)
+    , NNfactors (..)
     , bodyLength
     , bodiesLength
     , clSameHeads
@@ -47,6 +48,15 @@ data NNupdate = NNupdate
     }
     deriving (Show, Read)
 
+data NNfactors = NNfactors
+    { beta            :: Float  -- beta coefficient for sigmoid function
+    , addHidNeuNumber :: Int    -- number of additional hidden layer neurons
+    , addWeightLimit  :: Float  -- maximal value of an additional connection weight
+    , addNeuronsBias  :: Float  -- bias for additional neurons    
+    , weightFactor    :: Float  -- weight W factor (added value)
+    , aminFactor      :: Float  -- $A_min$ factor (added value)
+    }
+
 
 -- | The length of the body of a given clause.
 bodyLength :: Clause -> Int 
@@ -70,13 +80,13 @@ clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (\x -> clSameHeads x lp) lp
 
 
--- | The base for the value A_min. 
+-- | The base for the value $A_min$. 
 aminBase :: LP -> Int -> Float
 aminBase lp maxBH = (fromIntegral (maxBH - 1) / fromIntegral (maxBH + 1))
 
 
--- | The base for weight of the connections in neural network for a given logic
--- program. 
+-- | The base for the weight of the connections in neural network for a given
+-- logic program. 
 wBase :: LP -> Float -> Float -> Int -> Float -> Int -> Int -> Float
 wBase lp amin r l beta maxBodies maxHeads = maximum [fstCondition, sndCondition]
     where
