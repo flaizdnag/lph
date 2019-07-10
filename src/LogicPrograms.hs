@@ -72,6 +72,7 @@ import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
 import Data.List (nub, intercalate, subsequences, intersect, (\\))
+import System.Random
 
 
 -- | Atoms are basic structures for clauses.
@@ -108,6 +109,21 @@ instance LukasiewiczSemantic Atom IntLP where
         | elem a (trLP int) = Tr3v
         | elem a (faLP int) = Fa3v
         | otherwise         = Un3v
+
+instance Bounded Atom where
+    minBound = A 1 ""
+    maxBound = A 1000 ""
+
+instance Enum Atom where
+    toEnum i = A i ""
+    fromEnum (A i _) = i
+
+instance Random Atom where
+    random g = case randomR (fromEnum (minBound :: Atom), fromEnum (maxBound :: Atom)) g of
+                 (r, g') -> (toEnum r, g')
+
+    randomR (a,b) g = case randomR (fromEnum a, fromEnum b) g of
+                        (r, g') -> (toEnum r, g')
 
 
 -- | We do not implement negation as finite failure---instead, the negated
