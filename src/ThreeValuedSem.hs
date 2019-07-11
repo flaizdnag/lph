@@ -9,7 +9,7 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Module containing classes for three-valued semantics.
 -}
 module ThreeValuedSem
     ( ThreeValues (..)

@@ -11,7 +11,8 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Definition of CPL language. Since we are dealing only with completions of logic
+programs, the language is limited only to necessary parts.
 -}
 module CPL
     ( Form (..)

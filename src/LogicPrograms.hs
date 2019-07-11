@@ -212,6 +212,7 @@ instance Ord IntLP where
     a >= b = b <= a
 
 
+-- | Positive body of a clause, i.e. atoms that are not preceded by negation.
 clPBody :: Clause -> [Atom]
 clPBody cl = case cl of
     Cl _ _ _     -> clPAtoms cl
@@ -219,6 +220,7 @@ clPBody cl = case cl of
     Assumption _ -> []
 
 
+-- | Negative body of a clause, i.e. atoms that are preceded by negation.
 clNBody :: Clause -> [Atom]
 clNBody cl = case cl of
     Cl _ _ _     -> clNAtoms cl
@@ -226,6 +228,7 @@ clNBody cl = case cl of
     Assumption _ -> []
 
 
+-- | Atoms from the body of a clause (with duplicates).
 clBodyDup :: Clause -> [Atom]
 clBodyDup cl = case cl of
     Cl _ _ _     -> clPBody cl ++ clNBody cl
@@ -233,6 +236,7 @@ clBodyDup cl = case cl of
     Assumption _ -> []
 
 
+-- | Atoms from the body of a clause (without duplicates).
 clBody :: Clause -> [Atom]
 clBody = nub . clBodyDup
 

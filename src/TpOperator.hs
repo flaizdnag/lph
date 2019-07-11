@@ -10,7 +10,10 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Definition of the immediate consequence operator $T_{\mathcal{P}}$ along with
+a function that iterates the operator from an empty interpretation, and
+a function that establishes if a given atom is a logical consequence of a logic
+program.
 -}
 module TpOperator
     ( opTp
@@ -32,17 +35,14 @@ opTp lp int = IntLP newTr newFa
         newFa = (bp lp) \\ newTr
 
 
--- | Iterations of the Tp operator.
-iterTp :: LP -> [IntLP] -> [IntLP]
-iterTp lp (y:ys)
-    | opTp lp y == y = (y:ys)
-    | otherwise      = iterTp lp ((opTp lp y) : y:ys)
-
-
 -- | Iterates the Tp operator starting from the empty interpretation. Saves all
 -- iterations as elements of the list (newest are at the beginning of the list). 
 upArrow :: LP -> [IntLP]
 upArrow x = iterTp x [IntLP [] []]
+    where
+        iterTp lp (y:ys)
+            | opTp lp y == y = (y:ys)
+            | otherwise      = iterTp lp ((opTp lp y) : y:ys)
 
 
 -- | Checks if an atom is a logical consequence of a logic program by means of

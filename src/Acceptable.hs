@@ -72,8 +72,9 @@ candidateInts lp = concatMap makeMsLP filtered
         asToIntLP as lp = IntLP as ((bp lp) \\ as)
 
 
--- | Takes a clause, a level mapping and an interpretation. Checks if the
--- condition is fulfilled for a clause, i.e. ...
+-- | Checks if the condition is fulfilled for a clause, i.e. if the level of the
+-- head of a clause is greater than the level of the first literal from the body
+-- of the clause that do not follow form a given interpretation.
 conditionHCl :: Clause -> [(Atom, Int)] -> IntLP -> Bool
 conditionHCl cl lvlM int
     | null areNotCons   = all isSmaller (clBodyDup cl)
@@ -83,17 +84,23 @@ conditionHCl cl lvlM int
         areNotCons  = intersect (clPBody cl) (faLP int) ++ intersect (clNBody cl) (trLP int)
 
 
+-- | Checks if all clauses fulfil the condition @conditionHCL@.
 conditionLP :: LP -> [(Atom, Int)] -> IntLP -> Bool
 conditionLP lp lvlM int = all (\x -> conditionHCl x lvlM int) lp
 
 
+-- | Checks if there is an interpretation in a given list of interpretations
+-- that fulfil the condition @conditionLP@.
 conditionInts :: LP -> [(Atom, Int)] -> [IntLP] -> Bool
 conditionInts lp lvlM ints = any (\x -> conditionLP lp lvlM x) ints
 
 
+-- | Checks if there is an interpretation for any level mapping from a given
+-- list of level mappings that fulfil the condition @conditionInts@.
 conditionLvlMs :: LP -> [[(Atom, Int)]] -> [IntLP] -> Bool
 conditionLvlMs lp lvlMs ints = any (\x -> conditionInts lp x ints) lvlMs
 
 
+-- | Checks if a given logic program is acceptable.
 isAcceptable :: LP -> Bool
 isAcceptable lp = conditionLvlMs lp (possibleLvLMaps lp) (candidateInts lp)

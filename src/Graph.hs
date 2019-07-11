@@ -9,7 +9,7 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Tools needed for creating a graph from a given logic program.
 -}
 module Graph
     ( atomsToInts

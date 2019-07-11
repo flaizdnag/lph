@@ -10,7 +10,10 @@ Maintainer  : andrzej.m.gajda@gmail.com
 Stability   : experimental
 Portability : POSIX
 
-Longer description
+Level mapping of an atom (or literal) is a number associated with this atom (or
+literal). This module contains functions for generation of all possible level
+mappings for a given logic program, and checking the value of a given atom in
+a given level mapping.
 -}
 module LvlMap
     ( possibleLvLMaps
@@ -23,7 +26,7 @@ import Data.List (permutations, (\\), lookup)
 
 -- | Generates all possible level mappings for a given logic program, where the
 -- assumption is that permutations concern only those atoms that occur as heads
--- and in the bodies of Horn clauses.
+-- and in the bodies of clauses.
 possibleLvLMaps :: LP -> [[(Atom, Int)]]
 possibleLvLMaps lp = [ xs |
     let n   = length (bp lp),
