@@ -73,9 +73,9 @@ showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) 
 nnToPythonString :: NeuralNetwork -> String
 nnToPythonString (NN iL hL oL rL ihC hoC rC) =
     "{\"inpLayer\" = [" ++ showNs iL ++ 
-    ", \"hidLayer\" = [" ++ showNs hL ++ 
-    ", \"outLayer\" = [" ++ showNs oL ++ 
-    ", \"recLayer\" = [" ++ showNs rL ++ 
+    "\"hidLayer\" = [" ++ showNs hL ++ 
+    "\"outLayer\" = [" ++ showNs oL ++ 
+    "\"recLayer\" = [" ++ showNs rL ++ 
     "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
-    ", \"hidToOutConnections\" = [" ++ showConns hoC ++ 
-    ", \"recConnections\" = [" ++ showConns rC ++ "}"
+    "\"hidToOutConnections\" = [" ++ showConns hoC ++ 
+    "\"recConnections\" = [" ++ showConns rC ++ "}"

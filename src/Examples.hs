@@ -14,6 +14,8 @@ Longer description
 module Examples
     ( lp1
     , lp2
+    , lpDr
+    , lpDr'
     , cl1
     , cl2
     , cl3
@@ -22,11 +24,16 @@ module Examples
     , lp2NN
     , lp2NNrec
     , lp2NNadd
+    , lpDrNN
+    , lpDrNNa7
+    , lpDrNNrec
+    , lpDrNNfull
     ) where
 
 import LogicPrograms
 import NeuralNetworks
 import TranslationTp
+import TpOperator
 
 
 -- P1 = {
@@ -80,6 +87,51 @@ cl5 :: Clause
 cl5 = Cl (A 2 "") [A 1 ""] [A 3 ""]
 
 
+-- Pd = {
+--      A1 <- A2 , A3
+--      A4 <- A5
+--      A6 <- T
+-- }
+-- 
+-- Pd' = {
+--      A1 <- A2 , A3
+--      A4 <- A5
+--      A6 <- T
+--      A7 <- A4
+--      A5 <- T
+-- }
+lpDr :: LP
+lpDr = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
+         Cl (A 4 "") [A 5 ""] [],
+         Fact (A 6 "") ]
+
+lpDr' :: LP
+lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
+          Cl (A 4 "") [A 5 ""] [],
+          Fact (A 6 ""),
+          Cl (A 7 "") [A 4 ""] [],
+          Fact (A 5 "") ]
+
+lpDrNN :: NeuralNetwork
+lpDrNN = TranslationTp.baseNN lpDr 0.5 0.5 1 0.0 0.05 1
+
+lpDrNNa7 :: NeuralNetwork
+lpDrNNa7 = mergeNNupd lpDrNN upd
+    where
+        upd = NNupdate
+            { inpNeuToAdd      = [Neuron "A7" "idem" 0.0 "inp7"]
+            , hidNeuToAdd      = []
+            , outNeuToAdd      = [Neuron "A7" "idem" 0.0 "out7"]
+            , outNeuToRemove   = []
+            , inpToHidConToAdd = []
+            , hidToOutConToAdd = []
+            }
+
+lpDrNNrec :: NeuralNetwork
+lpDrNNrec = recursiveConnections lpDrNNa7 (overlappingAtoms lpDr)
+
+lpDrNNfull :: IO NeuralNetwork
+lpDrNNfull = additionalConnectionsIO lpDrNNrec 1 0.0 0.05
 
 
 

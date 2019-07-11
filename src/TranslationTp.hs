@@ -425,5 +425,5 @@ additionalConnectionsIO nn l ba r = do
 
 showNNPython :: NeuralNetwork -> IO String
 showNNPython x = do
-    nn <- additionalConnectionsIO x 1 0.4 0.2
+    nn <- additionalConnectionsIO x 1 0.0 0.05
     return $ nnToPythonString nn
