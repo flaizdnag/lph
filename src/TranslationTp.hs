@@ -15,11 +15,6 @@ Portability : POSIX
 module TranslationTp
     ( NNupdate (..)
     , NNfactors (..)
-    , bodyLength
-    , bodiesLength
-    , clSameHeads
-    , clsSameHeads
-    , overlappingAtoms
     , baseNN
     , additionalConnectionsIO
     , emptyNN
@@ -32,7 +27,7 @@ module TranslationTp
 import Auxiliary
 import NeuralNetworks
 import LogicPrograms
-import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
+import Data.List (length, maximum, map, find, (\\), delete, foldl1)
 import Data.Char 
 import System.Random
 
@@ -54,30 +49,8 @@ data NNfactors = NNfactors
     , addWeightLimit  :: Float  -- maximal value of an additional connection weight
     , addNeuronsBias  :: Float  -- bias for additional neurons    
     , weightFactor    :: Float  -- weight W factor (added value)
-    , aminFactor      :: Float  -- $A_min$ factor (added value)
+    , aminFactor      :: Float  -- A_min factor (added value)
     }
-
-
--- | The length of the body of a given clause.
-bodyLength :: Clause -> Int 
-bodyLength = length . clBody
-
-
--- | Lengths of all bodies of clauses from a given logic program. 
-bodiesLength :: LP -> [Int] 
-bodiesLength = map bodyLength
-
-
--- | The number of clauses that have the same atom in their head as the given
--- clause.
-clSameHeads :: Clause -> LP -> Int 
-clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
-
-
--- | The number of clauses that have the same atom in their head as the given
--- clause for every clause in a given logic program. 
-clsSameHeads :: LP -> [Int]
-clsSameHeads lp = map (\x -> clSameHeads x lp) lp
 
 
 -- | The base for the value $A_min$. 
@@ -87,34 +60,25 @@ aminBase lp maxBH = (fromIntegral (maxBH - 1) / fromIntegral (maxBH + 1))
 
 -- | The base for the weight of the connections in neural network for a given
 -- logic program. 
-wBase :: LP -> Float -> Float -> Int -> Float -> Int -> Int -> Float
-wBase lp amin r l beta maxBodies maxHeads = maximum [fstCondition, sndCondition]
+wBase :: LP -> Float -> NNfactors -> Int -> Int -> Float
+wBase lp amin nnF maxBodies maxHeads = maximum [fstCondition, sndCondition]
     where
-        fstCondition = (2 / beta) * (((log $ 1 + amin) - (log $ 1 - amin)) / ((fromIntegral maxBodies) * (amin - 1) + amin + 1))
-        sndCondition = (2 / beta) * (((log $ 1 + amin) - (log $ 1 - amin) - (r * (fromIntegral $ l + 1)) ) / ((fromIntegral maxHeads) * (amin - 1) + amin + 1))
+        fstCondition = (2 / b) * (((log $ 1 + amin) - (log $ 1 - amin)) / ((fromIntegral maxBodies) * (amin - 1) + amin + 1))
+        sndCondition = (2 / b) * (((log $ 1 + amin) - (log $ 1 - amin) - (r * (fromIntegral $ l + 1)) ) / ((fromIntegral maxHeads) * (amin - 1) + amin + 1))
+        b = beta nnF
+        r = addWeightLimit nnF
+        l = addHidNeuNumber nnF
 
 
--- | List of atoms that "overlap", i.e. atoms that have the same index number
--- but one of them has label with "h" and the other does not.
-overlappingAtoms :: LP -> [(Atom, Atom)]
-overlappingAtoms lp = [ (atom, atomCouterpart) |
-    atom <- snd partitionedAtoms,
-    atomCouterpart <- fst partitionedAtoms,
-    LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart ]
-    where
-        -- atoms with "h" in the label and atoms without "h" in the label
-        partitionedAtoms = partition (\x -> elem 'h' (LogicPrograms.label x)) (bp lp)
-
-
-baseNN :: LP -> Float -> Float -> Float -> Float -> Float -> Int -> NeuralNetwork
-baseNN lp aminF wF beta addBias r l = mergeNNupd (baseNNsteps triLP emptyNN amin w ovrl) (truthNN w)
+baseNN :: LP -> NNfactors -> NeuralNetwork
+baseNN lp nnF = mergeNNupd (baseNNsteps triLP emptyNN amin w ovrl) (truthNN w)
     where
         bdsLen = bodiesLength lp
         clsSH  = clsSameHeads lp
         maxBds = maximum $ bdsLen
         maxHds = maximum $ clsSH
-        amin   = aminBase lp (maximum [maxBds, maxHds]) + aminF
-        w      = wBase lp amin r l beta maxBds maxHds + wF
+        amin   = aminBase lp (maximum [maxBds, maxHds]) + (aminFactor nnF)
+        w      = wBase lp amin nnF maxBds maxHds + (weightFactor nnF)
         triLP  = zip3 lp bdsLen clsSH
         ovrl   = overlappingAtoms lp
 

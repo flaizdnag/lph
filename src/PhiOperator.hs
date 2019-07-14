@@ -23,13 +23,13 @@ import Auxiliary
 
 
 -- | The first part of the operator---returns the set of atoms that are mapped
--- to 'true'.
+-- to true.
 jTop :: LP -> IntLP -> [Atom]
 jTop lp int = [ clHead cl | cl <- lp, evalBodyLukasiewicz cl int == Tr3v ]
 
 
 -- | The second part of the operator---returns the set of atoms that are mapped
--- to 'false'.
+-- to false.
 jBot :: LP -> IntLP -> [Atom]
 jBot lp int = filter falseBodies (lpHeads lp)
     where

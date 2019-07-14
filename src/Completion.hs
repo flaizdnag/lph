@@ -83,7 +83,7 @@ intLPtoIntCPL int = IntCPL (atomsToVar (trLP int)) (atomsToVar (faLP int))
 
 -- | Takes a formula and an interpretation and returns the value of the formula.
 -- The interpretation is not complete, i.e. there are some variables that do not
--- belong to neither 'true' set nor 'false' set.
+-- belong to neither true set nor false set.
 partialEvalCPL :: Form -> IntCPL -> Maybe Bool
 partialEvalCPL f (IntCPL tr fa) = case f of
     T                       -> Just True
@@ -157,7 +157,7 @@ invIter fs (int, un, done)
 
 -- | Function that starts from the empty interpretation and searches for the
 -- model for the list of formulas. It returns a "part" of the model, i.e.
--- variables that can be established 'true' or 'false', and the list of formulas
+-- variables that can be established true or false, and the list of formulas
 -- with unknown value.
 modelSearch :: [Form] -> (IntCPL, [Form])
 modelSearch fs = invIter (sort fs) (IntCPL [] [], [], [])
@@ -169,7 +169,7 @@ modelSearch fs = invIter (sort fs) (IntCPL [] [], [], [])
 --------------------------------------------------------------------------------
 
 -- | Function that makes models for a list of formulas where some of them have
--- 'Un' value.
+-- Un value.
 makeModels :: [Form] -> [IntCPL]
 makeModels fs = case (modelSearch fs) of
     (int, [])   -> [int]
@@ -180,14 +180,14 @@ makeModels fs = case (modelSearch fs) of
 -- | Sorts a list of interpretations in such a way that the smallest
 -- interpretations are at the beginning of the list and the largest at the end.
 -- One interpretation in smaller than the other iff the set containing variables
--- mapped to 'true' is smaller.
+-- mapped to true is smaller.
 sortInts :: [IntCPL] -> [IntCPL]
 sortInts = sortBy (\(IntCPL a _) (IntCPL b _) -> compare (length a) (length b))
 
 -- | Function that modifies a given interpretation in such a way that the
--- given formula becomes 'true'. The result is a list of interpretations that
--- make the formula 'true'.
--- Note: The assumption is that the formula is evaluated as 'undecided'.
+-- given formula becomes true. The result is a list of interpretations that
+-- make the formula true.
+-- Note: The assumption is that the formula is evaluated as undecided.
 makeFormTr :: Form -> IntCPL -> [IntCPL] 
 makeFormTr f (IntCPL tr fa) = case f of
     V a             -> [IntCPL ((V a) : tr) fa]
@@ -210,9 +210,9 @@ makeFormTr f (IntCPL tr fa) = case f of
         makeFa = \x -> makeFormFa x int
     
 -- | Function that modifies a given interpretation in such a way that the
--- given formula becomes 'false'. The result is a list of interpretations that
--- make the formula 'false'.
--- Note: The assumption is that the formula is evaluated as 'undecided'.
+-- given formula becomes false. The result is a list of interpretations that
+-- make the formula false.
+-- Note: The assumption is that the formula is evaluated as undecided.
 makeFormFa :: Form -> IntCPL -> [IntCPL] 
 makeFormFa f (IntCPL tr fa) = case f of
     V a             -> [IntCPL tr ((V a) : fa)]
@@ -245,7 +245,7 @@ combineInts xs ys = stripM $ map combineInt $ allPairs
             Nothing  -> stripM xs
             Just int -> int : stripM xs
 
--- | Function that combines two interpretations. Returns 'Nothing' if
+-- | Function that combines two interpretations. Returns Nothing if
 -- interpretations are inconsistent.
 combineInt :: (IntCPL, IntCPL) -> Maybe IntCPL
 combineInt ((IntCPL atr afa), (IntCPL btr bfa))

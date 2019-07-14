@@ -58,7 +58,7 @@ candidateInts lp = concatMap makeMsLP filtered
         -- a model for @compP'@
         isModel xs = isModel2vCPL compP' $ intLPtoIntCPL $ asToIntLP xs lp
 
-        -- turns a list of atoms that are assumed to be 'true' into a list of
+        -- turns a list of atoms that are assumed to be true into a list of
         -- all models for a logic program, that can be obtained from the list
         -- without modifying it
         makeMsLP as = map makeInt
@@ -68,7 +68,7 @@ candidateInts lp = concatMap makeMsLP filtered
             where
                 makeInt xs = asToIntLP xs lp
         
-        -- turns a list of 'true' atoms into an interpretation
+        -- turns a list of true atoms into an interpretation
         asToIntLP as lp = IntLP as ((bp lp) \\ as)
 
 

@@ -68,7 +68,7 @@ lp2 :: LP
 lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
 lp2NN :: NeuralNetwork
-lp2NN = TranslationTp.baseNN lp2 0.5 0.5 1 0.0 0.05 2
+lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
 lp2NNrec :: NeuralNetwork
 lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
@@ -113,7 +113,7 @@ lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
           Fact (A 5 "") ]
 
 lpDrNN :: NeuralNetwork
-lpDrNN = TranslationTp.baseNN lpDr 0.5 0.5 1 0.0 0.05 1
+lpDrNN = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
 
 lpDrNNa7 :: NeuralNetwork
 lpDrNNa7 = mergeNNupd lpDrNN upd

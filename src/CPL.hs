@@ -136,8 +136,8 @@ instance LukasiewiczSemantic Form IntCPL where
 
 
 -- | An interpretation is a tuple with lists of variables: the first list
--- contains variables that are mapped to 'truth' and the second those that are
--- mapped to 'false'.
+-- contains variables that are mapped to truth and the second those that are
+-- mapped to false.
 data IntCPL = IntCPL { trCPL :: [Form] , faCPL :: [Form] }
     deriving (Read, Eq)
 

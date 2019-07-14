@@ -66,12 +66,17 @@ module LogicPrograms
     , intsLPgeneratorLuk
     , getCounterModelsLuk
     , getCounterModels2v
+    , overlappingAtoms
+    , bodyLength
+    , bodiesLength
+    , clSameHeads
+    , clsSameHeads
     ) where
 
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
-import Data.List (nub, intercalate, subsequences, intersect, (\\))
+import Data.List (nub, intercalate, subsequences, intersect, (\\), partition)
 import System.Random
 
 
@@ -191,8 +196,8 @@ type LP = [Clause]
 
 
 -- | An interpretation is a tuple with lists of atoms: the first list contains
--- atoms that are mapped to 'truth' and the second those that are mapped to
--- 'false'.
+-- atoms that are mapped to truth and the second those that are mapped to
+-- false.
 data IntLP = IntLP { trLP :: [Atom] , faLP :: [Atom] }
     deriving (Read)
 
@@ -391,15 +396,15 @@ getCounterModelsLuk lp cl = filter countermodels (intsLPgeneratorLuk $ bp $ cl :
         countermodels x = isModelLukasiewiczLP lp x && (not $ isModelLukasiewiczLP [cl] x)
 
 
--- | Symmetric difference between two logic programs (without atoms with 'h' in
+-- | Symmetric difference between two logic programs (without atoms with h in
 -- the upper index).
 lpSymDifference :: LP -> LP -> LP
 lpSymDifference lp1 lp2 =
     [ a | a <- symDifference lp1 lp2, not $ elem 'h' (label $ clHead a) ]
 
 
--- | Modifies a logic program w.r.t. a clause 'h', i.e. atoms from the body of
--- 'h' are added to the logic program as facts, if they are not preceded by
+-- | Modifies a logic program w.r.t. a clause h, i.e. atoms from the body of
+-- h are added to the logic program as facts, if they are not preceded by
 -- negation, and as assumptions, if they are preceded by negation.
 modifiedLP :: LP -> Clause -> LP
 modifiedLP lp cl = case cl of
@@ -411,3 +416,37 @@ modifiedLP lp cl = case cl of
             makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
             facts            = map makeFact pb
             assumptions      = map makeAssumption nb
+
+
+-- | List of atoms that "overlap", i.e. atoms that have the same index number
+-- but one of them has label with "h" and the other does not.
+overlappingAtoms :: LP -> [(Atom, Atom)]
+overlappingAtoms lp = [ (atom, atomCouterpart) |
+    atom <- snd partitionedAtoms,
+    atomCouterpart <- fst partitionedAtoms,
+    LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart ]
+    where
+        -- atoms with "h" in the label and atoms without "h" in the label
+        partitionedAtoms = partition (\x -> elem 'h' (LogicPrograms.label x)) (bp lp)
+
+
+-- | The length of the body of a given clause.
+bodyLength :: Clause -> Int 
+bodyLength = length . clBody
+
+
+-- | Lengths of all bodies of clauses from a given logic program. 
+bodiesLength :: LP -> [Int] 
+bodiesLength = map bodyLength
+
+
+-- | The number of clauses that have the same atom in their head as the given
+-- clause.
+clSameHeads :: Clause -> LP -> Int 
+clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
+
+
+-- | The number of clauses that have the same atom in their head as the given
+-- clause for every clause in a given logic program. 
+clsSameHeads :: LP -> [Int]
+clsSameHeads lp = map (\x -> clSameHeads x lp) lp
