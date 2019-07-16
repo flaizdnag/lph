@@ -39,6 +39,7 @@ module LogicPrograms
     , Clause (..)
     , LP
     , IntLP (..)
+    , OverlappingAtoms
     , clPBody
     , clNBody
     , clBodyDup
@@ -215,6 +216,8 @@ instance Ord IntLP where
     a <= b = (a < b) || (a == b)
     a >  b = b < a
     a >= b = b <= a
+
+type OverlappingAtoms = (Atom, Atom)
 
 
 -- | Positive body of a clause, i.e. atoms that are not preceded by negation.
@@ -420,7 +423,7 @@ modifiedLP lp cl = case cl of
 
 -- | List of atoms that "overlap", i.e. atoms that have the same index number
 -- but one of them has label with "h" and the other does not.
-overlappingAtoms :: LP -> [(Atom, Atom)]
+overlappingAtoms :: LP -> [OverlappingAtoms]
 overlappingAtoms lp = [ (atom, atomCouterpart) |
     atom <- snd partitionedAtoms,
     atomCouterpart <- fst partitionedAtoms,
