@@ -27,7 +27,7 @@ module Examples
     , lpDrNN
     , lpDrNNa7
     , lpDrNNrec
-    , lpDrNNfull
+    --, lpDrNNfull
     ) where
 
 import LogicPrograms
@@ -74,7 +74,7 @@ lp2NNrec :: NeuralNetwork
 lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
 lp2NNadd :: IO NeuralNetwork
-lp2NNadd = additionalConnectionsIO lp2NNrec 1 0.4 0.2
+lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
 
 -- cl4 : A2 <- A1 , ~A4
@@ -130,8 +130,8 @@ lpDrNNa7 = mergeNNupd lpDrNN upd
 lpDrNNrec :: NeuralNetwork
 lpDrNNrec = recursiveConnections lpDrNNa7 (overlappingAtoms lpDr)
 
-lpDrNNfull :: IO NeuralNetwork
-lpDrNNfull = additionalConnectionsIO lpDrNNrec 1 0.0 0.05
+--lpDrNNfull :: IO NeuralNetwork
+--lpDrNNfull = additionalConnectionsIO lpDrNNrec 1 0.0 0.05
 
 
 

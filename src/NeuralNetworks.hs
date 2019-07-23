@@ -43,7 +43,7 @@ data Connection = Connection
     , to     :: String
     , weight :: Float
     }
-    deriving (Read)
+    deriving (Read, Eq)
 
 instance Show Connection where
     show (Connection from to w) = "(" ++ from ++ ", " ++ to ++ ", " ++ show w ++ ")"
@@ -139,3 +139,10 @@ emptyNN = NN
     , hidToOutConnections = []
     , recConnections      = []
     }
+
+{-
+showNNPython :: NeuralNetwork -> IO String
+showNNPython x = do
+    nn <- additionalConnectionsIO x 1 0.0 0.05
+    return $ nnToPythonString nn
+-}

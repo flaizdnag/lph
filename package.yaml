@@ -28,6 +28,7 @@ dependencies:
 - text
 - aeson
 - random
+- split
 
 library:
   source-dirs: src
