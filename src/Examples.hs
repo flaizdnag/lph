@@ -74,7 +74,7 @@ lp2NNrec :: NeuralNetwork
 lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
 lp2NNadd :: IO NeuralNetwork
-lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5)
+lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5) [A 5 "", A 6 ""]
 
 
 -- cl4 : A2 <- A1 , ~A4

@@ -29,10 +29,11 @@ import System.Random
 
 
 -- | Types for $A_{min}$ and W values.
-type Amin = Float
-type W    = Float
-type AddW = Float
+type Amin    = Float
+type W       = Float
+type AddW    = Float
 type AddBias = Float
+type AbdGoal = [Atom]
 
 
 -- | The base for the value $A_min$. 
@@ -331,13 +332,19 @@ recConnFromTriple (inpN, outN1, outN2) = ([c1, c2, c3], [n])
 
 
 -- | Additional connections and additional hidden layer neurons for a given
--- neural network.
-additionalNN :: NeuralNetwork -> NNfactors -> IO NeuralNetwork
-additionalNN nn nnF = do
+-- neural network. Additional argument, i.e. a list of atoms serves for the
+-- introduction of abductive problems (atoms) to the neural network. 
+additionalNN :: NeuralNetwork -> NNfactors -> AbdGoal -> IO NeuralNetwork
+additionalNN nn nnF abdGs = do
+    -- if there is an abductive goal, then we have to modify the input and the
+    -- output layer
+    let newInpLayer = inpLayer nn ++ createInpNeurons abdGs (length $ inpLayer nn) (inpLayer nn)
+    let newOutLayer = outLayer nn ++ createOutNeurons abdGs (1 + (length $ outLayer nn)) (outLayer nn)
+    
     -- list of neurons from the output layer that are not associated with
     -- the head of a fact
     let notFacts = [ neu |
-            neu <- outLayer nn,
+            neu <- newOutLayer,
             find (\x -> from x == "hidT" && to x == NN.idx neu) (hidToOutConnections nn) == Nothing ]
     
     -- the number of additional hidden layer neurons is the number of output
@@ -365,15 +372,20 @@ additionalNN nn nnF = do
     
     -- additional connections from additional hidden layer neurons to output
     -- layer neurons
-    let addHidToOutConns = concatMap makeAddConns hidToOutTri
+    let addHidToOutConns =
+            if (null abdGs) then concatMap makeAddConns hidToOutTri
+            else filtered (concatMap makeAddConns hidToOutTri)
+                where
+                    filtered cs = filter (\x -> not $ from x == "hidT" && elem (to x) forbiddenIdxs) cs
+                    forbiddenIdxs = [ NN.idx n | n <- newOutLayer,  elem (NN.label n) (map show abdGs)]
     
     -- list of additional connections from the input to the hidden layer
-    let addInpToHidConns = makeAddInpToHidConns nn addHidNeurons addHidToOutConns (drop (length addHidToOutConns) addWs)
+    let addInpToHidConns = makeAddInpToHidConns newInpLayer newOutLayer addHidNeurons addHidToOutConns (drop (length addHidToOutConns) addWs)
     
     return NN
-        { inpLayer            = inpLayer nn
+        { inpLayer            = newInpLayer
         , hidLayer            = hidLayer nn ++ addHidNeurons
-        , outLayer            = outLayer nn
+        , outLayer            = newOutLayer
         , recLayer            = recLayer nn
         , inpToHidConnections = inpToHidConnections nn ++ addInpToHidConns
         , hidToOutConnections = hidToOutConnections nn ++ addHidToOutConns
@@ -396,94 +408,27 @@ makeAddConns (outNeu, addNeus, ws) = do
 
 
 -- | List of additional connections from the input to the hidden layer.
-makeAddInpToHidConns :: NeuralNetwork -> [Neuron] -> [Connection] -> [AddW] -> [Connection]
-makeAddInpToHidConns nn addHidNeurons addHidToOutConns addWs = do
+makeAddInpToHidConns :: [Neuron] -> [Neuron] -> [Neuron] -> [Connection] -> [AddW] -> [Connection]
+makeAddInpToHidConns inpLayer outLayer addHidNeurons addHidToOutConns addWs = do
     let neuronsToConnect = unzip $ do
             hidNeu <- addHidNeurons
             let connectedOutNeus = do
                     index <- [ to c | c <- addHidToOutConns, from c == NN.idx hidNeu ]
-                    neu <- [ n | n <- outLayer nn, NN.idx n == index ]
+                    neu <- [ n | n <- outLayer, NN.idx n == index ]
                     return neu
             let goodInpNeurons = [ n |
-                    n <- inpLayer nn,
+                    n <- inpLayer,
                     n /= Neuron "inpT" "const" 0.0 "inpT",
                     null $ filter (\x -> NN.label x == NN.label n) connectedOutNeus ]
             return (hidNeu, goodInpNeurons)
-    triple <- zip3 (fst neuronsToConnect) (snd neuronsToConnect) (chunksOf ((length $ inpLayer nn) - 2) addWs)
+    triple <- zip3 (fst neuronsToConnect) (snd neuronsToConnect) (chunksOf ((length $ inpLayer) - 2) addWs)
     connection <- makeAddConns triple
     return connection
 
 
-
-
-
-
-{-
-additionalConnectionsIO :: NeuralNetwork -> NNfactors -> IO NeuralNetwork
-additionalConnectionsIO nn nnF = do 
-    rs <- additionalWgen $ addWeightLimit nnF
-    return (additionalConnections nn nnF rs)
-
--- | Additional connections for a neural network along with additional hidden
--- layer neurons.
-additionalConnections :: NeuralNetwork -> NNfactors -> [AddW] -> NeuralNetwork
-additionalConnections nn nnF rs = case addConnsFromTriple of 
-    (hidNeurons, inpToHidConns, hidToOutConns) -> NN
-        { inpLayer            = inpLayer nn
-        , hidLayer            = hidLayer nn ++ hidNeurons
-        , outLayer            = outLayer nn
-        , recLayer            = recLayer nn
-        , inpToHidConnections = inpToHidConnections nn ++ inpToHidConns
-        , hidToOutConnections = hidToOutConnections nn ++ hidToOutConns ++ hidTToOutConns nn (outLayer nn) rs
-        , recConnections      = recConnections nn
-        }
+-- | Removes additional connections between the hidden and output layer that run
+-- from the truth neuron to abductive goals.
+remBadAddConns :: [Atom] -> [Neuron] -> [Connection] -> [Connection]
+remBadAddConns abdGs layer conns = filter (\x -> not $ from x == "hidT" && elem (to x) forbiddenIdxs) conns
     where
-        addConnsFromTriple = case unzip3 mkAddConns of (ns, xs, ys) -> (ns, concat xs, ys)
-        mkAddConns         = makeAddConns nn (outLayer nn) nnF (drop outLayerLen rs) hidLayerLen
-        hidLayerLen        = length $ hidLayer nn
-        outLayerLen        = length $ outLayer nn
-
-
-hidTToOutConns :: NeuralNetwork -> [Neuron] -> [Float] -> [Connection]
-hidTToOutConns _ [] _      = []
-hidTToOutConns nn (n:ns) (r:rs) = case findConnByNeu n (hidToOutConnections nn) of 
-    Nothing -> Connection "hidT" (NN.idx n) r : hidTToOutConns nn ns rs
-    Just _  -> hidTToOutConns nn ns (r:rs)
-
-
-makeAddConns :: NeuralNetwork -> [Neuron] -> NNfactors -> [AddW] -> Int -> [(Neuron, [Connection], Connection)]
-makeAddConns _ [] _ _ _              = []
-makeAddConns nn (n:ns) nnF rs idxStart = case findConnByNeu n (hidToOutConnections nn) of 
-    Nothing -> lNeu ++ makeAddConns nn ns nnF newrs (idxStart + l)
-    Just _  -> makeAddConns nn ns nnF newrs idxStart
-    where 
-        ba     = addNeuronsBias nnF
-        l      = addHidNeuNumber nnF
-        lNeu   = createLNs nn n l ba rs idxStart
-        newrs  = drop (l * (inpLen - 2) + 1) rs
-        inpLen = length (inpLayer nn)
-
-
-createLNs :: NeuralNetwork -> Neuron -> Int -> Float -> [Float] -> Int -> [(Neuron, [Connection], Connection)]
-createLNs _ _ 0 _ _ _               = []
-createLNs nn n l ba (r:rs) idxStart = (mkAddHidNeu, mkInpToHidConns, mkHidToOutConn) : createLNs nn n (l-1) ba newrs (idxStart + 1)
-    where 
-        mkAddHidNeu     = Neuron ("ha" ++ show idxStart) "tanh" ba ("hid" ++ show idxStart)
-        mkInpToHidConns = case findInpOut nn n of
-            Nothing     -> []
-            Just inpNeu -> [ Connection (NN.idx inp) addHidNeuIdx w | (w, inp) <- zip rs (inpLayer nn \\ [inpNeu, inpT]) ]
-        mkHidToOutConn  = Connection addHidNeuIdx (NN.idx n) r
-        addHidNeuIdx    = NN.idx mkAddHidNeu
-        inpT            = last $ inpLayer nn
-        newrs           = drop (l * (inpLen-1)^2) rs
-        inpLen          = length (inpLayer nn)
-
-findConnByNeu :: Neuron -> [Connection] -> Maybe Connection 
-findConnByNeu outNeu hidToOutConns = find (\x -> from x == "hidT" && NN.idx outNeu == to x) hidToOutConns
-
-
-findInpOut :: NeuralNetwork -> Neuron -> Maybe Neuron
-findInpOut nn n = find (\x -> NN.label x == NN.label n) (inpLayer nn) 
-
-
--}
+        forbiddenIdxs = [ NN.idx n | n <- layer,  elem (NN.label n) (map show abdGs)]
