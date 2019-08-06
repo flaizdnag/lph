@@ -17,13 +17,14 @@ module NeuralNetworks
     , NeuralNetwork (..)
     , NNupdate (..)
     , NNfactors (..)
-    , showNs
-    , showConns
+    , neuronsToPythonString
     , nnToPythonString
     , truthNN
     , emptyNN
     , emptyNNupd
     ) where
+
+import Data.List (intercalate)
 
 
 data Neuron = Neuron 
@@ -82,11 +83,20 @@ data NNfactors = NNfactors
     }
 
 
-showNs :: [Neuron] -> String
-showNs []                       = "], "
-showNs ((Neuron l aF b idx):xs) = case length ((Neuron l aF b idx):xs) of 
-    1 -> "(" ++ show l ++ ", " ++ show aF ++ ", " ++ show b ++ ", " ++ show idx ++ ")], "
-    _ -> "(" ++ show l ++ ", " ++ show aF ++ ", " ++ show b ++ ", " ++ show idx ++ "), " ++ showNs xs
+neuronsToPythonString :: [Neuron] -> String
+neuronsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
+    where
+        stringList = do
+            (Neuron label activFunc bias idx) <- ns
+            return ("(" ++ show label ++ ", " ++ show activFunc ++ ", " ++ show bias ++ ", " ++ show idx ++ ")")
+
+
+connectionsToPythonString :: [Connection] -> String
+connectionsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
+    where
+        stringList = do
+            (Connection from to weight) <- ns
+            return ("(" ++ show from ++ ", " ++ show to ++ ", " ++ show weight ++ ")")
 
 
 showConns :: [Connection] -> String
@@ -98,6 +108,17 @@ showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) 
 
 nnToPythonString :: NeuralNetwork -> String
 nnToPythonString (NN iL hL oL rL ihC hoC rC) =
+    "\"inpLayer\" = " ++ neuronsToPythonString iL ++ "\n" ++
+    "\"hidLayer\" = " ++ neuronsToPythonString hL ++ "\n" ++
+    "\"outLayer\" = " ++ neuronsToPythonString oL ++ "\n" ++
+    "\"recLayer\" = " ++ neuronsToPythonString rL ++ "\n" ++
+    "\"inpToHidConnections\" = " ++ connectionsToPythonString ihC ++ "\n" ++
+    "\"hidToOutConnections\" = " ++ connectionsToPythonString hoC ++ "\n" ++
+    "\"recConnections\" = " ++ connectionsToPythonString rC
+
+{-
+nnToPythonString' :: NeuralNetwork -> String
+nnToPythonString' (NN iL hL oL rL ihC hoC rC) =
     "{\"inpLayer\" = [" ++ showNs iL ++ 
     "\"hidLayer\" = [" ++ showNs hL ++ 
     "\"outLayer\" = [" ++ showNs oL ++ 
@@ -105,6 +126,7 @@ nnToPythonString (NN iL hL oL rL ihC hoC rC) =
     "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
     "\"hidToOutConnections\" = [" ++ showConns hoC ++ 
     "\"recConnections\" = [" ++ showConns rC ++ "}"
+-}
 
 
 truthNN :: Float -> NNupdate
