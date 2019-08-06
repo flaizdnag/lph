@@ -79,7 +79,7 @@ baseNN lp nnF = mergeNNupd baseForNN (truthNN w)
         triLP  = zip3 lp bdsLen clsSH
         
         -- list of overlapping atoms in the logic program
-        ovrl   = overlappingAtoms lp
+        ovrl   = overlappingAtoms lp []
         
         -- function that creates the basic neural network
         baseForNN = baseNNsteps triLP emptyNN amin w ovrl

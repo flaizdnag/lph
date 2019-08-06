@@ -22,12 +22,11 @@ module Examples
     , cl4
     , cl5
     , lp2NN
-    , lp2NNrec
-    , lp2NNadd
-    , lpDrNN
-    , lpDrNNa7
-    , lpDrNNrec
-    --, lpDrNNfull
+    --, lp2NNrec
+    --, lp2NNadd
+    , lpDrNNbase
+    , lpDrNNadd
+    , lpDrNNfull
     ) where
 
 import LogicPrograms
@@ -70,11 +69,11 @@ lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 lp2NN :: NeuralNetwork
 lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
-lp2NNrec :: NeuralNetwork
-lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
+--lp2NNrec :: NeuralNetwork
+--lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
-lp2NNadd :: IO NeuralNetwork
-lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5) [A 5 "", A 6 ""]
+--lp2NNadd :: IO NeuralNetwork
+--lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5) [A 5 "", A 6 ""]
 
 
 -- cl4 : A2 <- A1 , ~A4
@@ -112,9 +111,13 @@ lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
           Cl (A 7 "") [A 4 ""] [],
           Fact (A 5 "") ]
 
-lpDrNN :: NeuralNetwork
-lpDrNN = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
+lpDrNNbase :: NeuralNetwork
+lpDrNNbase = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
 
+lpDrNNadd :: IO NeuralNetwork
+lpDrNNadd = TranslationTp.additionalNN lpDrNNbase (NNfactors 1 1 0.05 0.0 0.5 0.5) [A 4 "", A 7 ""]
+
+{-
 lpDrNNa7 :: NeuralNetwork
 lpDrNNa7 = mergeNNupd lpDrNN upd
     where
@@ -129,9 +132,12 @@ lpDrNNa7 = mergeNNupd lpDrNN upd
 
 lpDrNNrec :: NeuralNetwork
 lpDrNNrec = recursiveConnections lpDrNNa7 (overlappingAtoms lpDr)
+-}
 
---lpDrNNfull :: IO NeuralNetwork
---lpDrNNfull = additionalConnectionsIO lpDrNNrec 1 0.0 0.05
+lpDrNNfull :: IO NeuralNetwork
+lpDrNNfull = do
+    nn <- lpDrNNadd
+    return $ recursiveConnections nn (overlappingAtoms lpDr [A 4 "", A 7 ""])
 
 
 

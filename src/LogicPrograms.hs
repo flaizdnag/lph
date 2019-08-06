@@ -423,9 +423,9 @@ modifiedLP lp cl = case cl of
 
 -- | List of atoms that "overlap", i.e. atoms that have the same index number
 -- but one of them has label with "h" and the other does not.
-overlappingAtoms :: LP -> [OverlappingAtoms]
-overlappingAtoms lp = [ (atom, atomCouterpart) |
-    atom <- snd partitionedAtoms,
+overlappingAtoms :: LP -> [Atom] -> [OverlappingAtoms]
+overlappingAtoms lp abdG = [ (atom, atomCouterpart) |
+    atom <- abdG ++ snd partitionedAtoms,
     atomCouterpart <- fst partitionedAtoms,
     LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart ]
     where

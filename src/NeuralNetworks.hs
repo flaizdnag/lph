@@ -139,10 +139,3 @@ emptyNN = NN
     , hidToOutConnections = []
     , recConnections      = []
     }
-
-{-
-showNNPython :: NeuralNetwork -> IO String
-showNNPython x = do
-    nn <- additionalConnectionsIO x 1 0.0 0.05
-    return $ nnToPythonString nn
--}
