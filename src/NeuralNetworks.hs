@@ -99,34 +99,15 @@ connectionsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
             return ("(" ++ show from ++ ", " ++ show to ++ ", " ++ show weight ++ ")")
 
 
-showConns :: [Connection] -> String
-showConns []                          = "]"
-showConns ((Connection from to w):xs) = case length ((Connection from to w):xs) of 
-    1 -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ ")]"
-    _ -> "(" ++ show from ++ ", " ++ show to ++ ", " ++ show w ++ "), " ++ showConns xs
-
-
 nnToPythonString :: NeuralNetwork -> String
 nnToPythonString (NN iL hL oL rL ihC hoC rC) =
-    "\"inpLayer\" = " ++ neuronsToPythonString iL ++ "\n" ++
-    "\"hidLayer\" = " ++ neuronsToPythonString hL ++ "\n" ++
-    "\"outLayer\" = " ++ neuronsToPythonString oL ++ "\n" ++
-    "\"recLayer\" = " ++ neuronsToPythonString rL ++ "\n" ++
-    "\"inpToHidConnections\" = " ++ connectionsToPythonString ihC ++ "\n" ++
-    "\"hidToOutConnections\" = " ++ connectionsToPythonString hoC ++ "\n" ++
-    "\"recConnections\" = " ++ connectionsToPythonString rC
-
-{-
-nnToPythonString' :: NeuralNetwork -> String
-nnToPythonString' (NN iL hL oL rL ihC hoC rC) =
-    "{\"inpLayer\" = [" ++ showNs iL ++ 
-    "\"hidLayer\" = [" ++ showNs hL ++ 
-    "\"outLayer\" = [" ++ showNs oL ++ 
-    "\"recLayer\" = [" ++ showNs rL ++ 
-    "\"inpToHidConnections\" = [" ++ showConns ihC ++ 
-    "\"hidToOutConnections\" = [" ++ showConns hoC ++ 
-    "\"recConnections\" = [" ++ showConns rC ++ "}"
--}
+    "{\"inpLayer\" = " ++ neuronsToPythonString iL ++ ", " ++
+    "\"hidLayer\" = " ++ neuronsToPythonString hL ++ ", " ++
+    "\"outLayer\" = " ++ neuronsToPythonString oL ++ ", " ++
+    "\"recLayer\" = " ++ neuronsToPythonString rL ++ ", " ++
+    "\"inpToHidConnections\" = " ++ connectionsToPythonString ihC ++ ", " ++
+    "\"hidToOutConnections\" = " ++ connectionsToPythonString hoC ++ ", " ++
+    "\"recConnections\" = " ++ connectionsToPythonString rC ++ "}"
 
 
 truthNN :: Float -> NNupdate

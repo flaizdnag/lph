@@ -72,12 +72,13 @@ module LogicPrograms
     , bodiesLength
     , clSameHeads
     , clsSameHeads
+    , lpSimp
     ) where
 
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
-import Data.List (nub, intercalate, subsequences, intersect, (\\), partition)
+import Data.List (nub, intercalate, subsequences, intersect, (\\), partition, groupBy, sortBy)
 import System.Random
 
 
@@ -453,3 +454,12 @@ clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
 -- clause for every clause in a given logic program. 
 clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (\x -> clSameHeads x lp) lp
+
+
+-- | Simplification of a logic program.
+lpSimp :: LP -> LP
+lpSimp lp = do
+    sameHeads <- groupByHeads lp
+    []
+    where
+        groupByHeads = groupBy (\x y -> clHead x == clHead y) . sortBy (\x y -> compare (clHead x) (clHead y))
