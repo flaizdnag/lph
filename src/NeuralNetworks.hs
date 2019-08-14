@@ -22,9 +22,12 @@ module NeuralNetworks
     , truthNN
     , emptyNN
     , emptyNNupd
+    , printNNPythonString
+    , saveToFile
     ) where
 
 import Data.List (intercalate)
+import System.IO  
 
 
 data Neuron = Neuron 
@@ -142,3 +145,15 @@ emptyNN = NN
     , hidToOutConnections = []
     , recConnections      = []
     }
+
+
+printNNPythonString :: IO NeuralNetwork -> IO String
+printNNPythonString inp = do
+    nn <- inp
+    return $ nnToPythonString nn
+
+
+saveToFile :: IO String -> IO ()
+saveToFile nn = do
+    toWrite <- nn
+    writeFile "NN_new.txt" toWrite

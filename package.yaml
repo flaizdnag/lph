@@ -3,7 +3,7 @@ version:             0.1.0.0
 github:              "flaizdnag/lph"
 license:             BSD3
 author:              "Aleksandra Cz., Kinga O., Andrzej G."
-maintainer:          "andrzej.gajda@amu.edu.pl"
+maintainer:          "andrzej.gajda@gmail.com"
 copyright:           "2018 Aleksandra Cz., Kinga O., Andrzej G."
 
 extra-source-files:
@@ -29,6 +29,7 @@ dependencies:
 - aeson
 - random
 - split
+- qm
 
 library:
   source-dirs: src

@@ -72,7 +72,6 @@ module LogicPrograms
     , bodiesLength
     , clSameHeads
     , clsSameHeads
-    , lpSimp
     ) where
 
 import Auxiliary
@@ -183,6 +182,25 @@ instance Eq Clause where
     Cl h1 pb1 nb1 == Cl h2 pb2 nb2  = h1 == h2 && eqLists pb1 pb2 && eqLists nb1 nb2
     _             == _              = False
 
+instance Ord Clause where
+    Assumption h1 < Assumption h2 = h1 < h2
+    Assumption _  < _             = True
+    _             < Assumption _  = False
+    Fact h1       < Fact h2       = h1 < h2
+    Fact _        < _             = True
+    _             < Fact _        = False
+    Cl h1 pb1 nb1 < Cl h2 pb2 nb2
+        | h1  < h2  = True
+        | h1  > h2  = False
+        | pb1 < pb2 = True
+        | pb1 > pb2 = False
+        | nb1 < nb2 = True
+        | otherwise = False
+    
+    a <= b = (a < b) || (a == b)
+    a >  b = b < a
+    a >= b = b <= a
+
 instance Show Clause where
     show cl = case cl of
         Fact h          -> show h ++ " <- Top"
@@ -191,7 +209,6 @@ instance Show Clause where
             | null pb   -> show h ++ " <- ~" ++ intercalate ", ~" (map show nb)
             | null nb   -> show h ++ " <- " ++ intercalate ", " (map show pb)
             | otherwise -> show h ++ " <- " ++ intercalate ", " (map show pb) ++ ", ~" ++ intercalate ", ~" (map show nb)
-
 
 -- | Logic program is a list of clauses.
 type LP = [Clause]
@@ -454,12 +471,3 @@ clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
 -- clause for every clause in a given logic program. 
 clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (\x -> clSameHeads x lp) lp
-
-
--- | Simplification of a logic program.
-lpSimp :: LP -> LP
-lpSimp lp = do
-    sameHeads <- groupByHeads lp
-    []
-    where
-        groupByHeads = groupBy (\x y -> clHead x == clHead y) . sortBy (\x y -> compare (clHead x) (clHead y))
