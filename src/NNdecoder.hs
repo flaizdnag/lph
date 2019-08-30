@@ -9,12 +9,11 @@ Portability : POSIX
 
 Longer description.
 -}
-module NNdecoder
-    (decodeNN) where
+module NNdecoder (decodeNN) where
 
 import LogicPrograms
 import Auxiliary
-import Data.List (nub, intercalate, subsequences, intersect, (\\), partition)
+import Data.List (partition)
 
 
 type Amin     = Float
