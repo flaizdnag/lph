@@ -48,6 +48,7 @@ clsToValStrings cls = do
     let asVals    = zip pBody (repeat 1) ++ zip nBody (repeat 0)
         ordAsVals = sortBy (\x y -> compare (fst x) (fst y)) asVals
         vals      = filter (' ' /=) $ unwords $ map (show . snd) ordAsVals
+
     return vals
 
 

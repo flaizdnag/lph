@@ -63,7 +63,7 @@ baseNN lp nnF = mergeNNupd baseForNN (truthNN w)
         
         -- list of numbers of clauses with the same head for every clause in the
         -- logic program
-        clsSH  = clsSameHeads lp
+        clsSH = clsSameHeads lp
         
         -- maximal number of atoms in bodies of clauses and clauses with the
         -- same heads
@@ -71,15 +71,15 @@ baseNN lp nnF = mergeNNupd baseForNN (truthNN w)
         maxHds = maximum $ clsSH
         
         -- A_min and W values for the neural network
-        amin   = aminBase lp (maximum [maxBds, maxHds]) + (aminFactor nnF)
-        w      = wBase lp amin nnF maxBds maxHds + (weightFactor nnF)
+        amin = aminBase lp (maximum [maxBds, maxHds]) + (aminFactor nnF)
+        w    = wBase lp amin nnF maxBds maxHds + (weightFactor nnF)
         
         -- list of triples: clause, body length of the clause, number of clauses
         -- with the same head
-        triLP  = zip3 lp bdsLen clsSH
+        triLP = zip3 lp bdsLen clsSH
         
         -- list of overlapping atoms in the logic program
-        ovrl   = overlappingAtoms lp []
+        ovrl = overlappingAtoms lp []
         
         -- function that creates the basic neural network
         baseForNN = baseNNsteps triLP emptyNN amin w ovrl

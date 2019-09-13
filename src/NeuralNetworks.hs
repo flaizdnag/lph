@@ -84,6 +84,7 @@ data NNfactors = NNfactors
     , weightFactor    :: Float  -- weight W factor (added value)
     , aminFactor      :: Float  -- A_min factor (added value)
     }
+    deriving (Show, Read)
 
 
 neuronsToPythonString :: [Neuron] -> String
