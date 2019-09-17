@@ -30,6 +30,7 @@ dependencies:
 - random
 - split
 - qm
+- QuickCheck
 
 library:
   source-dirs: src

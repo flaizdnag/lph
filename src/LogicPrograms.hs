@@ -241,7 +241,7 @@ type OverlappingAtoms = (Atom, Atom)
 -- | Positive body of a clause, i.e. atoms that are not preceded by negation.
 clPBody :: Clause -> [Atom]
 clPBody cl = case cl of
-    Cl _ _ _     -> clPAtoms cl
+    Cl _ _ _     -> nub $ clPAtoms cl
     Fact _       -> []
     Assumption _ -> []
 
@@ -249,7 +249,7 @@ clPBody cl = case cl of
 -- | Negative body of a clause, i.e. atoms that are preceded by negation.
 clNBody :: Clause -> [Atom]
 clNBody cl = case cl of
-    Cl _ _ _     -> clNAtoms cl
+    Cl _ _ _     -> nub $ clNAtoms cl
     Fact _       -> []
     Assumption _ -> []
 
@@ -338,7 +338,7 @@ bp = nub . bpDup
 
 
 -- | Definition of an atom is the set of all clauses that have the atom as the
--- head.
+-- head (may contain duplicates).
 atomDef :: Atom -> LP -> LP
 atomDef a lp = [ cl | cl <- lp, clHead cl == a ]
 
@@ -387,9 +387,7 @@ isModelLukasiewiczLP lp int = all (\x -> evalLukasiewicz x int == Tr3v) lp
 -- 2-valued semantic).
 intsLPgenerator2v :: [Atom] -> [IntLP]
 intsLPgenerator2v as =
-    [ IntLP x (as \\ x) | x <- powerAs ]
-    where
-        powerAs = subsequences as
+    [ IntLP x (as \\ x) | x <- subsequences as ]
 
 
 -- | Generator of all possible interpretations from a given set of atoms (in

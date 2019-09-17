@@ -63,12 +63,19 @@ cl3 = Cl (A 6 "") [A 3 "", A 4 ""] []
 --      A2 <- A1 , ~A4
 --      A3 <- A1
 -- }
-lp2 :: LP
-lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+--lp2 :: LP
+--lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
 lp2NN :: NeuralNetwork
 lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
+lp2 :: LP
+lp2 =
+    [ Cl (A 1 "") [A 10 "", A 10 ""] [A 11 "", A 11 ""]
+    , Cl (A 2 "") [A 15 "", A 15 ""] [A 16 "", A 16 ""]
+    , Fact (A 1 ""), Assumption (A 1 "")
+    , Fact (A 2 ""), Assumption (A 2 "")
+    ]
 --lp2NNrec :: NeuralNetwork
 --lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
