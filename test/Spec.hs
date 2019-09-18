@@ -162,7 +162,7 @@ main = hspec $ do
             length (intsLPgeneratorLuk [A 1 "", A 2 "", A 3 ""]) `shouldBe` 27
 
     describe "LogicPrograms module; getCounterModels2v" $ do
-        it "for lp1 and 'A1 <-'" $
+        it "for lp1 and 'A1 <- Top'" $
             getCounterModels2v lp1 (Fact (A 1 "")) `shouldBe` []
         it "for lp1 and 'A3 <- A4'" $
             null (getCounterModels2v lp1 (Cl (A 3 "") [A 4 ""] [])) `shouldBe` False
@@ -176,7 +176,7 @@ main = hspec $ do
             null (getCounterModels2v lp3 (Cl (A 2 "") [] [A 10 ""])) `shouldBe` False
 
     describe "LogicPrograms module; getCounterModelsLuk" $ do
-        it "for lp1 and 'A1 <-'" $
+        it "for lp1 and 'A1 <- Top'" $
             getCounterModelsLuk lp1 (Fact (A 1 "")) `shouldBe` []
         it "for lp1 and 'A3 <- A4'" $
             null (getCounterModelsLuk lp1 (Cl (A 3 "") [A 4 ""] [])) `shouldBe` False
@@ -194,18 +194,60 @@ main = hspec $ do
             length (lpSymDifference lp1 lp2) `shouldBe` 2
         it "for [] and lp1 it's lp1" $
             lpSymDifference [] lp1 `shouldBe` lp1
-        it "for [A1^h <-] and lp1 it's lp1" $
+        it "for [A1^h <- Top] and lp1 it's lp1" $
             lpSymDifference [Fact (A 1 "h")] lp1 `shouldBe` lp1
 
     describe "LogicPrograms module; modifiedLP" $ do
-        it "for lp1 and 'A1 <-' it's lp1" $
+        it "for lp1 and 'A1 <- Top' it's lp1" $
             modifiedLP lp1 (Fact (A 1 "")) `shouldBe` lp1
         it "for lp1 and 'A1 <- Bot' it's lp1" $
             modifiedLP lp1 (Assumption (A 1 "")) `shouldBe` lp1
         it "for lp1 and 'A1 <- A2, ~A3' it's [A2^h <- Top; A3^h <- Bot]" $
-            modifiedLP lp1 (Cl (A 1 "") [A 2 ""] [A 3 ""]) `shouldBe` lp1 ++ [Fact (A 2 "h"), Assumption (A 3 "h")]
+            eqLists (modifiedLP lp1 (Cl (A 1 "") [A 2 ""] [A 3 ""])) (lp1 ++ [Fact (A 2 "h"), Assumption (A 3 "h")]) `shouldBe` True
 
+    describe "LogicPrograms module; overlappingAtoms" $ do
+        it "for lp1 and empty list it's empty list" $
+            overlappingAtoms lp1 [] `shouldBe` []
+        it "for lp1 and [A1^h, A2^h] it's empty list" $
+            overlappingAtoms lp1 [A 1 "h", A 2 "h"] `shouldBe` []
+        it "for lp1 and [A1^hn, A2^hn] it's empty list" $
+            overlappingAtoms lp1 [A 1 "hn", A 2 "hn"] `shouldBe` []
+        it "for lp1 modified with 'A1 <- A2, A3^n' and [A3^n] there are two pairs" $
+            eqLists (overlappingAtoms (modifiedLP lp1 (Cl (A 1 "") [A 2 "", A 3 "n"] [])) [A 3 "n"]) [(A 2 "", A 2 "h"), (A 3 "n", A 3 "nh")] `shouldBe` True
 
+    describe "LogicPrograms module; bodyLength" $ do
+        it "for facts it's 0" $
+            bodyLength (Fact (A 1 "")) `shouldBe` 0
+        it "for assumptions it's 0" $
+            bodyLength (Assumption (A 1 "")) `shouldBe` 0
+        it "for 'A1 <- A2, A3^h, ~A4, ~A4^h' it's 4" $
+            bodyLength (Cl (A 1 "") [A 2 "", A 3 "h"] [A 4 "", A 4 "h"]) `shouldBe` 4
+        it "for 'A1 <- A2, A2, ~A2, ~A2' it's 1" $
+            bodyLength (Cl (A 1 "") [A 2 "", A 2 ""] [A 2 "", A 2 ""]) `shouldBe` 1
+
+    describe "LogicPrograms module; bodiesLength" $ do
+        it "for lp1 it's [0, 0, 0, 0]" $
+            bodiesLength lp1 `shouldBe` [0,0,0,0]
+        it "for lp2 it's 4 x 0 and 2 x 2" $
+            eqLists (bodiesLength lp2) [0,0,0,0,2,2] `shouldBe` True
+        it "for lp3 it's 2 x 4 and 2 x 0" $
+            eqLists (bodiesLength lp3) [0,0,4,4] `shouldBe` True
+
+    describe "LogicPrograms module; clSameHeads" $ do
+        it "for 'A1 <- Top' and lp1 it's 2" $
+            clSameHeads (Fact (A 1 "")) lp1 `shouldBe` 2
+        it "for 'A1 <- Bot' and lp1 it's 2" $
+            clSameHeads (Assumption (A 1 "")) lp1 `shouldBe` 2
+        it "for 'A1^h <- Bot' and lp1 it's 0" $
+            clSameHeads (Assumption (A 1 "h")) lp1 `shouldBe` 0
+
+    describe "LogicPrograms module; clsSameHeads" $ do
+        it "for lp1 it's 4 x 2" $
+            clsSameHeads lp1 `shouldBe` [2,2,2,2]
+        it "for lp2 it's 6 x 3" $
+            clsSameHeads lp2 `shouldBe` [3,3,3,3,3,3]
+        it "for lp3 it's 4 x 1" $
+            clsSameHeads lp3 `shouldBe` [1,1,1,1]
 
 
 {-
