@@ -1,5 +1,7 @@
 import AcceptableTests
 import AuxiliaryTests
+import CompletionTests
+import CPLTests
 import LogicProgramsTests
 import Test.Hspec
 import Test.QuickCheck
@@ -13,6 +15,14 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'Auxiliary' module"
     auxiliaryTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'Completion' module"
+    completionTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'CPL' module"
+    cplTests
     putStrLn ""
     putStrLn ""
     putStrLn "Tests for 'LogicPrograms' module"

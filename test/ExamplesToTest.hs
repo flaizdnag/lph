@@ -4,9 +4,11 @@ module ExamplesToTest
     , lp3
     , lp4
     , lp5
+    , forms1
     ) where
 
 import LogicPrograms
+import CPL
 
 
 lp1 :: LP
@@ -32,11 +34,22 @@ lp3 =
     ]
 
 lp4 :: LP
-lp4 = [Cl (A 1 "") [A 2 ""] [A 1 ""] ]
+lp4 = [Cl (A 1 "") [A 2 ""] [A 1 ""]]
 
 lp5 :: LP
 lp5 =
     [ Cl (A 2 "") [A 1 ""] []
     , Cl (A 1 "") [] [A 2 ""]
     , Cl (A 2 "") [] [A 1 ""]
+    ]
+
+
+forms1 :: [Form]
+forms1 =
+    [ V (A 1 "")
+    , N (V (A 2 ""))
+    , C [V (A 3 ""), N (V (A 4 ""))]
+    , D [C [V (A 5 ""), N (V (A 6 ""))], C [V (A 7 ""), N (V (A 8 ""))]]
+    , E (V (A 9 "")) (N (V (A 10 "")))
+    , E (V (A 11 "")) (D [C [V (A 12 "")]])
     ]

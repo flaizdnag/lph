@@ -19,7 +19,7 @@ module Completion
     ( comp
     , weakComp
     , intLPtoIntCPL
-    , makeModels
+    --, makeModels
     ) where
 
 import LogicPrograms
@@ -54,7 +54,7 @@ weakComp lp = map (equivalence . mapConjunction) headsDefs
         conjunction cl = case cl of
             Fact h          -> (V h, C [T])
             Assumption h    -> (V h, C [F])
-            Cl h pb nb      -> (V h, C (atomsToVar pb ++ atomsToNVar nb))
+            Cl h pb nb      -> (V h, C ((atomsToVar $ nub pb) ++ (atomsToNVar $ nub nb)))
         
         -- mapping @conjunction@ over a list of clauses
         mapConjunction cls = map conjunction cls
@@ -167,7 +167,7 @@ modelSearch fs = invIter (sort fs) (IntCPL [] [], [], [])
 -- Next step is to write function that creates a model for a list of formulas --
 -- even if there are formulas with unknown value.                             --
 --------------------------------------------------------------------------------
-
+{-
 -- | Function that makes models for a list of formulas where some of them have
 -- Un value.
 makeModels :: [Form] -> [IntCPL]
@@ -175,7 +175,7 @@ makeModels fs = case (modelSearch fs) of
     (int, [])   -> [int]
     (int, uns)  -> sortInts $ foldl1' combineInts $ map makeTr uns
         where
-            makeTr = \x -> makeFormTr x int
+            makeTr x = makeFormTr x int
 
 -- | Sorts a list of interpretations in such a way that the smallest
 -- interpretations are at the beginning of the list and the largest at the end.
@@ -253,3 +253,4 @@ combineInt ((IntCPL atr afa), (IntCPL btr bfa))
     | otherwise    = Just (IntCPL (nub $ atr ++ btr) (nub $ afa ++ bfa))
     where
         inconsistent = jointElem atr bfa || jointElem afa btr
+-}

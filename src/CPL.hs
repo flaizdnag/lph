@@ -139,10 +139,13 @@ instance LukasiewiczSemantic Form IntCPL where
 -- contains variables that are mapped to truth and the second those that are
 -- mapped to false.
 data IntCPL = IntCPL { trCPL :: [Form] , faCPL :: [Form] }
-    deriving (Read, Eq)
+    deriving (Read)
 
 instance Show IntCPL where
     show (IntCPL tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
+
+instance Eq IntCPL where
+    IntCPL tr1 fa1 == IntCPL tr2 fa2 = eqLists tr1 tr2 && eqLists fa1 fa2
 
 
 -- | Checks if a given interpretation is a model for a given set of formulas.
