@@ -34,8 +34,7 @@ atomsToInts = map idx
 
 -- | Takes a list of indexes and returns a list of atoms with empty labels.
 intsToAtoms :: [Int] -> [Atom]
-intsToAtoms []     = []
-intsToAtoms (x:xs) = (A x []) : intsToAtoms xs
+intsToAtoms = map (\x -> A x [])
 
 
 -- | Takes the Herbrand Base of a logic program and returns the limits for the
@@ -47,14 +46,16 @@ limits xs = (minimum idxs, maximum idxs)
         idxs = atomsToInts (bpDup xs)
 
 
--- | Creates a list of pairs: the head of a  clause and an atom from the body of
+-- | Creates a list of pairs: the head of a clause and an atom from the body of
 -- the clause.
 lpEdges :: LP -> [(Int, Int)]
-lpEdges lp = [ (headIdx, bodyAtomIdx) |
-    cl <- lp,
-    atom <- clBody cl,
-    let headIdx = idx (clHead cl),
-    let bodyAtomIdx = idx atom ]
+lpEdges lp =
+    [ (headIdx, bodyAtomIdx)
+    | cl <- lp
+    , atom <- clBody cl
+    , let headIdx = idx $ clHead cl
+    , let bodyAtomIdx = idx atom
+    ]
 
 
 -- | Creates a graph for a logic program.

@@ -2,6 +2,7 @@ import AcceptableTests
 import AuxiliaryTests
 import CompletionTests
 import CPLTests
+import GraphTests
 import LogicProgramsTests
 import Test.Hspec
 import Test.QuickCheck
@@ -23,6 +24,10 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'CPL' module"
     cplTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'Graph' module"
+    graphTests
     putStrLn ""
     putStrLn ""
     putStrLn "Tests for 'LogicPrograms' module"
