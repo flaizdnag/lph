@@ -70,8 +70,8 @@ graph x = buildG (limits x) (lpEdges x)
 -- from PhD.
 dependsOn :: Graph -> Int -> [Int]
 dependsOn g n
-    | selfDep g n   = reachable g n
-    | otherwise     = delete n (reachable g n)
+    | selfDep g n = reachable g n
+    | otherwise   = delete n (reachable g n)
 
 
 -- | Establishes if a given node depends on itself, i.e. if it is reachable from
