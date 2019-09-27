@@ -7,6 +7,7 @@ import LogicProgramsTests
 import LPsimplifierTests
 import LvlMapTests
 import NeuralNetworksTests
+import NNdecoderTests
 import Test.Hspec
 import Test.QuickCheck
 
@@ -47,3 +48,7 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'NeuralNetworks' module"
     neuralNetworksTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'NNdecoder' module"
+    nnDecoderTests
