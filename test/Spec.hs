@@ -6,6 +6,7 @@ import GraphTests
 import LogicProgramsTests
 import LPsimplifierTests
 import LvlMapTests
+import NeuralNetworksTests
 import Test.Hspec
 import Test.QuickCheck
 
@@ -42,3 +43,7 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'LvlMap' module"
     lvlMapTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'NeuralNetworks' module"
+    neuralNetworksTests
