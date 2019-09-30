@@ -8,6 +8,7 @@ import LPsimplifierTests
 import LvlMapTests
 import NeuralNetworksTests
 import NNdecoderTests
+import PhiOperatorTests
 import Test.Hspec
 import Test.QuickCheck
 
@@ -52,3 +53,7 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'NNdecoder' module"
     nnDecoderTests
+    putStrLn ""
+    putStrLn ""
+    putStrLn "Tests for 'PhiOperator' module"
+    phiOperatorTests

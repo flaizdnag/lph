@@ -224,7 +224,7 @@ instance Show IntLP where
     show (IntLP tr fa) = "(" ++ show tr ++ ", " ++ show fa ++ ")"
 
 instance Eq IntLP where
-    IntLP tr1 fa1 == IntLP tr2 fa2 = eqLists tr1 tr2 && eqLists fa1 fa2
+    IntLP tr1 fa1 == IntLP tr2 fa2 = eqLists (nub tr1) (nub tr2) && eqLists (nub fa1) (nub fa2)
 
 -- | The ordering of interpretations is knowledge-based ordering.
 instance Ord IntLP where
