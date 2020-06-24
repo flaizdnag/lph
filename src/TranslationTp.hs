@@ -173,8 +173,19 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
     -- we add input layer neurons, hidden layer neuron, output layer neurons and
     -- connections: from new input layer neurons to new hidden layer neuron and
     -- from new hidden layer neuron to new output layer neuron
-    Nothing ->
-        NNupdate
+    Nothing
+        -- the atom that is the head of the clause is in the body of the clause
+        -- (this should not occur, but...) then the neuron added to the output
+        -- layer associated with that atom is based on the head
+        | any (hd ==) (pBod ++ nBod) -> NNupdate
+            { inpNeuToAdd      = inputNs
+            , hidNeuToAdd      = [hidNeuron]
+            , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuIdx] ++ (createOutNeurons ((pBod ++ nBod) \\ [hd]) ((+) (1 + 1) $ length $ outLayer nn) (outLayer nn))
+            , outNeuToRemove   = []
+            , inpToHidConToAdd = inpToHidConns
+            , hidToOutConToAdd = [Connection hidNeuIdx outNeuIdx w]
+            }
+        | otherwise -> NNupdate
             { inpNeuToAdd      = inputNs
             , hidNeuToAdd      = [hidNeuron]
             , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuIdx] ++ outputNs 1
@@ -345,7 +356,7 @@ additionalNN nn nnF abdGs = do
     -- the head of a fact
     let notFacts = [ neu |
             neu <- newOutLayer,
-            find (\x -> from x == "hidT" && to x == NN.idx neu) (hidToOutConnections nn) == Nothing ]
+            find (\x -> fromNeuron x == "hidT" && toNeuron x == NN.idx neu) (hidToOutConnections nn) == Nothing ]
     
     -- the number of additional hidden layer neurons is the number of output
     -- layer neurons that are not connected with the truth neuron
@@ -376,7 +387,7 @@ additionalNN nn nnF abdGs = do
             if (null abdGs) then concatMap makeAddConns hidToOutTri
             else filtered (concatMap makeAddConns hidToOutTri)
                 where
-                    filtered cs = filter (\x -> not $ from x == "hidT" && elem (to x) forbiddenIdxs) cs
+                    filtered cs = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) cs
                     forbiddenIdxs = [ NN.idx n | n <- newOutLayer,  elem (NN.label n) (map show abdGs)]
     
     -- list of additional connections from the input to the hidden layer
@@ -413,7 +424,7 @@ makeAddInpToHidConns inpLayer outLayer addHidNeurons addHidToOutConns addWs = do
     let neuronsToConnect = unzip $ do
             hidNeu <- addHidNeurons
             let connectedOutNeus = do
-                    index <- [ to c | c <- addHidToOutConns, from c == NN.idx hidNeu ]
+                    index <- [ toNeuron c | c <- addHidToOutConns, fromNeuron c == NN.idx hidNeu ]
                     neu <- [ n | n <- outLayer, NN.idx n == index ]
                     return neu
             let goodInpNeurons = [ n |
@@ -429,6 +440,6 @@ makeAddInpToHidConns inpLayer outLayer addHidNeurons addHidToOutConns addWs = do
 -- | Removes additional connections between the hidden and output layer that run
 -- from the truth neuron to abductive goals.
 remBadAddConns :: [Atom] -> [Neuron] -> [Connection] -> [Connection]
-remBadAddConns abdGs layer conns = filter (\x -> not $ from x == "hidT" && elem (to x) forbiddenIdxs) conns
+remBadAddConns abdGs layer conns = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) conns
     where
         forbiddenIdxs = [ NN.idx n | n <- layer,  elem (NN.label n) (map show abdGs)]

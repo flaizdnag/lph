@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-|
 Module      : NeuralNetworks
 Description : Definitions of types that concern neural networks.
@@ -26,6 +28,12 @@ module NeuralNetworks
     , saveToFile
     ) where
 
+import Data.Aeson
+import Data.Map
+import Data.Text
+import GHC.Generics
+
+import Auxiliary
 import Data.List (intercalate)
 import System.IO  
 
@@ -36,21 +44,43 @@ data Neuron = Neuron
     , bias      :: Float 
     , idx       :: String 
     }
-    deriving (Read, Eq)
+    deriving (Generic, Read, Eq)
+
+instance FromJSON Neuron
+instance ToJSON Neuron where
+    toEncoding = genericToEncoding defaultOptions
 
 instance Show Neuron where 
     show (Neuron l aF b idx) = "(" ++ l ++ ", " ++ aF ++ ", " ++ show b ++ ", " ++ idx ++ ")"
 
+instance Ord Neuron where
+    n1 < n2 = idx n1 < idx n2
+    
+    a <= b = (a < b) || (a == b)
+    a >  b = b < a
+    a >= b = b <= a
+
 
 data Connection = Connection
-    { from   :: String
-    , to     :: String
-    , weight :: Float
+    { fromNeuron :: String
+    , toNeuron   :: String
+    , weight     :: Float
     }
-    deriving (Read, Eq)
+    deriving (Generic, Read, Eq)
+
+instance FromJSON Connection
+instance ToJSON Connection where
+    toEncoding = genericToEncoding defaultOptions
 
 instance Show Connection where
     show (Connection from to w) = "(" ++ from ++ ", " ++ to ++ ", " ++ show w ++ ")"
+
+instance Ord Connection where
+    c1 < c2 = fromNeuron c1 < fromNeuron c2
+    
+    a <= b = (a < b) || (a == b)
+    a >  b = b < a
+    a >= b = b <= a
 
 
 data NeuralNetwork = NN
@@ -62,7 +92,28 @@ data NeuralNetwork = NN
     , hidToOutConnections :: [Connection]
     , recConnections      :: [Connection]
     }
-    deriving (Show, Read)
+    deriving (Generic, Show, Read)
+
+instance FromJSON NeuralNetwork
+instance ToJSON NeuralNetwork where
+    toEncoding = genericToEncoding defaultOptions
+
+instance Eq NeuralNetwork where
+    nn1 == nn2 =
+        Prelude.all (True==)
+            [ eqLists (inpLayer nn1) (inpLayer nn2)
+            , eqLists (hidLayer nn1) (hidLayer nn2)
+            , eqLists (outLayer nn1) (outLayer nn2)
+            , eqLists (recLayer nn1) (recLayer nn2)
+            ]
+        
+        &&
+        
+        Prelude.all (True==)
+            [ eqLists (inpToHidConnections nn1) (inpToHidConnections nn2)
+            , eqLists (hidToOutConnections nn1) (hidToOutConnections nn2)
+            , eqLists (recConnections nn1) (recConnections nn2)
+            ]
 
 
 -- | A special type for neural networks updates handling.
@@ -88,7 +139,7 @@ data NNfactors = NNfactors
 
 
 neuronsToPythonString :: [Neuron] -> String
-neuronsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
+neuronsToPythonString ns = "[" ++ Data.List.intercalate ", " stringList ++ "]"
     where
         stringList = do
             (Neuron label activFunc bias idx) <- ns
@@ -96,7 +147,7 @@ neuronsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
 
 
 connectionsToPythonString :: [Connection] -> String
-connectionsToPythonString ns = "[" ++ intercalate ", " stringList ++ "]"
+connectionsToPythonString ns = "[" ++ Data.List.intercalate ", " stringList ++ "]"
     where
         stringList = do
             (Connection from to weight) <- ns
@@ -158,3 +209,19 @@ saveToFile :: IO String -> IO ()
 saveToFile nn = do
     toWrite <- nn
     writeFile "NN_new.txt" toWrite
+
+
+
+
+
+
+exmplNN :: NeuralNetwork
+exmplNN = NN
+    { inpLayer            = [Neuron "A1" "id" 0.0 "inp1", Neuron "A2" "id" 0.0 "inp2"]
+    , hidLayer            = [Neuron "h1" "tanh" 1.0 "hid1", Neuron "h2" "tanh" 2.0 "hid2"]
+    , outLayer            = [Neuron "A1" "tanh" 1.0 "out1", Neuron "A2" "tanh" 2.0 "out2"]
+    , recLayer            = [Neuron "rec1" "special" 1.0 "rec1"]
+    , inpToHidConnections = [Connection "inp1" "hid2" 1.0, Connection "inp2" "hid1" 2.0]
+    , hidToOutConnections = [Connection "hid2" "out2" 1.0, Connection "hid1" "out1" 2.0]
+    , recConnections      = [Connection "out2" "rec1" 1.0, Connection "out1" "rec1" 1.0, Connection "rec1" "inp1" 1.0]
+    }

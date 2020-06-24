@@ -57,6 +57,8 @@ module LogicPrograms
     , bpDup
     , bp
     , atomDef
+    , definedLP
+    , undefinedLP
     , isModel2vLP
     , isModelLukasiewiczLP
     , evalBody2v
@@ -341,6 +343,16 @@ bp = nub . bpDup
 -- head (may contain duplicates).
 atomDef :: Atom -> LP -> LP
 atomDef a lp = [ cl | cl <- lp, clHead cl == a ]
+
+
+-- | Defined atoms in a given LP.
+definedLP :: LP -> [Atom]
+definedLP lp = lpHeads lp
+
+
+-- | Undefined atoms in a given LP.
+undefinedLP :: LP -> [Atom]
+undefinedLP lp = onlyBodies lp
 
 
 -- | Evaluates the body of a clause in the two-valued semantic.

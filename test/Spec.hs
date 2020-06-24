@@ -10,6 +10,7 @@ import NeuralNetworksTests
 import NNdecoderTests
 import PhiOperatorTests
 import TpOperatorTests
+import TranslationTpTests
 import Test.Hspec
 import Test.QuickCheck
 
@@ -62,3 +63,7 @@ main = do
     putStrLn ""
     putStrLn "Tests for 'TpOperator' module"
     tpOperatorTests
+    putStrLn ""
+    putStrLn ""
+    --putStrLn "Tests for 'TranslationTp' module"
+    --translationTpTests

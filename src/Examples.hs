@@ -27,6 +27,12 @@ module Examples
     , lpDrNNbase
     , lpDrNNadd
     , lpDrNNfull
+    , articleLP1
+    , articleLP2
+    , articleLP3
+    , articleLP4
+    , articleLP5
+    , articleLP6
     ) where
 
 import LogicPrograms
@@ -145,6 +151,55 @@ lpDrNNfull :: IO NeuralNetwork
 lpDrNNfull = do
     nn <- lpDrNNadd
     return $ recursiveConnections nn (overlappingAtoms lpDr [A 4 "", A 7 ""])
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Examples from article on the core method for WCS with sceptical abduction
+
+articleLP1 :: LP
+articleLP1 = 
+    [ Cl (A 1 "") [A 2 ""] [A 3 ""]
+    , Assumption (A 3 "")
+    ]
+
+articleLP2 :: LP
+articleLP2 = 
+    [ Cl (A 1 "") [A 2 ""] [A 3 ""]
+    , Assumption (A 3 "")
+    , Cl (A 1 "") [A 4 ""] [A 5 ""]
+    , Assumption (A 5 "")
+    ]
+
+articleLP3 :: LP
+articleLP3 =
+    [ Cl (A 1 "") [A 2 ""] []
+    , Cl (A 1 "") [A 3 ""] []
+    , Assumption (A 3 "")
+    ]
+
+articleLP4 :: LP
+articleLP4 =
+    [ Fact (A 3 "")
+    , Assumption (A 3 "")
+    ]
+
+articleLP5 :: LP
+articleLP5 =
+    [ Cl (A 1 "") [A 2 ""] [A 3 ""]
+    , Assumption (A 3 "")
+    , Fact (A 2 "")
+    ]
+
+articleLP6 :: LP
+articleLP6 =
+    [ Cl (A 1 "") [A 2 ""] []
+    , Cl (A 1 "") [A 3 ""] []
+    , Cl (A 3 "") [A 1 ""] []
+    ]
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 
 
