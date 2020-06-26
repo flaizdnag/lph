@@ -33,6 +33,7 @@ dependencies:
 - QuickCheck
 - aeson
 - ghc
+- bytestring
 
 library:
   source-dirs: src

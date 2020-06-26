@@ -1,4 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 {-|
 Module      : LogicPrograms
@@ -76,6 +78,9 @@ module LogicPrograms
     , clsSameHeads
     ) where
 
+import Data.Aeson
+import GHC.Generics
+
 import Auxiliary
 import TwoValuedSem
 import ThreeValuedSem
@@ -85,12 +90,16 @@ import System.Random
 
 -- | Atoms are basic structures for clauses.
 data Atom = A { idx :: Int, label :: [Char] }
-    deriving (Read)
+    deriving (Read, Generic)
 
 {-
 instance Read Atom where
     read "A"
 -}
+
+instance FromJSON Atom
+instance ToJSON Atom where
+    toEncoding = genericToEncoding defaultOptions
 
 instance Show Atom where
     show (A idx lab)
@@ -147,7 +156,11 @@ data Clause =
         , clPAtoms :: [Atom]
         , clNAtoms :: [Atom]
         }
-    deriving (Read)
+    deriving (Read, Generic)
+
+instance FromJSON Clause
+instance ToJSON Clause where
+    toEncoding = genericToEncoding defaultOptions
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of

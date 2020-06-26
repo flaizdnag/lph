@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+
 {-|
 Module      : NeuralNetworks
 Description : Definitions of types that concern neural networks.
@@ -29,13 +30,12 @@ module NeuralNetworks
     ) where
 
 import Data.Aeson
-import Data.Map
-import Data.Text
 import GHC.Generics
 
 import Auxiliary
 import Data.List (intercalate)
-import System.IO  
+import System.IO
+
 
 
 data Neuron = Neuron 
@@ -61,6 +61,7 @@ instance Ord Neuron where
     a >= b = b <= a
 
 
+
 data Connection = Connection
     { fromNeuron :: String
     , toNeuron   :: String
@@ -81,6 +82,7 @@ instance Ord Connection where
     a <= b = (a < b) || (a == b)
     a >  b = b < a
     a >= b = b <= a
+
 
 
 data NeuralNetwork = NN
@@ -116,6 +118,7 @@ instance Eq NeuralNetwork where
             ]
 
 
+
 -- | A special type for neural networks updates handling.
 data NNupdate = NNupdate
     { inpNeuToAdd      :: [Neuron]
@@ -136,6 +139,7 @@ data NNfactors = NNfactors
     , aminFactor      :: Float  -- A_min factor (added value)
     }
     deriving (Show, Read)
+
 
 
 neuronsToPythonString :: [Neuron] -> String
@@ -209,19 +213,3 @@ saveToFile :: IO String -> IO ()
 saveToFile nn = do
     toWrite <- nn
     writeFile "NN_new.txt" toWrite
-
-
-
-
-
-
-exmplNN :: NeuralNetwork
-exmplNN = NN
-    { inpLayer            = [Neuron "A1" "id" 0.0 "inp1", Neuron "A2" "id" 0.0 "inp2"]
-    , hidLayer            = [Neuron "h1" "tanh" 1.0 "hid1", Neuron "h2" "tanh" 2.0 "hid2"]
-    , outLayer            = [Neuron "A1" "tanh" 1.0 "out1", Neuron "A2" "tanh" 2.0 "out2"]
-    , recLayer            = [Neuron "rec1" "special" 1.0 "rec1"]
-    , inpToHidConnections = [Connection "inp1" "hid2" 1.0, Connection "inp2" "hid1" 2.0]
-    , hidToOutConnections = [Connection "hid2" "out2" 1.0, Connection "hid1" "out1" 2.0]
-    , recConnections      = [Connection "out2" "rec1" 1.0, Connection "out1" "rec1" 1.0, Connection "rec1" "inp1" 1.0]
-    }
