@@ -18,6 +18,7 @@ module JsonHandling
     , Factors (..)
     , LPtoNN (..)
     , lpjosnTOlp
+    , factorsTOnnfactors
     ) where
 
 import Data.Aeson
@@ -26,7 +27,7 @@ import qualified Data.ByteString.Lazy as B
 import Data.Text
 
 import LogicPrograms
-import NeuralNetworks
+import qualified NeuralNetworks as NN
 
 
 data LPjson = LPjson
@@ -73,3 +74,14 @@ lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
     where
         fsNew = Prelude.map (\x -> Fact (clHead x)) fs
         asNew = Prelude.map (\x -> Assumption (clHead x)) fs
+
+
+factorsTOnnfactors :: Factors -> NN.NNfactors
+factorsTOnnfactors f = NN.NNfactors 
+    { NN.beta            = JsonHandling.beta f
+    , NN.addHidNeuNumber = round $ ahln f
+    , NN.addWeightLimit  = r f
+    , NN.addNeuronsBias  = JsonHandling.bias f
+    , NN.weightFactor    = w f
+    , NN.aminFactor      = amin f
+    }
