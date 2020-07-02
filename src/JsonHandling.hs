@@ -73,7 +73,7 @@ lpjosnTOlp :: LPjson -> LP
 lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
     where
         fsNew = Prelude.map (\x -> Fact (clHead x)) fs
-        asNew = Prelude.map (\x -> Assumption (clHead x)) fs
+        asNew = Prelude.map (\x -> Assumption (clHead x)) as
 
 
 factorsTOnnfactors :: Factors -> NN.NNfactors
