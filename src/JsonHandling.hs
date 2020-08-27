@@ -17,6 +17,7 @@ module JsonHandling
     ( LPjson (..)
     , Factors (..)
     , LPtoNN (..)
+    , NNwithFactors (..)
     , lpjosnTOlp
     , factorsTOnnfactors
     ) where
@@ -65,6 +66,17 @@ data LPtoNN = LPtoNN
 
 instance FromJSON LPtoNN
 instance ToJSON LPtoNN where
+    toEncoding = genericToEncoding defaultOptions
+
+
+
+data NNwithFactors = NNwithFactors
+    { nn        :: NN.NeuralNetwork
+    , nnFactors :: Factors
+    } deriving (Show, Read, Generic)
+
+instance FromJSON NNwithFactors
+instance ToJSON NNwithFactors where
     toEncoding = genericToEncoding defaultOptions
 
 
