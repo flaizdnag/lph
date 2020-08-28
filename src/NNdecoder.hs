@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 {-|
 Module      : NNdecoder
 Description : Conversion from Python data into a logic program.
@@ -9,20 +12,37 @@ Portability : POSIX
 
 Longer description.
 -}
-module NNdecoder (decodeNN) where
+module NNdecoder
+    ( decodeNN
+    ) where
 
 import LogicPrograms
 import Auxiliary
 import Data.List (partition)
+import Data.Aeson
+import GHC.Generics
 
 
-type Amin     = Float
+
+data InpOutTOlp = InpOutTOlp
+    { orderInp :: [Atom]
+    , orderOut :: [Atom]
+    , amin     :: Float
+    , ioPairs  :: [IOpair]
+    } deriving (Generic, Read, Eq)
+
+instance FromJSON InpOutTOlp
+instance ToJSON InpOutTOlp where
+    toEncoding = genericToEncoding defaultOptions
+
+
+
 type IOpair   = ([Int], [Float])
-type AtomsOrd = ([Atom], [Atom])
 
 
-decodeNN :: Amin -> AtomsOrd -> [IOpair] -> LP
-decodeNN amin (inpAtoms, outAtoms) ioPairs = do
+
+decodeNN :: InpOutTOlp -> LP
+decodeNN (InpOutTOlp inpAtoms outAtoms amin ioPairs) = do
     (inpValues, outValues) <- ioPairs
     
     let ((trAtoms, faAtoms), heads) =
