@@ -13,7 +13,8 @@ Portability : POSIX
 Longer description.
 -}
 module NNdecoder
-    ( decodeNN
+    ( InpOutTOlp (..)
+    , decodeNN
     ) where
 
 import LogicPrograms
