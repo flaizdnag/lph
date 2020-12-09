@@ -21,7 +21,7 @@ module TranslationTp
 
 import Auxiliary
 import NeuralNetworks as NN
-import LogicPrograms
+import LogicPrograms  as LP
 import Data.List (length, maximum, map, find, (\\), delete, foldl1, concatMap, repeat)
 import Data.List.Split (chunksOf)
 import Data.Char 
@@ -55,8 +55,12 @@ wBase lp amin nnF maxBodies maxHeads = maximum [fstCondition, sndCondition]
 
 -- | Base neural network for a given logic program. The truth neuron is added
 -- regardless of presence of facts in the logic program.
+--
+-- correctedOutBiases was added to deal with the problem of the bias of output
+-- layer neurons that are associated with atoms that do not appear as heads of
+-- clauses.
 baseNN :: LP -> NNfactors -> NeuralNetwork
-baseNN lp nnF = mergeNNupd baseForNN (truthNN w)
+baseNN lp nnF = mergeNNupd oldBaseNN correctedOutBiases
     where
         -- list of all bodies length in the logic program
         bdsLen = bodiesLength lp
@@ -84,6 +88,23 @@ baseNN lp nnF = mergeNNupd baseForNN (truthNN w)
         -- function that creates the basic neural network
         baseForNN = baseNNsteps triLP emptyNN amin w ovrl
 
+        -- corrects biases for neurons that are associated with atoms that do
+        -- not appear as heads
+        oldBaseNN = (mergeNNupd baseForNN (truthNN w))
+    
+        correctedOutBiases = NNupdate
+            { inpNeuToAdd      = []
+            , hidNeuToAdd      = []
+            , outNeuToAdd      = createNewOutNeurons [ n | n <- outLayer oldBaseNN, elem (NN.label n) (map show $ onlyBodies lp) ]
+            , outNeuToRemove   = [ n | n <- outLayer oldBaseNN, elem (NN.label n) (map show $ onlyBodies lp) ]
+            , inpToHidConToAdd = []
+            , hidToOutConToAdd = []
+            }
+
+        createNewOutNeurons ns = do
+            Neuron oldLabel oldActFunc oldBias oldIdx <- ns
+            let newBias = w * (1 + amin) / 2
+            return $ Neuron oldLabel oldActFunc newBias oldIdx
 
 -- | Base neural network created on the ground of list of triples that contain
 -- clauses along with information about the body length and the number of
@@ -443,3 +464,25 @@ remBadAddConns :: [Atom] -> [Neuron] -> [Connection] -> [Connection]
 remBadAddConns abdGs layer conns = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) conns
     where
         forbiddenIdxs = [ NN.idx n | n <- layer,  elem (NN.label n) (map show abdGs)]
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+exLP1 = [
+        Cl {clHead = A {LP.idx = 1, LP.label = []}, clPAtoms = [A {LP.idx = 2, LP.label = []}, A {LP.idx = 3, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 2, LP.label = []}, clPAtoms = [A {LP.idx = 3, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 2, LP.label = []}, clPAtoms = [A {LP.idx = 1, LP.label = []}], clNAtoms = []}
+    ]
+
+
+exLP1fac = NNfactors
+    { beta            = 1.0
+    , addHidNeuNumber = 1
+    , addWeightLimit  = 0.05
+    , addNeuronsBias  = 0.0
+    , weightFactor    = 0.1
+    , aminFactor      = 0.1
+    }
