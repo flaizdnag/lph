@@ -28,8 +28,8 @@ import GHC.Generics
 
 
 data InpOutTOlp = InpOutTOlp
-    { orderInp :: [Neuron]
-    , orderOut :: [Neuron]
+    { orderInp :: [String]
+    , orderOut :: [String]
     , amin     :: Float
     , ioPairs  :: [IOpair]
     } deriving (Generic, Read, Eq)
@@ -43,11 +43,13 @@ instance ToJSON InpOutTOlp where
 type IOpair   = ([Int], [Float])
 
 
-neuronToAtom :: Neuron -> Atom
-neuronToAtom n = A { LP.idx = newIndex, LP.label = newLabel}
-    where
-        newIndex = read $ tail $ NN.label n
-        newLabel = []
+neuronToAtom :: String -> Atom
+neuronToAtom n = case n of
+	"inpT" -> A { LP.idx = -1, LP.label = "truth" }
+	_      -> A { LP.idx = newIndex, LP.label = newLabel}
+    		where
+			newIndex = read $ tail $ n
+			newLabel = []
 
 decodeNN :: InpOutTOlp -> LP
 decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
