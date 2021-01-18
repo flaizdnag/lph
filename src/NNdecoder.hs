@@ -15,9 +15,11 @@ Longer description.
 module NNdecoder
     ( InpOutTOlp (..)
     , decodeNN
+    , neuronToAtom
     ) where
 
-import LogicPrograms
+import LogicPrograms as LP
+import NeuralNetworks as NN
 import Auxiliary
 import Data.List (partition)
 import Data.Aeson
@@ -26,8 +28,8 @@ import GHC.Generics
 
 
 data InpOutTOlp = InpOutTOlp
-    { orderInp :: [Atom]
-    , orderOut :: [Atom]
+    { orderInp :: [Neuron]
+    , orderOut :: [Neuron]
     , amin     :: Float
     , ioPairs  :: [IOpair]
     } deriving (Generic, Read, Eq)
@@ -41,16 +43,23 @@ instance ToJSON InpOutTOlp where
 type IOpair   = ([Int], [Float])
 
 
+neuronToAtom :: Neuron -> Atom
+neuronToAtom n = A { LP.idx = newIndex, LP.label = newLabel}
+    where
+        newIndex = read $ tail $ NN.label n
+        newLabel = []
 
 decodeNN :: InpOutTOlp -> LP
-decodeNN (InpOutTOlp inpAtoms outAtoms amin ioPairs) = do
+decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
     (inpValues, outValues) <- ioPairs
     
-    let ((trAtoms, faAtoms), heads) =
+    let inpAtoms = map neuronToAtom inpNs
+        outAtoms = map neuronToAtom outNs
+        ((trAtoms, faAtoms), heads) =
             (getAtoms $ atomsTrFa $ zip inpAtoms inpValues, trHeads $ zip outAtoms outValues)
         
         getAtoms (p1, p2) = (map fst p1, map fst p2)
-        atomsTrFa = partition ((1==) . snd) . filter (("truth"/=) . label . fst)
+        atomsTrFa = partition ((1==) . snd) . filter (("truth"/=) . LP.label . fst)
         trHeads = map fst . filter ((amin<=) . snd)
     
     clause <- do
