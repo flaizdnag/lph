@@ -14,6 +14,7 @@ Longer description.
 -}
 module NNdecoder
     ( InpOutTOlp (..)
+    , LPpython (..)
     , decodeNN
     , neuronToAtom
     ) where
@@ -25,6 +26,9 @@ import Data.List (partition)
 import Data.Aeson
 import GHC.Generics
 
+import LPsimplifier
+import JsonHandling
+
 
 
 data InpOutTOlp = InpOutTOlp
@@ -32,10 +36,20 @@ data InpOutTOlp = InpOutTOlp
     , orderOut :: [String]
     , amin     :: Float
     , ioPairs  :: [IOpair]
-    } deriving (Generic, Read, Eq)
+    } deriving (Generic, Read, Eq, Show)
 
 instance FromJSON InpOutTOlp
 instance ToJSON InpOutTOlp where
+    toEncoding = genericToEncoding defaultOptions
+
+
+
+data LPpython = LPpython
+    { lp :: LPjson
+    } deriving (Show, Read, Generic)
+
+instance FromJSON LPpython
+instance ToJSON LPpython where
     toEncoding = genericToEncoding defaultOptions
 
 
@@ -69,3 +83,20 @@ decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
         return (Cl head trAtoms faAtoms)
     
     return clause
+
+makeLPpython :: LP -> LPpython
+makeLPpython xs = LPpython { NNdecoder.lp = LPjson
+    { facts = filter (\x -> isFact x) xs
+    , assumptions = filter (\x -> isAssumption x) xs
+    , clauses = filter (\x -> isClause x) xs}
+    }
+    where
+        isFact x = case x of
+            Fact _ -> True
+            _      -> False
+        isAssumption x = case x of
+            Assumption _ -> True
+            _            -> False
+        isClause x = case x of
+            Cl _ _ _-> True
+            _       -> False
