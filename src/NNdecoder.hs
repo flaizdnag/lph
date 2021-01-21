@@ -17,6 +17,7 @@ module NNdecoder
     , LPpython (..)
     , decodeNN
     , neuronToAtom
+    , makeLPpython
     ) where
 
 import LogicPrograms as LP
