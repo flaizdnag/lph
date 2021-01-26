@@ -14,6 +14,8 @@ Portability : POSIX
 -}
 module TranslationTp
     ( baseNN
+    , aminBase
+    , wBase
     , additionalNN
     , mergeNNupd
     , recursiveConnections
