@@ -480,6 +480,16 @@ exLP1 = [
     ]
 
 
+exLP2 = [
+        Cl {clHead = A {LP.idx = 1, LP.label = []}, clPAtoms = [A {LP.idx = 2, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 1, LP.label = []}, clPAtoms = [A {LP.idx = 3, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 4, LP.label = []}, clPAtoms = [A {LP.idx = 5, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 3, LP.label = []}, clPAtoms = [A {LP.idx = 5, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 2, LP.label = []}, clPAtoms = [A {LP.idx = 3, LP.label = []}], clNAtoms = []},
+        Cl {clHead = A {LP.idx = 4, LP.label = []}, clPAtoms = [A {LP.idx = 6, LP.label = []}], clNAtoms = []}
+    ]
+
+
 exLP1fac = NNfactors
     { beta            = 1.0
     , addHidNeuNumber = 1

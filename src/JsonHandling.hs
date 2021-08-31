@@ -1,5 +1,4 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 {-|
@@ -35,7 +34,7 @@ data LPjson = LPjson
     { facts       :: [Clause]
     , assumptions :: [Clause]
     , clauses     :: [Clause]
-    } deriving (Show, Read, Generic)
+    } deriving (Show, Read, Eq, Generic)
 
 instance FromJSON LPjson
 instance ToJSON LPjson where
@@ -84,8 +83,8 @@ instance ToJSON NNwithFactors where
 lpjosnTOlp :: LPjson -> LP
 lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
     where
-        fsNew = Prelude.map (\x -> Fact (clHead x)) fs
-        asNew = Prelude.map (\x -> Assumption (clHead x)) as
+        fsNew = Prelude.map (Fact . clHead) fs
+        asNew = Prelude.map (Assumption . clHead) as
 
 
 factorsTOnnfactors :: Factors -> NN.NNfactors

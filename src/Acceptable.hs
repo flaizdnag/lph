@@ -14,12 +14,13 @@ acceptable.
 -}
 module Acceptable (isAcceptable) where
 
-import LogicPrograms
-import Graph
-import Completion
-import LvlMap
-import CPL
-import Data.List  (nub, foldl1', subsequences, sort, (\\), intersect)
+import           CPL
+import           Completion
+import           Data.List     (foldl1', intersect, nub, sort, subsequences,
+                                (\\))
+import           Graph
+import           LogicPrograms
+import           LvlMap
 
 
 -- | The list of all atoms that some atom occurring negatively in a logic

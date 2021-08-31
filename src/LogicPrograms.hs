@@ -118,13 +118,13 @@ instance Ord Atom where
 
 instance TwoValuedSemantic Atom IntLP where
     eval2v a int
-        | elem a (trLP int) = Tr2v
+        | a `elem` trLP int = Tr2v
         | otherwise         = Fa2v
 
 instance LukasiewiczSemantic Atom IntLP where
     evalLukasiewicz a int
-        | elem a (trLP int) = Tr3v
-        | elem a (faLP int) = Fa3v
+        | a `elem` trLP int = Tr3v
+        | a `elem` faLP int = Fa3v
         | otherwise         = Un3v
 
 instance Bounded Atom where
