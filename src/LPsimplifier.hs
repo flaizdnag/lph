@@ -12,9 +12,9 @@ https://hackage.haskell.org/package/qm-0.1.0.0/candidate
 -}
 module LPsimplifier (simplifyLP) where
 
-import Qm
-import LogicPrograms
-import Data.List (groupBy, sortBy, nub, sort)
+import           Data.List     (groupBy, nub, sort, sortBy)
+import           LogicPrograms
+import           Qm
 
 
 -- | Simplification of a logic program by means of the Quine-McCluskey
@@ -23,8 +23,7 @@ import Data.List (groupBy, sortBy, nub, sort)
 simplifyLP :: LP -> LP
 simplifyLP lp = do
     sameHeads <- grouped $ sorted lp
-    clause <- simplifySameHeads sameHeads
-    return clause
+    simplifySameHeads sameHeads
     where
         sorted  = sortBy (\x y -> compare (clHead x) (clHead y))
         grouped = groupBy (\x y -> clHead x == clHead y)
@@ -38,7 +37,7 @@ simplifySameHeads cls
 
         let atoms    = sort $ lpBodies cls
             headAtom = clHead $ head cls
-        
+
         valuation <- applyQM $ clsToValStrings cls
         return $ makeCl atoms headAtom (show valuation)
 
@@ -51,7 +50,7 @@ simplifySameHeads cls
 clsToValStrings :: [Clause] -> [String]
 clsToValStrings cls = do
     (pBody, nBody) <- map (\c -> (clPBody c, clNBody c)) cls
-    
+
     let asVals    = zip pBody (repeat 1) ++ zip nBody (repeat 0)
         ordAsVals = sortBy (\x y -> compare (fst x) (fst y)) asVals
         vals      = filter (' ' /=) $ unwords $ map (show . snd) ordAsVals
@@ -74,4 +73,4 @@ makeCl atoms head string
 
 
 -- | Application of the @qm@ algorithm.
-applyQM xs = qm (map getTerm $ map fromString xs) [] []
+applyQM xs = qm (map (getTerm . fromString) xs) [] []

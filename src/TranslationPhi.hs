@@ -16,13 +16,14 @@ Portability : POSIX
 module TranslationPhi
     ( ) where
 
-import Auxiliary
-import NeuralNetworks
-import LogicPrograms
-import Data.List (length, maximum, map, find, (\\), delete, partition, foldl1)
-import Data.Char 
-import System.Random
-import TranslationTp
+import           Auxiliary
+import           Data.Char
+import           Data.List      (delete, find, foldl1, length, map, maximum,
+                                 partition, (\\))
+import           LogicPrograms
+import           NeuralNetworks
+import           System.Random
+import           TranslationTp
 
 
 -- | NNupdate that contains Top and Bottom neurons for the input layer.
@@ -38,7 +39,7 @@ topBotNN = NNupdate
 
 
 findNeuByLabel :: Atom -> [Neuron] -> Maybe Neuron
-findNeuByLabel a ns = find (\x -> NeuralNetworks.label x == (show a) ++ "Top") ns
+findNeuByLabel a = find (\x -> NeuralNetworks.label x == show a ++ "Top")
 
 
 baseNN :: LP -> Float -> NeuralNetwork
@@ -51,123 +52,123 @@ baseNN lp w = mergeNNupd (baseNNsteps triLP emptyNN w) topBotNN
 
 baseNNsteps :: [(Clause, Int, Int)] -> NeuralNetwork -> Float -> NeuralNetwork
 baseNNsteps [] nn w     = nn
-baseNNsteps (t:ts) nn w = baseNNsteps ts newNN w 
+baseNNsteps (t:ts) nn w = baseNNsteps ts newNN w
     where
         newNN = mergeNNupd nn (nnUpdFromTriple t nn w)
 
 
 nnUpdFromTriple :: (Clause, Int, Int) -> NeuralNetwork -> Float -> NNupdate
-nnUpdFromTriple (cl, bdLen, sameHds) nn w = case cl of 
+nnUpdFromTriple (cl, bdLen, sameHds) nn w = case cl of
     Assumption _ -> updFromAssumption cl nn w biasHidAF biasOut
     Fact _       -> updFromFact cl nn w biasHidAF biasOut
-    Cl _ _ _     -> updFromClause cl nn w biasHidClTop biasHidClBot biasOut
-    where 
+    Cl {}        -> updFromClause cl nn w biasHidClTop biasHidClBot biasOut
+    where
         biasHidAF    = w / 2
         biasHidClTop = (fromIntegral bdLen * w) - (w / 2)
-        biasHidClBot = w / 2 
+        biasHidClBot = w / 2
         biasOut      = maximum (w / 2, (fromIntegral sameHds * w) - w / 2)
 
 
 updFromAssumption :: Clause -> NeuralNetwork -> Float -> Float -> Float -> NNupdate
-updFromAssumption (Assumption hd) nn w biasHid biasOut = case outNeuOld of 
-    Nothing -> 
-        NNupdate 
+updFromAssumption (Assumption hd) nn w biasHid biasOut = case outNeuOld of
+    Nothing ->
+        NNupdate
             { inpNeuToAdd      = []
             , hidNeuToAdd      = hidNs
-            , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop, 
+            , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop,
                                   Neuron hdLabelBot "threshold" biasOut outIdxLabelBot]
             , outNeuToRemove   = []
             , inpToHidConToAdd = [Connection "Bot" hidNeuIdxBot w]
-            , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w, 
+            , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w,
                                   Connection hidNeuIdxBot outIdxLabelBot w]
             }
-    Just neu -> case neu of 
+    Just neu -> case neu of
         (Neuron lab aF b outNeuIdx) ->
-            NNupdate 
+            NNupdate
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = hidNs
                 , outNeuToAdd      = []
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = [Connection "Bot" hidNeuIdxBot w]
-                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w, 
+                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w,
                                       Connection hidNeuIdxBot (NeuralNetworks.idx (remJust (lookup neu $ (zip <*> tail) (outLayer nn)))) w]
                 }
     where
         outNeuOld       = findNeuByLabel hd (outLayer nn)
         inpNeuron       = findNeuByLabel hd (inpLayer nn)
-        hdLabelTop      = (show $ hd) ++ "Top"
-        hdLabelBot      = (show $ hd) ++ "Bot"
-        inpIdxLabelTop  = "inp" ++ (show $ (+) 1 $ length $ inpLayer nn)
-        inpIdxLabelBot  = "inp" ++ (show $ (+) 2 $ length $ inpLayer nn)
-        outIdxLabelTop  = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 1))
-        outIdxLabelBot  = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 2))
-        hidNeuIdxNum    = show $ round (((fromIntegral $ length $ hidLayer nn)/2) + 1)
-        hidNeuIdxNumTop = show $ (+) 1 $ length $ hidLayer nn
-        hidNeuIdxNumBot = show $ (+) 2 $ length $ hidLayer nn
+        hdLabelTop      = show hd ++ "Top"
+        hdLabelBot      = show hd ++ "Bot"
+        inpIdxLabelTop  = "inp" ++ show ((+) 1 . length $ inpLayer nn)
+        inpIdxLabelBot  = "inp" ++ show ((+) 2 . length $ inpLayer nn)
+        outIdxLabelTop  = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 1))
+        outIdxLabelBot  = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 2))
+        hidNeuIdxNum    = show (round ((fromIntegral (length $ hidLayer nn)/2) + 1))
+        hidNeuIdxNumTop = show ((+) 1 . length $ hidLayer nn)
+        hidNeuIdxNumBot = show ((+) 2 . length $ hidLayer nn)
         hidNeuIdxTop    = "hid" ++ hidNeuIdxNumTop
         hidNeuIdxBot    = "hid" ++ hidNeuIdxNumBot
-        hidNs           = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHid hidNeuIdxTop, 
+        hidNs           = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHid hidNeuIdxTop,
                            Neuron ("h" ++ hidNeuIdxNum ++ "Bot") "threshold" biasHid hidNeuIdxBot]
         remJust = \(Just x) -> x
 
 
 updFromFact :: Clause -> NeuralNetwork -> Float -> Float -> Float -> NNupdate
-updFromFact (Fact hd) nn w biasHid biasOut = case outNeuOld of 
-    Nothing -> 
-        NNupdate 
+updFromFact (Fact hd) nn w biasHid biasOut = case outNeuOld of
+    Nothing ->
+        NNupdate
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = hidNs
-                , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop, 
+                , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop,
                                       Neuron hdLabelBot "threshold" biasOut outIdxLabelBot]
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = [Connection "Top" hidNeuIdxTop w]
-                , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w, 
+                , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w,
                                       Connection hidNeuIdxBot outIdxLabelBot w]
                 }
-    Just neu -> case neu of 
+    Just neu -> case neu of
         Neuron lab aF b outNeuIdx ->
-            NNupdate 
+            NNupdate
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = hidNs
                 , outNeuToAdd      = []
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = [Connection "Top" hidNeuIdxTop w]
-                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w, 
+                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w,
                                       Connection hidNeuIdxBot (NeuralNetworks.idx (remJust (lookup neu $ (zip <*> tail) (outLayer nn)))) w]
                 }
     where
         outNeuOld       = findNeuByLabel hd (outLayer nn)
         inpNeuron       = findNeuByLabel hd (inpLayer nn)
-        hdLabelTop      = (show $ hd) ++ "Top"
-        hdLabelBot      = (show $ hd) ++ "Bot"
-        inpIdxLabelTop  = "inp" ++ (show $ (+) 1 $ length $ inpLayer nn)
-        inpIdxLabelBot  = "inp" ++ (show $ (+) 2 $ length $ inpLayer nn)
-        outIdxLabelTop  = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 1))
-        outIdxLabelBot  = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 2))
-        hidNeuIdxNum    = show $ round (((fromIntegral $ length $ hidLayer nn)/2) + 1)
-        hidNeuIdxNumTop = show $ (+) 1 $ length $ hidLayer nn
-        hidNeuIdxNumBot = show $ (+) 2 $ length $ hidLayer nn
+        hdLabelTop      = show hd ++ "Top"
+        hdLabelBot      = show hd ++ "Bot"
+        inpIdxLabelTop  = "inp" ++ show ((+) 1 . length $ inpLayer nn)
+        inpIdxLabelBot  = "inp" ++ show ((+) 2 . length $ inpLayer nn)
+        outIdxLabelTop  = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 1))
+        outIdxLabelBot  = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 2))
+        hidNeuIdxNum    = show (round ((fromIntegral (length $ hidLayer nn)/2) + 1))
+        hidNeuIdxNumTop = show ((+) 1 . length $ hidLayer nn)
+        hidNeuIdxNumBot = show ((+) 2 . length $ hidLayer nn)
         hidNeuIdxTop    = "hid" ++ hidNeuIdxNumTop
         hidNeuIdxBot    = "hid" ++ hidNeuIdxNumBot
-        hidNs           = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHid hidNeuIdxTop, 
+        hidNs           = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHid hidNeuIdxTop,
                            Neuron ("h" ++ hidNeuIdxNum ++ "Bot") "threshold" biasHid hidNeuIdxBot]
         remJust = \(Just x) -> x
 
-                
+
 updFromClause :: Clause -> NeuralNetwork -> Float -> Float -> Float -> Float -> NNupdate
-updFromClause (Cl hd pBod nBod) nn w biasHidTop biasHidBot biasOut = case outNeuOld of 
-    Nothing -> 
+updFromClause (Cl hd pBod nBod) nn w biasHidTop biasHidBot biasOut = case outNeuOld of
+    Nothing ->
         NNupdate
             { inpNeuToAdd      = inputNs
             , hidNeuToAdd      = hidNs
-            , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop, 
+            , outNeuToAdd      = [Neuron hdLabelTop "threshold" biasOut outIdxLabelTop,
                                   Neuron hdLabelBot "threshold" biasOut outIdxLabelBot] ++ outputNs 2
             , outNeuToRemove   = []
             , inpToHidConToAdd = inpToHidConnsTop ++ inpToHidConnsBot
-            , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w, 
+            , hidToOutConToAdd = [Connection hidNeuIdxTop outIdxLabelTop w,
                                   Connection hidNeuIdxBot outIdxLabelBot w]
             }
-    Just neu -> case neu of 
+    Just neu -> case neu of
         Neuron lab aF b outNeuIdx ->
             NNupdate
                 { inpNeuToAdd      = inputNs
@@ -175,29 +176,29 @@ updFromClause (Cl hd pBod nBod) nn w biasHidTop biasHidBot biasOut = case outNeu
                 , outNeuToAdd      = outputNs 0
                 , outNeuToRemove   = []
                 , inpToHidConToAdd = inpToHidConnsTop ++ inpToHidConnsBot
-                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w, 
+                , hidToOutConToAdd = [Connection hidNeuIdxTop outNeuIdx w,
                                       Connection hidNeuIdxBot (NeuralNetworks.idx (remJust (lookup neu $ (zip <*> tail) (outLayer nn)))) w]
                 }
-    where 
+    where
         outNeuOld        = findNeuByLabel hd (outLayer nn)
-        hdLabelTop       = (show $ hd) ++ "Top"
-        hdLabelBot       = (show $ hd) ++ "Bot"
-        outIdxLabelTop   = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 1))
-        outIdxLabelBot   = "out" ++ (show $ round (((fromIntegral $ length $ outLayer nn)/2) + 2))
+        hdLabelTop       = show hd ++ "Top"
+        hdLabelBot       = show hd ++ "Bot"
+        outIdxLabelTop   = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 1))
+        outIdxLabelBot   = "out" ++ show (round ((fromIntegral (length $ outLayer nn)/2) + 2))
         inputNs          =
-            if (elem hd (pBod ++ nBod)) then
-                createInpNeurons (pBod ++ nBod) ((+) 1 $ length $ inpLayer nn) (inpLayer nn)
+            if hd `elem` (pBod ++ nBod) then
+                createInpNeurons (pBod ++ nBod) ((+) 1 . length $ inpLayer nn) (inpLayer nn)
             else
-                createInpNeurons (hd : pBod ++ nBod) ((+) 1 $ length $ inpLayer nn) (inpLayer nn)
+                createInpNeurons (hd : pBod ++ nBod) ((+) 1 . length $ inpLayer nn) (inpLayer nn)
         outputNs         = \x -> createOutNeurons (pBod ++ nBod) ((+) (1 + x) $ length $ outLayer nn) (outLayer nn) biasOut
         inpToHidConnsTop = createInpToHidConnTop hidNeuIdxTop (inputNs ++ inpLayer nn) pBod nBod w
         inpToHidConnsBot = createInpToHidConnBot hidNeuIdxBot (inputNs ++ inpLayer nn) pBod nBod w
-        hidNeuIdxNum     = show $ round (((fromIntegral $ length $ hidLayer nn)/2) + 1)
-        hidNeuIdxNumTop  = show $ (+) 1 $ length $ hidLayer nn
-        hidNeuIdxNumBot  = show $ (+) 2 $ length $ hidLayer nn
+        hidNeuIdxNum     = show (round ((fromIntegral (length $ hidLayer nn)/2) + 1))
+        hidNeuIdxNumTop  = show ((+) 1 $ length $ hidLayer nn)
+        hidNeuIdxNumBot  = show ((+) 2 $ length $ hidLayer nn)
         hidNeuIdxTop     = "hid" ++ hidNeuIdxNumTop
         hidNeuIdxBot     = "hid" ++ hidNeuIdxNumBot
-        hidNs            = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHidTop hidNeuIdxTop, 
+        hidNs            = [Neuron ("h" ++ hidNeuIdxNum ++ "Top") "threshold" biasHidTop hidNeuIdxTop,
                             Neuron ("h" ++ hidNeuIdxNum ++ "Bot") "threshold" biasHidBot hidNeuIdxBot]
         remJust = \(Just x) -> x
 
@@ -223,13 +224,13 @@ createOutNeurons (a:as) idxStart outNs biasOut = case findNeuByLabel a outNs of
 
 
 createInpToHidConnTop :: String -> [Neuron] -> [Atom] -> [Atom] -> Float -> [Connection]
-createInpToHidConnTop hidIdx inpNs pBod nBod w = 
+createInpToHidConnTop hidIdx inpNs pBod nBod w =
     [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Top") == NeuralNetworks.label n) pBod ] ++
-    [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Bot") == NeuralNetworks.label n) nBod ] 
+    [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Bot") == NeuralNetworks.label n) nBod ]
 
 
 createInpToHidConnBot :: String -> [Neuron] -> [Atom] -> [Atom] -> Float -> [Connection]
-createInpToHidConnBot hidIdx inpNs pBod nBod w = 
+createInpToHidConnBot hidIdx inpNs pBod nBod w =
     [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Bot") == NeuralNetworks.label n) pBod ] ++
     [ Connection (NeuralNetworks.idx n) hidIdx w | n <- inpNs, any (\x -> (show x ++ "Top") == NeuralNetworks.label n) nBod ]
 

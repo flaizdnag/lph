@@ -20,11 +20,11 @@ module Graph
     , dependsOn
     ) where
 
-import LogicPrograms
-import TpOperator
-import Data.Graph   (Graph, reachable, buildG)
-import Data.List    (delete)
-import Data.Array   (assocs)
+import           Data.Array    (assocs)
+import           Data.Graph    (Graph, buildG, reachable)
+import           Data.List     (delete)
+import           LogicPrograms
+import           TpOperator
 
 
 -- | Takes a list of atoms and returns a list of their indexes.
@@ -34,7 +34,7 @@ atomsToInts = map idx
 
 -- | Takes a list of indexes and returns a list of atoms with empty labels.
 intsToAtoms :: [Int] -> [Atom]
-intsToAtoms = map (\x -> A x [])
+intsToAtoms = map (`A` [])
 
 
 -- | Takes the Herbrand Base of a logic program and returns the limits for the
@@ -52,8 +52,8 @@ lpEdges :: LP -> [(Int, Int)]
 lpEdges lp =
     [ (headIdx, bodyAtomIdx)
     | cl <- lp
-    , atom <- clBody cl
     , let headIdx = idx $ clHead cl
+    , atom <- clBody cl
     , let bodyAtomIdx = idx atom
     ]
 
@@ -77,4 +77,4 @@ dependsOn g n
 -- | Establishes if a given node depends on itself, i.e. if it is reachable from
 -- nodes that are reachable from the given node apart from that node.
 selfDep :: Graph -> Int -> Bool
-selfDep g n = elem n $ concatMap (reachable g) (snd ((assocs g) !! (n - 1)))
+selfDep g n = elem n $ concatMap (reachable g) (snd (assocs g !! (n - 1)))

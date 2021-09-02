@@ -1,5 +1,5 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 {-|
 Module      : NNdecoder
@@ -20,15 +20,15 @@ module NNdecoder
     , makeLPpython
     ) where
 
-import LogicPrograms as LP
-import NeuralNetworks as NN
-import Auxiliary
-import Data.List (partition)
-import Data.Aeson
-import GHC.Generics
+import           Auxiliary
+import           Data.Aeson
+import           Data.List      (partition)
+import           GHC.Generics
+import           LogicPrograms  as LP
+import           NeuralNetworks as NN
 
-import LPsimplifier
-import JsonHandling
+import           JsonHandling
+import           LPsimplifier
 
 
 
@@ -45,7 +45,7 @@ instance ToJSON InpOutTOlp where
 
 
 
-data LPpython = LPpython
+newtype LPpython = LPpython
     { lp :: LPjson
     } deriving (Show, Read, Generic)
 
@@ -60,36 +60,34 @@ type IOpair   = ([Int], [Float])
 
 neuronToAtom :: String -> Atom
 neuronToAtom n = case n of
-	"inpT" -> A { LP.idx = -1, LP.label = "truth" }
-	_      -> A { LP.idx = newIndex, LP.label = newLabel}
-    		where
-			newIndex = read $ tail $ n
-			newLabel = []
+    "inpT" -> A { LP.idx = -1, LP.label = "truth" }
+    _      -> A { LP.idx = newIndex, LP.label = newLabel}
+        where
+            newIndex = read $ tail n
+            newLabel = []
 
 decodeNN :: InpOutTOlp -> LP
 decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
     (inpValues, outValues) <- ioPairs
-    
+
     let inpAtoms = map neuronToAtom inpNs
         outAtoms = map neuronToAtom outNs
         ((trAtoms, faAtoms), heads) =
             (getAtoms $ atomsTrFa $ zip inpAtoms inpValues, trHeads $ zip outAtoms outValues)
-        
+
         getAtoms (p1, p2) = (map fst p1, map fst p2)
         atomsTrFa = partition ((1==) . snd) . filter (("truth"/=) . LP.label . fst)
         trHeads = map fst . filter ((amin<=) . snd)
-    
-    clause <- do
+
+    do
         head <- heads
         return (Cl head trAtoms faAtoms)
-    
-    return clause
 
 makeLPpython :: LP -> LPpython
 makeLPpython xs = LPpython { NNdecoder.lp = LPjson
-    { facts = filter (\x -> isFact x) xs
-    , assumptions = filter (\x -> isAssumption x) xs
-    , clauses = filter (\x -> isClause x) xs}
+    { facts = filter isFact xs
+    , assumptions = filter isAssumption xs
+    , clauses = filter isClause xs}
     }
     where
         isFact x = case x of
@@ -99,5 +97,5 @@ makeLPpython xs = LPpython { NNdecoder.lp = LPjson
             Assumption _ -> True
             _            -> False
         isClause x = case x of
-            Cl _ _ _-> True
-            _       -> False
+            Cl {} -> True
+            _     -> False

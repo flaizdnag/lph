@@ -20,8 +20,8 @@ module LvlMap
     , lvlMapValue
     ) where
 
-import LogicPrograms
-import Data.List (permutations, (\\), lookup)
+import           Data.List     (lookup, permutations, (\\))
+import           LogicPrograms
 
 
 -- | Generates all possible level mappings for a given logic program, where the

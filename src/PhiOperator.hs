@@ -17,9 +17,9 @@ module PhiOperator
     , findModelOpPhi
     ) where
 
-import LogicPrograms
-import ThreeValuedSem
-import Auxiliary
+import           Auxiliary
+import           LogicPrograms
+import           ThreeValuedSem
 
 
 -- | The first part of the operator---returns the set of atoms that are mapped
@@ -47,8 +47,8 @@ iterOpPhi :: LP -> [IntLP]
 iterOpPhi lp = stepOpPhi lp [IntLP [] []]
     where
         stepOpPhi lp (i:is)
-            | opPhi lp i == i = (i:is)
-            | otherwise       = stepOpPhi lp ((opPhi lp i) : i:is)
+            | opPhi lp i == i = i : is
+            | otherwise       = stepOpPhi lp (opPhi lp i : i:is)
 
 
 -- | Model for a logic program that is the least fixedpoint of $\Phi$-operator.

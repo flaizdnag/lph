@@ -21,22 +21,23 @@ module CPL
     , isModelLukasiewiczCPL
     ) where
 
-import LogicPrograms
-import Auxiliary
-import TwoValuedSem
-import ThreeValuedSem
-import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub, intercalate)
+import           Auxiliary
+import           Data.List      (foldl1', groupBy, intercalate, nub, sort,
+                                 sortBy, union, (\\))
+import           LogicPrograms
+import           ThreeValuedSem
+import           TwoValuedSem
 
 
 -- | The CPL language.
 data Form =
-      V Atom 
+      V Atom
     | N Form        -- negation
-    | C [Form]      -- conjunction 
-    | D [Form]      -- disjunction 
+    | C [Form]      -- conjunction
+    | D [Form]      -- disjunction
     | E Form Form   -- equivalence
     | T             -- verum
-    | F             -- falsum      
+    | F             -- falsum
     deriving (Read)
 
 instance Show Form where
@@ -54,24 +55,24 @@ instance Show Form where
         E f1 f2 -> show f1 ++ " <-> " ++ show f2
 
 instance Eq Form where
-    T     == T      = True
-    F     == F      = True
-    V a   == V b    = a == b
-    N x   == N y    = x == y
-    C xs  == C ys   = eqLists xs ys
-    D xs  == D ys   = eqLists xs ys
-    E a b == E c d  = (a == c && b == d) || (a == d && b == c)
-    _     == _      = False
+    T     == T     = True
+    F     == F     = True
+    V a   == V b   = a == b
+    N x   == N y   = x == y
+    C xs  == C ys  = eqLists xs ys
+    D xs  == D ys  = eqLists xs ys
+    E a b == E c d = (a == c && b == d) || (a == d && b == c)
+    _     == _     = False
 
 instance Ord Form where
-    F     < _       = True
-    T     < _       = True
-    V a   < V b     = a < b
-    N x   < N y     = x < y
-    C xs  < C ys    = sort xs < sort ys
-    D xs  < D ys    = sort xs < sort ys
-    E a b < E c d   = (a < c) -- should be enough...
-    _     < _       = False
+    F     < _     = True
+    T     < _     = True
+    V a   < V b   = a < b
+    N x   < N y   = x < y
+    C xs  < C ys  = sort xs < sort ys
+    D xs  < D ys  = sort xs < sort ys
+    E a b < E c d = a < c -- should be enough...
+    _     < _     = False
 
     a <= b = (a < b) || (a == b)
     a >  b = b < a
@@ -97,7 +98,7 @@ instance TwoValuedSemantic Form IntCPL where
             | sameEval x y  -> Tr2v
             | otherwise     -> Fa2v
         where
-            isVTr x      = elem (x :: Form) (trCPL int)
+            isVTr x      = (x :: Form) `elem` trCPL int
             isTr x       = eval2v (x :: Form) int == Tr2v
             isFa x       = eval2v (x :: Form) int == Fa2v
             sameEval x y = eval2v (x :: Form) int == eval2v (y :: Form) int
@@ -127,8 +128,8 @@ instance LukasiewiczSemantic Form IntCPL where
             | isUn x || isUn y -> Un3v
             | otherwise        -> Fa3v
         where
-            isVTr x      = elem (x :: Form) (trCPL int)
-            isVFa x      = elem (x :: Form) (faCPL int)
+            isVTr x      = (x :: Form) `elem` trCPL int
+            isVFa x      = (x :: Form) `elem` faCPL int
             isTr x       = evalLukasiewicz (x :: Form) int == Tr3v
             isFa x       = evalLukasiewicz (x :: Form) int == Fa3v
             isUn x       = evalLukasiewicz (x :: Form) int == Un3v

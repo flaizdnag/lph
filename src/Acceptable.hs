@@ -35,7 +35,7 @@ negP lp = intsToAtoms $ nub (concatMap (dependsOn g) nodes)
 -- | Creates a program from the initial logic program with Horn clauses whose
 -- heads belong to @negP@.
 logicP' :: LP -> LP
-logicP' lp = [ cl | cl <- lp, elem (clHead cl) (negP lp) ]
+logicP' lp = [ cl | cl <- lp, clHead cl `elem` negP lp ]
 
 
 -- | Makes a list of interpretation for a given logic program that are models
@@ -47,13 +47,13 @@ candidateInts lp = concatMap makeMsLP filtered
     where
         -- creating Clark's completion for the logic program @logicP'@
         compP' = comp (logicP' lp)
-        
+
         -- creating a list of all subsequences of the list of atoms @negP@
         subseq = subsequences (negP lp)
-        
+
         -- filtering the list @subseq@ and leaving only those that are models
         -- for the @compP'@
-        filtered = filter (\as -> isModel as) subseq
+        filtered = filter isModel subseq
 
         -- condition for the @filtered@; checks if a given list of atoms is
         -- a model for @compP'@
@@ -62,15 +62,16 @@ candidateInts lp = concatMap makeMsLP filtered
         -- turns a list of atoms that are assumed to be true into a list of
         -- all models for a logic program, that can be obtained from the list
         -- without modifying it
-        makeMsLP as = map makeInt
-            [ bs |
-                bs <- subsequences ((bp lp) \\ as),
-                isModel2vLP lp (IntLP (bs ++ as) []) ]
+        makeMsLP as =
+            [ makeInt bs |
+                bs <- subsequences (bp lp \\ as),
+                isModel2vLP lp (IntLP (bs ++ as) [])
+            ]
             where
                 makeInt xs = asToIntLP xs lp
-        
+
         -- turns a list of true atoms into an interpretation
-        asToIntLP as lp = IntLP as ((bp lp) \\ as)
+        asToIntLP as lp = IntLP as (bp lp \\ as)
 
 
 -- | Checks if the condition is fulfilled for a clause, i.e. if the level of the
@@ -93,7 +94,7 @@ conditionLP lp lvlM int = all (\x -> conditionHCl x lvlM int) lp
 -- | Checks if there is an interpretation in a given list of interpretations
 -- that fulfil the condition @conditionLP@.
 conditionInts :: LP -> [(Atom, Int)] -> [IntLP] -> Bool
-conditionInts lp lvlM ints = any (\x -> conditionLP lp lvlM x) ints
+conditionInts lp lvlM = any (conditionLP lp lvlM)
 
 
 -- | Checks if there is an interpretation for any level mapping from a given

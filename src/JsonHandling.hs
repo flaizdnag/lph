@@ -1,5 +1,5 @@
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 {-|
 Module      : JsonHandling
@@ -21,13 +21,13 @@ module JsonHandling
     , factorsTOnnfactors
     ) where
 
-import Data.Aeson
-import GHC.Generics
+import           Data.Aeson
 import qualified Data.ByteString.Lazy as B
-import Data.Text
+import           Data.Text
+import           GHC.Generics
 
-import LogicPrograms
-import qualified NeuralNetworks as NN
+import           LogicPrograms
+import qualified NeuralNetworks       as NN
 
 
 data LPjson = LPjson
@@ -88,7 +88,7 @@ lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
 
 
 factorsTOnnfactors :: Factors -> NN.NNfactors
-factorsTOnnfactors f = NN.NNfactors 
+factorsTOnnfactors f = NN.NNfactors
     { NN.beta            = JsonHandling.beta f
     , NN.addHidNeuNumber = round $ ahln f
     , NN.addWeightLimit  = r f

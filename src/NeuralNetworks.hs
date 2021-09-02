@@ -1,5 +1,5 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 {-|
 Module      : NeuralNetworks
@@ -29,20 +29,20 @@ module NeuralNetworks
     , saveToFile
     ) where
 
-import Data.Aeson
-import GHC.Generics
+import           Data.Aeson
+import           GHC.Generics
 
-import Auxiliary
-import Data.List (intercalate)
-import System.IO
+import           Auxiliary
+import           Data.List    (intercalate)
+import           System.IO
 
 
 
-data Neuron = Neuron 
-    { label     :: String 
-    , activFunc :: String 
-    , bias      :: Float 
-    , idx       :: String 
+data Neuron = Neuron
+    { label     :: String
+    , activFunc :: String
+    , bias      :: Float
+    , idx       :: String
     }
     deriving (Generic, Read, Eq)
 
@@ -50,12 +50,12 @@ instance FromJSON Neuron
 instance ToJSON Neuron where
     toEncoding = genericToEncoding defaultOptions
 
-instance Show Neuron where 
+instance Show Neuron where
     show (Neuron l aF b idx) = "(" ++ l ++ ", " ++ aF ++ ", " ++ show b ++ ", " ++ idx ++ ")"
 
 instance Ord Neuron where
     n1 < n2 = idx n1 < idx n2
-    
+
     a <= b = (a < b) || (a == b)
     a >  b = b < a
     a >= b = b <= a
@@ -78,7 +78,7 @@ instance Show Connection where
 
 instance Ord Connection where
     c1 < c2 = fromNeuron c1 < fromNeuron c2
-    
+
     a <= b = (a < b) || (a == b)
     a >  b = b < a
     a >= b = b <= a
@@ -108,9 +108,9 @@ instance Eq NeuralNetwork where
             , eqLists (outLayer nn1) (outLayer nn2)
             , eqLists (recLayer nn1) (recLayer nn2)
             ]
-        
+
         &&
-        
+
         Prelude.all (True==)
             [ eqLists (inpToHidConnections nn1) (inpToHidConnections nn2)
             , eqLists (hidToOutConnections nn1) (hidToOutConnections nn2)
@@ -134,7 +134,7 @@ data NNfactors = NNfactors
     { beta            :: Float  -- beta coefficient for sigmoid function
     , addHidNeuNumber :: Int    -- number of additional hidden layer neurons
     , addWeightLimit  :: Float  -- maximal value of an additional connection weight
-    , addNeuronsBias  :: Float  -- bias for additional neurons    
+    , addNeuronsBias  :: Float  -- bias for additional neurons
     , weightFactor    :: Float  -- weight W factor (added value)
     , aminFactor      :: Float  -- A_min factor (added value)
     }
@@ -205,8 +205,7 @@ emptyNN = NN
 
 printNNPythonString :: IO NeuralNetwork -> IO String
 printNNPythonString inp = do
-    nn <- inp
-    return $ nnToPythonString nn
+    nnToPythonString <$> inp
 
 
 saveToFile :: IO String -> IO ()

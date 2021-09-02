@@ -22,21 +22,23 @@ module Completion
     --, makeModels
     ) where
 
-import LogicPrograms
-import Auxiliary
-import ThreeValuedSem
-import CPL
-import Data.List (sort, groupBy, (\\), union, foldl1', sortBy, nub)
+import           Auxiliary
+import           CPL
+import           Data.List      (foldl1', groupBy, nub, sort, sortBy, union,
+                                 (\\))
+import           Data.Maybe     (isNothing)
+import           LogicPrograms
+import           ThreeValuedSem
 
 
 -- | Turns a list of atoms into a list of variables.
 atomsToVar :: [Atom] -> [Form]
-atomsToVar = map (\x -> V x)
+atomsToVar = map V
 
 
 -- | Turns a list of atoms into a list of negated variables.
 atomsToNVar :: [Atom] -> [Form]
-atomsToNVar = map (\x -> N (V x))
+atomsToNVar = map (N . V)
 
 
 -- | Weak Clark's completion for a logic program. Maps @mapConjunction@ and
@@ -47,15 +49,15 @@ weakComp lp = map (equivalence . mapConjunction) headsDefs
     where
         -- list of definitions (clauses) for all heads from the logic program;
         -- as a result we obtain a list of lists of clauses
-        headsDefs = map (\x -> atomDef x lp) (lpHeads lp)
-        
+        headsDefs = map (`atomDef` lp) (lpHeads lp)
+
         -- turning a clause into a tuple with head of the clause and the body of
         -- the clause as a conjunction
         conjunction cl = case cl of
             Fact h          -> (V h, C [T])
             Assumption h    -> (V h, C [F])
-            Cl h pb nb      -> (V h, C ((atomsToVar $ nub pb) ++ (atomsToNVar $ nub nb)))
-        
+            Cl h pb nb      -> (V h, C (atomsToVar (nub pb) ++ atomsToNVar (nub nb)))
+
         -- mapping @conjunction@ over a list of clauses
         mapConjunction cls = map conjunction cls
 
@@ -69,7 +71,7 @@ weakComp lp = map (equivalence . mapConjunction) headsDefs
 
 -- | Clark's completion for a logic program.
 comp :: LP -> [Form]
-comp lp = weakComp lp ++ (atomsToNVar ((bp lp) \\ (lpHeads lp)))
+comp lp = weakComp lp ++ atomsToNVar (bp lp \\ lpHeads lp)
 
 
 -- | Creates an interpretation for CPL from an interpretation for LP.
@@ -89,8 +91,8 @@ partialEvalCPL f (IntCPL tr fa) = case f of
     T                       -> Just True
     F                       -> Just False
     V a
-        | elem (V a) tr     -> Just True
-        | elem (V a) fa     -> Just False
+        | V a `elem` tr     -> Just True
+        | V a `elem` fa     -> Just False
         | otherwise         -> Nothing
     N x
         | isTr x            -> Just False
@@ -111,11 +113,11 @@ partialEvalCPL f (IntCPL tr fa) = case f of
     where
         isTr x       = partialEvalCPL x (IntCPL tr fa) == Just True
         isFa x       = partialEvalCPL x (IntCPL tr fa) == Just False
-        isUn x       = partialEvalCPL x (IntCPL tr fa) == Nothing
+        isUn x       = isNothing (partialEvalCPL x (IntCPL tr fa))
         sameEval x y = partialEvalCPL x (IntCPL tr fa) == partialEvalCPL y (IntCPL tr fa)
         anyTr        = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just True)
         anyFa        = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just False)
-        anyUn        = any (\x -> partialEvalCPL x (IntCPL tr fa) == Nothing)
+        anyUn        = any (\x -> isNothing (partialEvalCPL x (IntCPL tr fa)))
 
 
 -- | Takes a list of formulas (Clark's completion), an interpretation and a list
@@ -127,7 +129,7 @@ partialEvalCPL f (IntCPL tr fa) = case f of
 -- i.e. negated variables and equivalences.
 invariants :: [Form] -> (IntCPL, [Form]) -> (IntCPL, [Form])
 invariants [] (int, un)                = (int, un)
-invariants (f:fs) ((IntCPL tr fa), un) = case f of
+invariants (f:fs) (IntCPL tr fa, un) = case f of
     N a             -> invariants fs (IntCPL tr (a : fa), un)
     E a T           -> invariants fs (IntCPL (a : tr) fa, un)
     E a F           -> invariants fs (IntCPL tr (a : fa), un)
@@ -138,7 +140,7 @@ invariants (f:fs) ((IntCPL tr fa), un) = case f of
         where
             isTr x = partialEvalCPL x (IntCPL tr fa) == Just True
             isFa x = partialEvalCPL x (IntCPL tr fa) == Just False
-            isUn x = partialEvalCPL x (IntCPL tr fa) == Nothing
+            isUn x = isNothing (partialEvalCPL x (IntCPL tr fa))
 
 
 -- | Iterates @invariants@ till the set of formulas with unknown
@@ -152,7 +154,7 @@ invIter fs (int, un, done)
             newInt  = fst inv
             newUn   = snd inv
             inv     = invariants fs (int, un)
-            newDone = union done newUn
+            newDone = done `union` newUn
 
 
 -- | Function that starts from the empty interpretation and searches for the
@@ -188,7 +190,7 @@ sortInts = sortBy (\(IntCPL a _) (IntCPL b _) -> compare (length a) (length b))
 -- given formula becomes true. The result is a list of interpretations that
 -- make the formula true.
 -- Note: The assumption is that the formula is evaluated as undecided.
-makeFormTr :: Form -> IntCPL -> [IntCPL] 
+makeFormTr :: Form -> IntCPL -> [IntCPL]
 makeFormTr f (IntCPL tr fa) = case f of
     V a             -> [IntCPL ((V a) : tr) fa]
     N v             -> makeFa v
@@ -208,12 +210,12 @@ makeFormTr f (IntCPL tr fa) = case f of
         getUns = \x -> [ y | y <- x, isUn y ]
         makeTr = \x -> makeFormTr x int
         makeFa = \x -> makeFormFa x int
-    
+
 -- | Function that modifies a given interpretation in such a way that the
 -- given formula becomes false. The result is a list of interpretations that
 -- make the formula false.
 -- Note: The assumption is that the formula is evaluated as undecided.
-makeFormFa :: Form -> IntCPL -> [IntCPL] 
+makeFormFa :: Form -> IntCPL -> [IntCPL]
 makeFormFa f (IntCPL tr fa) = case f of
     V a             -> [IntCPL tr ((V a) : fa)]
     N v             -> makeTr v

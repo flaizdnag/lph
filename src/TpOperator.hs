@@ -21,10 +21,10 @@ module TpOperator
     , isConsequenceA
     ) where
 
-import LogicPrograms
-import Auxiliary
-import TwoValuedSem
-import Data.List (nub, (\\))
+import           Auxiliary
+import           Data.List     (nub, (\\))
+import           LogicPrograms
+import           TwoValuedSem
 
 
 -- | Immediate consequence operator Tp.
@@ -32,20 +32,20 @@ opTp :: LP -> IntLP -> IntLP
 opTp lp int = IntLP newTr newFa
     where
         newTr = [ clHead cl | cl <- lp, evalBody2v cl int == Tr2v ]
-        newFa = (bp lp) \\ newTr
+        newFa = bp lp \\ newTr
 
 
 -- | Iterates the Tp operator starting from the empty interpretation. Saves all
--- iterations as elements of the list (newest are at the beginning of the list). 
+-- iterations as elements of the list (newest are at the beginning of the list).
 upArrow :: LP -> [IntLP]
 upArrow x = iterTp x [IntLP [] []]
     where
         iterTp lp (y:ys)
-            | opTp lp y == y = (y:ys)
-            | otherwise      = iterTp lp ((opTp lp y) : y:ys)
+            | opTp lp y == y = y : ys
+            | otherwise      = iterTp lp (opTp lp y : y : ys)
 
 
 -- | Checks if an atom is a logical consequence of a logic program by means of
 -- the Tp operator.
 isConsequenceA :: Atom -> LP -> Bool
-isConsequenceA a lp = elem a (trLP $ head (upArrow lp))
+isConsequenceA a lp = a `elem` (trLP . head $ upArrow lp)

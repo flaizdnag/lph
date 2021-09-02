@@ -24,7 +24,7 @@ module Auxiliary
     , uniquePairs
     ) where
 
-import Data.List ((\\), intersect, sort)
+import           Data.List (intersect, sort, (\\))
 
 
 -- | Checks if a list is a sublist of the other list (ordering does not matter).
@@ -35,13 +35,13 @@ isSublist xs ys = null (xs \\ ys)
 -- | Checks if a given list is contained in the second list, while the second
 -- list is bigger than the first.
 isProperSublist :: Eq a => [a] -> [a] -> Bool
-isProperSublist xs ys = isSublist xs ys && (not $ null (ys \\ xs))
+isProperSublist xs ys = isSublist xs ys && not (null (ys \\ xs))
 
 
 -- | Checks if a list contains any element of the other list (ordering does not
 -- matter).
 jointElem :: Eq a => [a] -> [a] -> Bool
-jointElem xs ys = not $ null (intersect xs ys)
+jointElem xs ys = not $ null (xs `intersect` ys)
 
 
 -- | Checks if a list has the same elements as the other list (ordering does not

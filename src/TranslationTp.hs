@@ -21,13 +21,15 @@ module TranslationTp
     , recursiveConnections
     ) where
 
-import Auxiliary
-import NeuralNetworks as NN
-import LogicPrograms  as LP
-import Data.List (length, maximum, map, find, (\\), delete, foldl1, concatMap, repeat)
-import Data.List.Split (chunksOf)
-import Data.Char 
-import System.Random
+import           Auxiliary
+import           Data.Char
+import           Data.List       (concatMap, delete, find, foldl1, length, map,
+                                  maximum, repeat, (\\))
+import           Data.List.Split (chunksOf)
+import           Data.Maybe      (isNothing)
+import           LogicPrograms   as LP
+import           NeuralNetworks  as NN
+import           System.Random
 
 
 -- | Types for $A_{min}$ and W values.
@@ -38,18 +40,18 @@ type AddBias = Float
 type AbdGoal = [Atom]
 
 
--- | The base for the value $A_min$. 
+-- | The base for the value $A_min$.
 aminBase :: LP -> Int -> Float
-aminBase lp maxBH = (fromIntegral (maxBH - 1) / fromIntegral (maxBH + 1))
+aminBase lp maxBH = fromIntegral (maxBH - 1) / fromIntegral (maxBH + 1)
 
 
 -- | The base for the weight of the connections in a neural network for a given
--- logic program. 
+-- logic program.
 wBase :: LP -> Amin -> NNfactors -> Int -> Int -> Float
 wBase lp amin nnF maxBodies maxHeads = maximum [fstCondition, sndCondition]
     where
-        fstCondition = (2 / b) * (((log $ 1 + amin) - (log $ 1 - amin)) / ((fromIntegral maxBodies) * (amin - 1) + amin + 1))
-        sndCondition = (2 / b) * (((log $ 1 + amin) - (log $ 1 - amin) - (r * (fromIntegral $ l + 1)) ) / ((fromIntegral maxHeads) * (amin - 1) + amin + 1))
+        fstCondition = (2 / b) * ((log (1 + amin) - log (1 - amin)) / (fromIntegral maxBodies * (amin - 1) + amin + 1))
+        sndCondition = (2 / b) * ((log (1 + amin) - log (1 - amin) - (r * fromIntegral (l + 1)) ) / (fromIntegral maxHeads * (amin - 1) + amin + 1))
         b = beta nnF
         r = addWeightLimit nnF
         l = addHidNeuNumber nnF
@@ -66,39 +68,39 @@ baseNN lp nnF = mergeNNupd oldBaseNN correctedOutBiases
     where
         -- list of all bodies length in the logic program
         bdsLen = bodiesLength lp
-        
+
         -- list of numbers of clauses with the same head for every clause in the
         -- logic program
         clsSH = clsSameHeads lp
-        
+
         -- maximal number of atoms in bodies of clauses and clauses with the
         -- same heads
-        maxBds = maximum $ bdsLen
-        maxHds = maximum $ clsSH
-        
+        maxBds = maximum bdsLen
+        maxHds = maximum clsSH
+
         -- A_min and W values for the neural network
-        amin = aminBase lp (maximum [maxBds, maxHds]) + (aminFactor nnF)
-        w    = wBase lp amin nnF maxBds maxHds + (weightFactor nnF)
-        
+        amin = aminBase lp (maximum [maxBds, maxHds]) + aminFactor nnF
+        w    = wBase lp amin nnF maxBds maxHds + weightFactor nnF
+
         -- list of triples: clause, body length of the clause, number of clauses
         -- with the same head
         triLP = zip3 lp bdsLen clsSH
-        
+
         -- list of overlapping atoms in the logic program
         ovrl = overlappingAtoms lp []
-        
+
         -- function that creates the basic neural network
         baseForNN = baseNNsteps triLP emptyNN amin w ovrl
 
         -- corrects biases for neurons that are associated with atoms that do
         -- not appear as heads
-        oldBaseNN = (mergeNNupd baseForNN (truthNN w))
-    
+        oldBaseNN = mergeNNupd baseForNN (truthNN w)
+
         correctedOutBiases = NNupdate
             { inpNeuToAdd      = []
             , hidNeuToAdd      = []
-            , outNeuToAdd      = createNewOutNeurons [ n | n <- outLayer oldBaseNN, elem (NN.label n) (map show $ onlyBodies lp) ]
-            , outNeuToRemove   = [ n | n <- outLayer oldBaseNN, elem (NN.label n) (map show $ onlyBodies lp) ]
+            , outNeuToAdd      = createNewOutNeurons [ n | n <- outLayer oldBaseNN, NN.label n `elem` map show (onlyBodies lp) ]
+            , outNeuToRemove   = [ n | n <- outLayer oldBaseNN, NN.label n `elem` map show (onlyBodies lp) ]
             , inpToHidConToAdd = []
             , hidToOutConToAdd = []
             }
@@ -123,8 +125,8 @@ baseNNsteps (t:ts) nn amin w ovrl = baseNNsteps ts newNN amin w ovrl
 -- and the number of clauses with the same head.
 nnUpdFromTriple :: NeuralNetwork -> (Clause, Int, Int) -> Amin -> W -> [OverlappingAtoms] -> NNupdate
 nnUpdFromTriple nn (cl, bdLen, sameHds) amin w ovrl = case cl of
-    Fact _   -> updFromFact cl nn outBias ovrl w
-    Cl _ _ _ -> updFromClause cl nn outBias hidBias w
+    Fact _ -> updFromFact cl nn outBias ovrl w
+    Cl {}  -> updFromClause cl nn outBias hidBias w
     where
         outBias = w * (1 + amin) * (1 - fromIntegral sameHds) / 2
         hidBias = w * (1 + amin) * (fromIntegral bdLen - 1) / 2
@@ -137,8 +139,8 @@ updFromFact (Fact hd) nn outBias ovrl w = case outNeuOld of
     Nothing
         -- atom is with h index or it is already in the input layer;
         -- we add only output layer neuron and the connection to truth neuron
-        | (elem hd ovrlH) || (not $ null inpNeuron) ->
-            NNupdate 
+        | elem hd ovrlH || not (null inpNeuron) ->
+            NNupdate
                 { inpNeuToAdd      = []
                 , hidNeuToAdd      = []
                 , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outIdxLabel]
@@ -183,9 +185,9 @@ updFromFact (Fact hd) nn outBias ovrl w = case outNeuOld of
     where
         outNeuOld    = findNeuByLabel hd (outLayer nn)
         inpNeuron    = findNeuByLabel hd (inpLayer nn)
-        hdLabel      = show $ hd
-        inpIdxLabel  = "inp" ++ (show $ (+) 1 $ length $ inpLayer nn)
-        outIdxLabel  = "out" ++ (show $ (+) 1 $ length $ outLayer nn)
+        hdLabel      = show hd
+        inpIdxLabel  = "inp" ++ show ((+) 1 . length $ inpLayer nn)
+        outIdxLabel  = "out" ++ show ((+) 1 . length $ outLayer nn)
         ovrlH        = map snd ovrl
 
 
@@ -200,10 +202,10 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
         -- the atom that is the head of the clause is in the body of the clause
         -- (this should not occur, but...) then the neuron added to the output
         -- layer associated with that atom is based on the head
-        | any (hd ==) (pBod ++ nBod) -> NNupdate
+        | hd `elem` (pBod ++ nBod) -> NNupdate
             { inpNeuToAdd      = inputNs
             , hidNeuToAdd      = [hidNeuron]
-            , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuIdx] ++ (createOutNeurons ((pBod ++ nBod) \\ [hd]) ((+) (1 + 1) $ length $ outLayer nn) (outLayer nn))
+            , outNeuToAdd      = Neuron hdLabel "tanh" outBias outNeuIdx : createOutNeurons ((pBod ++ nBod) \\ [hd]) ((+) (1 + 1) . length $ outLayer nn) (outLayer nn)
             , outNeuToRemove   = []
             , inpToHidConToAdd = inpToHidConns
             , hidToOutConToAdd = [Connection hidNeuIdx outNeuIdx w]
@@ -211,7 +213,7 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
         | otherwise -> NNupdate
             { inpNeuToAdd      = inputNs
             , hidNeuToAdd      = [hidNeuron]
-            , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuIdx] ++ outputNs 1
+            , outNeuToAdd      = Neuron hdLabel "tanh" outBias outNeuIdx : outputNs 1
             , outNeuToRemove   = []
             , inpToHidConToAdd = inpToHidConns
             , hidToOutConToAdd = [Connection hidNeuIdx outNeuIdx w]
@@ -228,7 +230,7 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
             NNupdate
                 { inpNeuToAdd      = inputNs
                 , hidNeuToAdd      = [hidNeuron]
-                , outNeuToAdd      = [Neuron hdLabel "tanh" outBias outNeuOldIdx] ++ outputNs 0
+                , outNeuToAdd      = Neuron hdLabel "tanh" outBias outNeuOldIdx : outputNs 0
                 , outNeuToRemove   = [Neuron hdLabel "tanh" outNeuOldBias outNeuOldIdx]
                 , inpToHidConToAdd = inpToHidConns
                 , hidToOutConToAdd = [Connection hidNeuIdx outNeuOldIdx w]
@@ -251,14 +253,14 @@ updFromClause (Cl hd pBod nBod) nn outBias hidBias w = case outNeuOld of
         hidNeuIdx     = "hid" ++ hidNeuIdxNum
         hidNeuron     = Neuron ("h" ++ hidNeuIdxNum) "tanh" hidBias hidNeuIdx
         outNeuOld     = findNeuByLabel hd (outLayer nn)
-        hdLabel       = show $ hd
-        outNeuIdx     = "out" ++ (show $ (+) 1 $ length $ outLayer nn)
+        hdLabel       = show hd
+        outNeuIdx     = "out" ++ show ((+) 1 . length $ outLayer nn)
         inputNs
-            | (elem hd (pBod ++ nBod)) = createInpNeurons (pBod ++ nBod) ((+) 1 $ length $ inpLayer nn) (inpLayer nn)
-            | otherwise                = createInpNeurons (hd : pBod ++ nBod) ((+) 1 $ length $ inpLayer nn) (inpLayer nn)
-        outputNs x    = createOutNeurons (pBod ++ nBod) ((+) (1 + x) $ length $ outLayer nn) (outLayer nn)
+            | hd `elem` (pBod ++ nBod) = createInpNeurons (pBod ++ nBod) ((+) 1 . length $ inpLayer nn) (inpLayer nn)
+            | otherwise                = createInpNeurons (hd : pBod ++ nBod) ((+) 1 . length $ inpLayer nn) (inpLayer nn)
+        outputNs x    = createOutNeurons (pBod ++ nBod) ((+) (1 + x) . length $ outLayer nn) (outLayer nn)
         inpToHidConns = createInpToHidConn hidNeuIdx (inputNs ++ inpLayer nn) pBod nBod w
-        
+
 
 -- | Addition of neurons associated with given list of atoms to a given input
 -- layer.
@@ -292,15 +294,15 @@ createInpToHidConn hidIdx inpNs pBod nBod w =
 
 -- | Finds neuron in a given list of neurons by a given label.
 findNeuByLabel :: Atom -> [Neuron] -> Maybe Neuron
-findNeuByLabel a ns = find (\x -> NN.label x == show a) ns
+findNeuByLabel a = find (\x -> NN.label x == show a)
 
 
 -- | Merges an update for neural network with a given neural network.
 mergeNNupd :: NeuralNetwork -> NNupdate -> NeuralNetwork
-mergeNNupd nn nnUpd = NN 
+mergeNNupd nn nnUpd = NN
     { inpLayer            = inpLayer nn ++ inpNeuToAdd nnUpd
     , hidLayer            = hidLayer nn ++ hidNeuToAdd nnUpd
-    , outLayer            = ((outLayer nn) \\ (outNeuToRemove nnUpd)) ++ outNeuToAdd nnUpd
+    , outLayer            = (outLayer nn \\ outNeuToRemove nnUpd) ++ outNeuToAdd nnUpd
     , recLayer            = recLayer nn
     , inpToHidConnections = inpToHidConnections nn ++ inpToHidConToAdd nnUpd
     , hidToOutConnections = hidToOutConnections nn ++ hidToOutConToAdd nnUpd
@@ -324,9 +326,10 @@ recursiveConnections nn ovrl = NN
         tupleAToN (x, y)  = (remJust $ findNeuByLabel x (outLayer nn), remJust $ findNeuByLabel y (outLayer nn))
         ovrlNs            = map tupleAToN ovrl
         notOvrlNs         = [ n |
-            n <- outLayer nn,
-            not $ elem (NN.label n) (map show $ fst $ unzip ovrl),
-            not $ elem (NN.label n) (map show $ snd $ unzip ovrl) ]
+                                n <- outLayer nn,
+                                NN.label n `notElem` map (show . fst) ovrl,
+                                NN.label n `notElem` map (show . snd) ovrl
+                            ]
         regularRecConns   = createRecConnNormal (inpLayer nn) notOvrlNs
         abnormalRecConns  = fst $ createRecConnAbnormal (inpLayer nn) ovrlNs
         recursiveNs       = snd $ createRecConnAbnormal (inpLayer nn) ovrlNs
@@ -367,20 +370,21 @@ recConnFromTriple (inpN, outN1, outN2) = ([c1, c2, c3], [n])
 
 -- | Additional connections and additional hidden layer neurons for a given
 -- neural network. Additional argument, i.e. a list of atoms serves for the
--- introduction of abductive problems (atoms) to the neural network. 
+-- introduction of abductive problems (atoms) to the neural network.
 additionalNN :: NeuralNetwork -> NNfactors -> AbdGoal -> IO NeuralNetwork
 additionalNN nn nnF abdGs = do
     -- if there is an abductive goal, then we have to modify the input and the
     -- output layer
     let newInpLayer = inpLayer nn ++ createInpNeurons abdGs (length $ inpLayer nn) (inpLayer nn)
-    let newOutLayer = outLayer nn ++ createOutNeurons abdGs (1 + (length $ outLayer nn)) (outLayer nn)
-    
+    let newOutLayer = outLayer nn ++ createOutNeurons abdGs (1 + length (outLayer nn)) (outLayer nn)
+
     -- list of neurons from the output layer that are not associated with
     -- the head of a fact
     let notFacts = [ neu |
-            neu <- newOutLayer,
-            find (\x -> fromNeuron x == "hidT" && toNeuron x == NN.idx neu) (hidToOutConnections nn) == Nothing ]
-    
+                       neu <- newOutLayer,
+                       isNothing (find (\x -> fromNeuron x == "hidT" && toNeuron x == NN.idx neu) (hidToOutConnections nn))
+                   ]
+
     -- the number of additional hidden layer neurons is the number of output
     -- layer neurons that are not connected with the truth neuron
     -- (@notFacts@) multiplied by the number of additional hidden layer
@@ -388,34 +392,35 @@ additionalNN nn nnF abdGs = do
     let l = addHidNeuNumber nnF * length notFacts
 
     -- list of additional hidden layer neurons
-    let addHidNeurons = map (makeAddHidNeuron (addNeuronsBias nnF)) (zip [1..l] [length $ hidLayer nn..])
+    let addHidNeurons = zipWith (curry (makeAddHidNeuron (addNeuronsBias nnF))) [1..l] [length $ hidLayer nn..]
             where
                 makeAddHidNeuron bias (labelIdx, neuronIdx) =
                     Neuron ("ha" ++ show labelIdx) "tanh" bias ("hid" ++ show neuronIdx)
 
     -- list of random additional weights
     addWs <- additionalWgen $ addWeightLimit nnF
-    
+
     -- additional hidden layer neurons that have to be connected with a given
     -- output layer neuron plus the truth neuron
     let hidNeus = map (++ [Neuron "hidT" "tanh" 0.0 "hidT"]) (chunksOf (addHidNeuNumber nnF) addHidNeurons)
-    
+
     -- creating triples: output layer neuron, additional hidden layer neurons,
     -- list of additional weights in order to create additional connections
     let hidToOutTri = zip3 notFacts hidNeus (chunksOf (addHidNeuNumber nnF + 1) addWs)
-    
+
     -- additional connections from additional hidden layer neurons to output
     -- layer neurons
     let addHidToOutConns =
-            if (null abdGs) then concatMap makeAddConns hidToOutTri
-            else filtered (concatMap makeAddConns hidToOutTri)
-                where
-                    filtered cs = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) cs
-                    forbiddenIdxs = [ NN.idx n | n <- newOutLayer,  elem (NN.label n) (map show abdGs)]
-    
+            if null abdGs
+                then concatMap makeAddConns hidToOutTri
+                else filtered (concatMap makeAddConns hidToOutTri)
+                    where
+                        filtered cs = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) cs
+                        forbiddenIdxs = [ NN.idx n | n <- newOutLayer,  NN.label n `elem` map show abdGs]
+
     -- list of additional connections from the input to the hidden layer
     let addInpToHidConns = makeAddInpToHidConns newInpLayer newOutLayer addHidNeurons addHidToOutConns (drop (length addHidToOutConns) addWs)
-    
+
     return NN
         { inpLayer            = newInpLayer
         , hidLayer            = hidLayer nn ++ addHidNeurons
@@ -429,7 +434,8 @@ additionalNN nn nnF abdGs = do
 
 -- | Generator of additional weights.
 additionalWgen :: Float -> IO [AddW]
-additionalWgen r = newStdGen >>= return . randomRs (-r, r)
+additionalWgen r = randomRs (-r, r) <$> newStdGen
+--additionalWgen r = newStdGen >>= return . randomRs (-r, r)
 
 
 -- | List of additional connections based on the triple that contains the neuron
@@ -448,24 +454,22 @@ makeAddInpToHidConns inpLayer outLayer addHidNeurons addHidToOutConns addWs = do
             hidNeu <- addHidNeurons
             let connectedOutNeus = do
                     index <- [ toNeuron c | c <- addHidToOutConns, fromNeuron c == NN.idx hidNeu ]
-                    neu <- [ n | n <- outLayer, NN.idx n == index ]
-                    return neu
+                    [ n | n <- outLayer, NN.idx n == index ]
             let goodInpNeurons = [ n |
                     n <- inpLayer,
                     n /= Neuron "inpT" "const" 0.0 "inpT",
-                    null $ filter (\x -> NN.label x == NN.label n) connectedOutNeus ]
+                    not $ any (\x -> NN.label x == NN.label n) connectedOutNeus ]
             return (hidNeu, goodInpNeurons)
-    triple <- zip3 (fst neuronsToConnect) (snd neuronsToConnect) (chunksOf ((length $ inpLayer) - 2) addWs)
-    connection <- makeAddConns triple
-    return connection
+    triple <- uncurry zip3 neuronsToConnect (chunksOf (length inpLayer - 2) addWs)
+    makeAddConns triple
 
 
 -- | Removes additional connections between the hidden and output layer that run
 -- from the truth neuron to abductive goals.
 remBadAddConns :: [Atom] -> [Neuron] -> [Connection] -> [Connection]
-remBadAddConns abdGs layer conns = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) conns
+remBadAddConns abdGs layer = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs)
     where
-        forbiddenIdxs = [ NN.idx n | n <- layer,  elem (NN.label n) (map show abdGs)]
+        forbiddenIdxs = [ NN.idx n | n <- layer, NN.label n `elem` map show abdGs ]
 
 
 

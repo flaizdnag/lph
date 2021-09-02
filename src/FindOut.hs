@@ -15,22 +15,23 @@ module FindOut
     , parserFO
     ) where
 
-import System.IO  
-import Control.Monad
-import Control.Applicative ((<|>))
-import Data.Char
-import Data.Graph
-import Graph
-import Data.Array   (assocs)
-import Text.ParserCombinators.ReadP
+import           Control.Applicative          ((<|>))
+import           Control.Monad
+import           Data.Array                   (assocs)
+import           Data.Char
+import           Data.Graph
+import           Data.Maybe                   (fromMaybe)
+import           Graph
+import           System.IO
+import           Text.ParserCombinators.ReadP
 
 
 data ReportFO = ReportFO
-    { code :: String
-    , column1 :: [(Integer, String)]
-    , column2 :: [(Integer, String)]
+    { code       :: String
+    , column1    :: [(Integer, String)]
+    , column2    :: [(Integer, String)]
     , situations :: [(Integer, String)]
-    , graph :: Graph
+    , graph      :: Graph
     }
     deriving Show
 
@@ -78,21 +79,21 @@ getItem :: ReadP String
 getItem = do
     many1 digit
     string ". " <|> string " - "
-    item <- many1 (satisfy (\char -> char /= '\n'))
+    item <- many1 (satisfy (/= '\n'))
     eol
     return item
 
 digit :: ReadP Char
-digit = satisfy (\char -> char >= '0' && char <= '9')
+digit = satisfy isDigit
 
 textEOL :: ReadP String
 textEOL = do
-    txt <- many1 (satisfy (\char -> char /= '\n'))
+    txt <- many1 (satisfy (/= '\n'))
     eol
     return txt
 
 eol :: ReadP Char
-eol = satisfy (\char -> char == '\n')
+eol = satisfy (== '\n')
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -141,16 +142,14 @@ graphToForest g =
 
 numToNode :: Int -> [(Int, [Int])] -> String
 numToNode n ls
-    | connected == [] = "[" ++ show n ++ "]"
-    | otherwise       = "[" ++ show n ++ " " ++ concatMap numsToNodes connected ++ "]"
+    | null connected = "[" ++ show n ++ "]"
+    | otherwise      = "[" ++ show n ++ " " ++ concatMap numsToNodes connected ++ "]"
     where
         connected   = succG n ls
-        numsToNodes = \x -> numToNode x ls
+        numsToNodes = (`numToNode` ls)
 
 succG :: Int -> [(Int, [Int])] -> [Int]
-succG n xs = case lookup n xs of
-    Nothing -> []
-    Just ys -> ys
+succG n xs = fromMaybe [] (lookup n xs)
 
 exGraph :: Graph
 exGraph = buildG (0,10) [(0,1), (0,2), (0,3), (0,4), (0,9), (1,5), (5,8), (8,6), (6,7), (7,10)]
