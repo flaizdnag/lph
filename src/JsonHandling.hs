@@ -16,6 +16,7 @@ module JsonHandling
     ( LPjson (..)
     , Factors (..)
     , LPtoNN (..)
+    , LPtoNNnoABD (..)
     , NNwithFactors (..)
     , lpjosnTOlp
     , factorsTOnnfactors
@@ -65,6 +66,17 @@ data LPtoNN = LPtoNN
 
 instance FromJSON LPtoNN
 instance ToJSON LPtoNN where
+    toEncoding = genericToEncoding defaultOptions
+
+
+
+data LPtoNNnoABD = LPtoNNnoABD
+    { lpnoABD      :: LPjson
+    , factorsnoABD :: Factors
+    } deriving (Show, Read, Generic)
+
+instance FromJSON LPtoNNnoABD
+instance ToJSON LPtoNNnoABD where
     toEncoding = genericToEncoding defaultOptions
 
 
