@@ -1,18 +1,18 @@
-import AcceptableTests
-import AuxiliaryTests
-import CompletionTests
-import CPLTests
-import GraphTests
-import LogicProgramsTests
-import LPsimplifierTests
-import LvlMapTests
-import NeuralNetworksTests
-import NNdecoderTests
-import PhiOperatorTests
-import TpOperatorTests
-import TranslationTpTests
-import Test.Hspec
-import Test.QuickCheck
+import           AcceptableTests
+import           AuxiliaryTests
+import           CPLTests
+import           CompletionTests
+import           GraphTests
+import           LPsimplifierTests
+import           LogicProgramsTests
+import           LvlMapTests
+import           NNdecoderTests
+import           NeuralNetworksTests
+import           PhiOperatorTests
+import           Test.Hspec
+import           Test.QuickCheck
+import           TpOperatorTests
+import           TranslationTpTests
 
     
 main :: IO ()

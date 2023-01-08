@@ -1,11 +1,13 @@
 module NNdecoderTests (nnDecoderTests) where
 
-import ExamplesToTest
-import Auxiliary
-import LogicPrograms
-import NNdecoder
-import Test.Hspec
-import Test.QuickCheck
+import           Auxiliary
+import           ExamplesToTest
+import           LogicPrograms
+import           NNdecoder
+
+import           Test.Hspec
+import           Test.QuickCheck
+
 
 nnDecoderTests :: IO ()
 nnDecoderTests = hspec $ do

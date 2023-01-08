@@ -31,7 +31,6 @@ import           JsonHandling
 import           LPsimplifier
 
 
-
 data InpOutTOlp = InpOutTOlp
     { orderInp :: [String]
     , orderOut :: [String]
@@ -44,7 +43,6 @@ instance ToJSON InpOutTOlp where
     toEncoding = genericToEncoding defaultOptions
 
 
-
 newtype LPpython = LPpython
     { lp :: LPjson
     } deriving (Show, Read, Generic)
@@ -52,7 +50,6 @@ newtype LPpython = LPpython
 instance FromJSON LPpython
 instance ToJSON LPpython where
     toEncoding = genericToEncoding defaultOptions
-
 
 
 type IOpair   = ([Int], [Float])
@@ -65,6 +62,7 @@ neuronToAtom n = case n of
         where
             newIndex = read $ tail n
             newLabel = []
+
 
 decodeNN :: InpOutTOlp -> LP
 decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
@@ -82,6 +80,7 @@ decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
     do
         head <- heads
         return (Cl head trAtoms faAtoms)
+
 
 makeLPpython :: LP -> LPpython
 makeLPpython xs = LPpython { NNdecoder.lp = LPjson
