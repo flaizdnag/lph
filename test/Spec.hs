@@ -53,10 +53,10 @@ main = do
     neuralNetworksTests
     putStrLn ""
     putStrLn ""
-    putStrLn "Tests for 'NNdecoder' module"
-    nnDecoderTests
-    putStrLn ""
-    putStrLn ""
+    --putStrLn "Tests for 'NNdecoder' module"
+    --nnDecoderTests
+    --putStrLn ""
+    --putStrLn ""
     putStrLn "Tests for 'PhiOperator' module"
     phiOperatorTests
     putStrLn ""

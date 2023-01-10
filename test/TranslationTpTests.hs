@@ -11,7 +11,7 @@ translationTpTests :: IO ()
 translationTpTests = hspec $ do
     describe "TranslationTp module; baseNN" $ do
         it "for lp4 input layer" $
-            (inpLayer $ baseNN lp4 nnFactors) `shouldBe` (inpLayer baseLP4)
+            (inpLayer $ fst $ baseNN lp4 nnFactors) `shouldBe` (inpLayer baseLP4)
             --eqLists (inpLayer $ baseNN lp4 nnFactors) (inpLayer baseLP4) `shouldBe` True
 
 
@@ -33,4 +33,3 @@ baseLP4 = NN
     , hidToOutConnections = [Connection "hid1" "out1" 6.2865784775823075]
     , recConnections      = []
     }
-

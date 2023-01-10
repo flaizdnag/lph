@@ -63,8 +63,8 @@ wBase lp amin nnF maxBodies maxHeads = maximum [fstCondition, sndCondition]
 -- correctedOutBiases was added to deal with the problem of the bias of output
 -- layer neurons that are associated with atoms that do not appear as heads of
 -- clauses.
-baseNN :: LP -> NNfactors -> NeuralNetwork
-baseNN lp nnF = mergeNNupd oldBaseNN correctedOutBiases
+baseNN :: LP -> NNfactors -> (NeuralNetwork, Amin)
+baseNN lp nnF = (mergeNNupd oldBaseNN correctedOutBiases, amin)
     where
         -- list of all bodies length in the logic program
         bdsLen = bodiesLength lp
@@ -415,7 +415,7 @@ additionalNN nn nnF abdGs = do
                 then concatMap makeAddConns hidToOutTri
                 else filtered (concatMap makeAddConns hidToOutTri)
                     where
-                        filtered cs = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs) cs
+                        filtered = filter (\x -> not $ fromNeuron x == "hidT" && elem (toNeuron x) forbiddenIdxs)
                         forbiddenIdxs = [ NN.idx n | n <- newOutLayer,  NN.label n `elem` map show abdGs]
 
     -- list of additional connections from the input to the hidden layer

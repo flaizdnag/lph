@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy as B
 main :: IO ()
 main = scotty 10100 $ do
 
+{-
     post "/api/bP" $ do
         b <- decodeUtf8 <$> body
         responseLP b bp
@@ -44,6 +45,7 @@ main = scotty 10100 $ do
     post "/api/getNN" $ do
         b <- decodeUtf8 <$> body
         responseNN b
+-}
 
     post "/api/abdAt" $ do
         b <- decodeUtf8 <$> body
@@ -70,6 +72,7 @@ main = scotty 10100 $ do
         lp2nn_base b
 
 
+{-
 responseLP :: Show a => Text -> (LP -> a) -> Web.Scotty.ActionM ()
 responseLP input function = textPackShow $ function $ readUnpackLP input
     where
@@ -97,6 +100,7 @@ responseNN input = do
             nnPythonString = do
                 nn <- nnFull
                 return $ nnToPythonString nn
+-}
 
 
 getNN_atomsAbd :: Text -> Web.Scotty.ActionM ()
@@ -108,7 +112,7 @@ getNN_atomsAbd input = do
         inpLP  = read (div !! 0) :: LP
         abd    = read (div !! 1) :: [Atom]
         nnFac  = floatsToNNfac (read (div !! 2) :: [Float])
-        nnBase = baseNN inpLP nnFac
+        (nnBase, amin) = baseNN inpLP nnFac
         nnAdd  = additionalNN nnBase nnFac abd
         nnFull = do
             nn <- nnAdd
@@ -129,11 +133,11 @@ getNN_clauseAbd input = do
         abd    = [clHead cl]
         nnFac  = floatsToNNfac (read (div !! 2) :: [Float])
         modLP  = modifiedLP inpLP cl
-        nnBase = baseNN modLP nnFac
+        (nnBase, amin) = baseNN modLP nnFac
         nnAdd  = additionalNN nnBase nnFac abd
         nnFull = do
             nn <- nnAdd
-            return $ recursiveConnections nn (overlappingAtoms modLP abd)
+            return $ (recursiveConnections nn (overlappingAtoms modLP abd), amin)
 
 
 floatsToNNfac :: [Float] -> NNfactors
@@ -165,12 +169,12 @@ lp2nn input = case (decode input :: Maybe LPtoNN) of
             abd    = [clHead cl]
             nnFac  = factorsTOnnfactors $ factors decodedInp
             modLP  = modifiedLP inpLP cl
-            nnBase = baseNN modLP nnFac
+            (nnBase, amin) = baseNN modLP nnFac
             nnAdd  = additionalNN nnBase nnFac abd
             nnWfac = do
                 nn <- nnAdd
                 let nnRec = recursiveConnections nn (overlappingAtoms modLP abd)
-                return $ NNwithFactors nnRec (factors decodedInp)
+                return $ NNwithAmin nnRec amin
 
 
 lp2nn_no_abd input = case (decode input :: Maybe LPtoNNnoABD) of
@@ -181,12 +185,12 @@ lp2nn_no_abd input = case (decode input :: Maybe LPtoNNnoABD) of
         where
             inpLP  = lpjosnTOlp $ JsonHandling.lpnoABD decodedInp
             nnFac  = factorsTOnnfactors $ factorsnoABD decodedInp
-            nnBase = baseNN inpLP nnFac
+            (nnBase, amin) = baseNN inpLP nnFac
             nnAdd  = additionalNN nnBase nnFac []
             nnWfac = do
                 nn <- nnAdd
                 let nnRec = recursiveConnections nn []
-                return $ NNwithFactors nnRec (factorsnoABD decodedInp)
+                return $ (NNwithFactors nnRec (factorsnoABD decodedInp), amin)
 
 
 lp2nn_base input = case (decode input :: Maybe LPtoNNnoABD) of
@@ -195,6 +199,6 @@ lp2nn_base input = case (decode input :: Maybe LPtoNNnoABD) of
         where
             inpLP  = lpjosnTOlp $ JsonHandling.lpnoABD decodedInp
             nnFac  = factorsTOnnfactors $ factorsnoABD decodedInp
-            nnBase = baseNN inpLP nnFac
+            (nnBase, amin) = baseNN inpLP nnFac
             nnRec = recursiveConnections nnBase []
-            converted = NNwithFactors nnRec (factorsnoABD decodedInp)
+            converted = (NNwithFactors nnRec (factorsnoABD decodedInp), amin)

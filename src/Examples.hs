@@ -72,7 +72,7 @@ cl3 = Cl (A 6 "") [A 3 "", A 4 ""] []
 --lp2 :: LP
 --lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
-lp2NN :: NeuralNetwork
+lp2NN :: (NeuralNetwork, Float)
 lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
 lp2 :: LP
@@ -124,11 +124,11 @@ lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
           Cl (A 7 "") [A 4 ""] [],
           Fact (A 5 "") ]
 
-lpDrNNbase :: NeuralNetwork
+lpDrNNbase :: (NeuralNetwork, Float)
 lpDrNNbase = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
 
 lpDrNNadd :: IO NeuralNetwork
-lpDrNNadd = TranslationTp.additionalNN lpDrNNbase (NNfactors 1 1 0.05 0.0 0.5 0.5) [A 4 "", A 7 ""]
+lpDrNNadd = TranslationTp.additionalNN (fst lpDrNNbase) (NNfactors 1 1 0.05 0.0 0.5 0.5) [A 4 "", A 7 ""]
 
 {-
 lpDrNNa7 :: NeuralNetwork

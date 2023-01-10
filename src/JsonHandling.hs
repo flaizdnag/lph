@@ -20,6 +20,7 @@ module JsonHandling
     , NNwithFactors (..)
     , lpjosnTOlp
     , factorsTOnnfactors
+    , NNwithAmin (..)
     ) where
 
 import           Data.Aeson
@@ -42,20 +43,18 @@ instance ToJSON LPjson where
     toEncoding = genericToEncoding defaultOptions
 
 
-
 data Factors = Factors
-    { beta :: Float
-    , ahln :: Float
-    , r    :: Float
-    , bias :: Float
-    , w    :: Float
-    , amin :: Float
+    { beta_for_activation_function :: Float
+    , number_of_additional_neurons :: Float
+    , additional_weights_range     :: Float
+    , bias_for_additional_neurons  :: Float
+    , w_factor                     :: Float
+    , amin_factor                  :: Float
     } deriving (Show, Read, Generic)
 
 instance FromJSON Factors
 instance ToJSON Factors where
     toEncoding = genericToEncoding defaultOptions
-
 
 
 data LPtoNN = LPtoNN
@@ -69,7 +68,6 @@ instance ToJSON LPtoNN where
     toEncoding = genericToEncoding defaultOptions
 
 
-
 data LPtoNNnoABD = LPtoNNnoABD
     { lpnoABD      :: LPjson
     , factorsnoABD :: Factors
@@ -78,7 +76,6 @@ data LPtoNNnoABD = LPtoNNnoABD
 instance FromJSON LPtoNNnoABD
 instance ToJSON LPtoNNnoABD where
     toEncoding = genericToEncoding defaultOptions
-
 
 
 data NNwithFactors = NNwithFactors
@@ -91,6 +88,15 @@ instance ToJSON NNwithFactors where
     toEncoding = genericToEncoding defaultOptions
 
 
+data NNwithAmin = NNwithAmin
+    { neuralNetwork :: NN.NeuralNetwork
+    , amin          :: Float
+    } deriving (Show, Read, Generic)
+
+instance FromJSON NNwithAmin
+instance ToJSON NNwithAmin where
+    toEncoding = genericToEncoding defaultOptions
+
 
 lpjosnTOlp :: LPjson -> LP
 lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
@@ -101,10 +107,10 @@ lpjosnTOlp (LPjson fs as cls) = fsNew ++ asNew ++ cls
 
 factorsTOnnfactors :: Factors -> NN.NNfactors
 factorsTOnnfactors f = NN.NNfactors
-    { NN.beta            = JsonHandling.beta f
-    , NN.addHidNeuNumber = round $ ahln f
-    , NN.addWeightLimit  = r f
-    , NN.addNeuronsBias  = JsonHandling.bias f
-    , NN.weightFactor    = w f
-    , NN.aminFactor      = amin f
+    { NN.beta            = beta_for_activation_function f
+    , NN.addHidNeuNumber = round $ number_of_additional_neurons f
+    , NN.addWeightLimit  = additional_weights_range f
+    , NN.addNeuronsBias  = bias_for_additional_neurons f
+    , NN.weightFactor    = w_factor f
+    , NN.aminFactor      = amin_factor f
     }
