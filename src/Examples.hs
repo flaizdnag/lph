@@ -33,6 +33,9 @@ module Examples
     , articleLP4
     , articleLP5
     , articleLP6
+    , lpT
+    , abdGT
+    , nnFacT
     ) where
 
 import LogicPrograms
@@ -40,6 +43,20 @@ import NeuralNetworks
 import TranslationTp
 import TpOperator
 
+
+-- trouble P
+-- P = {
+--      A1 <- A2, ~A3
+-- }
+--
+-- abd. goal: A1
+lpT :: LP
+lpT = [ Cl (A 1 "") [A 2 ""] [A 3 ""] ]
+
+abdGT :: Clause
+abdGT = Cl (A 1 "") [] []
+
+nnFacT = NNfactors 1 1 0.01 0.0 0.1 0.1
 
 -- P1 = {
 --      A2 <- A1 , A4

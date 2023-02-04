@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module Main where
 
@@ -168,7 +167,7 @@ lp2nn input = case (decode input :: Maybe LPtoNN) of
             cl     = abductive_goal decodedInp
             abd    = [clHead cl]
             nnFac  = factorsTOnnfactors $ factors decodedInp
-            modLP  = modifiedLP inpLP cl
+            modLP  = modifiedLP (mkLPpositive inpLP) cl
             (nnBase, amin) = baseNN modLP nnFac
             nnAdd  = additionalNN nnBase nnFac abd
             nnWfac = do

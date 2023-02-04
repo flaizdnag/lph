@@ -76,6 +76,8 @@ module LogicPrograms
     , bodiesLength
     , clSameHeads
     , clsSameHeads
+    , mkCLpositive
+    , mkLPpositive
     ) where
 
 
@@ -107,6 +109,7 @@ instance Show Atom where
     show (A idx lab)
         | null lab  = "A" ++ show idx
         | otherwise = "A" ++ show idx ++ "^" ++ lab
+        -- | otherwise = "A" ++ show idx
 
 instance Eq Atom where
     A a xs == A b ys = a == b && eqLists xs ys
@@ -496,3 +499,19 @@ clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
 -- clause for every clause in a given logic program.
 clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (`clSameHeads` lp) lp
+
+
+-- | Creates a positive version of a clause
+mkCLpositive :: Clause -> Clause
+mkCLpositive cl = case cl of
+    Cl head positiveAts negativeAts -> Cl head newPositiveAts []
+        where
+            newPositiveAts = positiveAts ++ map markAtN negativeAts
+
+            markAtN :: Atom -> Atom
+            markAtN (A idx label) = A idx ('n': label)
+
+    _ -> cl
+
+mkLPpositive :: LP -> LP
+mkLPpositive = map mkCLpositive

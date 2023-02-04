@@ -58,10 +58,13 @@ type IOpair   = ([Int], [Float])
 neuronToAtom :: String -> Atom
 neuronToAtom n = case n of
     "inpT" -> A { LP.idx = -1, LP.label = "truth" }
+    _      -> read n :: LP.Atom
+{-
     _      -> A { LP.idx = newIndex, LP.label = newLabel}
         where
             newIndex = read $ tail n
             newLabel = []
+-}
 
 
 decodeNN :: InpOutTOlp -> LP
