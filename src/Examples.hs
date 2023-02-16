@@ -33,6 +33,9 @@ module Examples
     , articleLP4
     , articleLP5
     , articleLP6
+    , lpT
+    , abdGT
+    , nnFacT
     ) where
 
 import LogicPrograms
@@ -40,6 +43,20 @@ import NeuralNetworks
 import TranslationTp
 import TpOperator
 
+
+-- trouble P
+-- P = {
+--      A1 <- A2, ~A3
+-- }
+--
+-- abd. goal: A1
+lpT :: LP
+lpT = [ Cl (A 1 "") [A 2 ""] [A 3 ""] ]
+
+abdGT :: Clause
+abdGT = Cl (A 1 "") [] []
+
+nnFacT = NNfactors 1 1 0.01 0.0 0.1 0.1
 
 -- P1 = {
 --      A2 <- A1 , A4
@@ -72,7 +89,7 @@ cl3 = Cl (A 6 "") [A 3 "", A 4 ""] []
 --lp2 :: LP
 --lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
-lp2NN :: NeuralNetwork
+lp2NN :: (NeuralNetwork, Float)
 lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
 
 lp2 :: LP
@@ -124,11 +141,11 @@ lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
           Cl (A 7 "") [A 4 ""] [],
           Fact (A 5 "") ]
 
-lpDrNNbase :: NeuralNetwork
+lpDrNNbase :: (NeuralNetwork, Float)
 lpDrNNbase = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
 
 lpDrNNadd :: IO NeuralNetwork
-lpDrNNadd = TranslationTp.additionalNN lpDrNNbase (NNfactors 1 1 0.05 0.0 0.5 0.5) [A 4 "", A 7 ""]
+lpDrNNadd = TranslationTp.additionalNN (fst lpDrNNbase) (NNfactors 1 1 0.05 0.0 0.5 0.5) [A 4 "", A 7 ""]
 
 {-
 lpDrNNa7 :: NeuralNetwork

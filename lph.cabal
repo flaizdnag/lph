@@ -1,8 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 377438d78935f696aaad2e1b2e887a594cdf575922de71fbbd04e64b4aab81da
+-- hash: 9865ed3972bac2eb42b5813d01c380d04ad6fa15c298e90d4b11faaf5a3d3584
 
 name:           lph
 version:        0.1.0.0
@@ -10,15 +12,14 @@ description:    Please see the README on GitHub at <https://github.com/flaizdnag
 homepage:       https://github.com/flaizdnag/lph#readme
 bug-reports:    https://github.com/flaizdnag/lph/issues
 author:         Aleksandra Cz., Kinga O., Andrzej G.
-maintainer:     andrzej.gajda@amu.edu.pl
+maintainer:     andrzej.gajda@gmail.com
 copyright:      2018 Aleksandra Cz., Kinga O., Andrzej G.
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    ChangeLog.md
     README.md
+    ChangeLog.md
 
 source-repository head
   type: git
@@ -28,17 +29,39 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      QuickCheck
+    , aeson
+    , array
+    , base >=4.7 && <5
+    , bytestring
     , containers
+    , ghc
     , hspec
+    , qm
+    , random
+    , scotty
+    , split
+    , text
   exposed-modules:
+      Acceptable
       Auxiliary
       Completion
+      CPL
       Examples
-      Formulas
+      FindOut
       Graph
+      JsonHandling
+      LogicPrograms
+      LPsimplifier
       LvlMap
-      Operator
+      NeuralNetworks
+      NNdecoder
+      PhiOperator
+      ThreeValuedSem
+      TpOperator
+      TranslationPhi
+      TranslationTp
+      TwoValuedSem
   other-modules:
       Paths_lph
   default-language: Haskell2010
@@ -49,10 +72,20 @@ executable lph-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      QuickCheck
+    , aeson
+    , array
+    , base >=4.7 && <5
+    , bytestring
     , containers
+    , ghc
     , hspec
     , lph
+    , qm
+    , random
+    , scotty
+    , split
+    , text
   other-modules:
       Paths_lph
   default-language: Haskell2010
@@ -64,10 +97,34 @@ test-suite lph-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      QuickCheck
+    , aeson
+    , array
+    , base >=4.7 && <5
+    , bytestring
     , containers
+    , ghc
     , hspec
     , lph
+    , qm
+    , random
+    , scotty
+    , split
+    , text
   other-modules:
+      AcceptableTests
+      AuxiliaryTests
+      CompletionTests
+      CPLTests
+      ExamplesToTest
+      GraphTests
+      LogicProgramsTests
+      LPsimplifierTests
+      LvlMapTests
+      NeuralNetworksTests
+      NNdecoderTests
+      PhiOperatorTests
+      TpOperatorTests
+      TranslationTpTests
       Paths_lph
   default-language: Haskell2010
