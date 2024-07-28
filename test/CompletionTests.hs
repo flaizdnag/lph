@@ -1,10 +1,10 @@
 module CompletionTests (completionTests) where
 
-import Completion
-import CPL
-import LogicPrograms
 import Auxiliary
+import CPL
+import Completion
 import ExamplesToTest
+import LogicPrograms
 import Test.Hspec
 import Test.QuickCheck
 
@@ -21,7 +21,7 @@ completionTests = hspec $ do
             eqLists (comp lp4) compLP4 `shouldBe` True
         it "for lp5" $
             eqLists (comp lp5) compLP5 `shouldBe` True
-    
+
     describe "Completion module; weakComp" $ do
         it "for lp1" $
             eqLists (weakComp lp1) weakCompLP1 `shouldBe` True
@@ -33,7 +33,7 @@ completionTests = hspec $ do
             eqLists (weakComp lp4) weakCompLP4 `shouldBe` True
         it "for lp5" $
             eqLists (weakComp lp5) weakCompLP5 `shouldBe` True
-    
+
     describe "Completion module; intLPtoOntCPL" $ do
         it "for ([] ,[]) it's empty interpretation" $
             intLPtoIntCPL (IntLP [] []) `shouldBe` IntCPL [] []
@@ -42,17 +42,14 @@ completionTests = hspec $ do
         it "for ([A1, A2] ,[])" $
             intLPtoIntCPL (IntLP [A 1 "", A 2 ""] []) `shouldBe` IntCPL [V (A 1 ""), V (A 2 "")] []
 
-
 weakCompLP1 :: [Form]
 weakCompLP1 =
     [ E (V (A 1 "")) (D [C [T], C [F]])
     , E (V (A 2 "")) (D [C [T], C [F]])
     ]
 
-
 compLP1 :: [Form]
 compLP1 = weakCompLP1
-
 
 weakCompLP2 :: [Form]
 weakCompLP2 =
@@ -61,9 +58,9 @@ weakCompLP2 =
     ]
 
 compLP2 :: [Form]
-compLP2 = weakCompLP2 ++
-    [ N (V (A 10 "")), N (V (A 11 "")), N (V (A 15 "")), N (V (A 16 "")) ]
-
+compLP2 =
+    weakCompLP2
+        ++ [N (V (A 10 "")), N (V (A 11 "")), N (V (A 15 "")), N (V (A 16 ""))]
 
 weakCompLP3 :: [Form]
 weakCompLP3 =
@@ -73,25 +70,20 @@ weakCompLP3 =
     , E (V (A 4 "")) (D [C [F]])
     ]
 
-
 compLP3 :: [Form]
-compLP3 = weakCompLP3 ++ [ N (V (A 5 "")) ]
-
+compLP3 = weakCompLP3 ++ [N (V (A 5 ""))]
 
 weakCompLP4 :: [Form]
-weakCompLP4 = [ E (V (A 1 "")) (D [C [V (A 2 ""), N (V (A 1 ""))]]) ]
-
+weakCompLP4 = [E (V (A 1 "")) (D [C [V (A 2 ""), N (V (A 1 ""))]])]
 
 compLP4 :: [Form]
-compLP4 = weakCompLP4 ++ [ N (V (A 2 "")) ]
-
+compLP4 = weakCompLP4 ++ [N (V (A 2 ""))]
 
 weakCompLP5 :: [Form]
 weakCompLP5 =
     [ E (V (A 1 "")) (D [C [N (V (A 2 ""))]])
     , E (V (A 2 "")) (D [C [V (A 1 "")], C [N (V (A 1 ""))]])
     ]
-
 
 compLP5 :: [Form]
 compLP5 = weakCompLP5

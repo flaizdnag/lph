@@ -1,4 +1,4 @@
-{-|
+{- |
 Module      : Completion
 Description : Tools needed to perform Clark's completion for a logic program.
 Copyright   : (c) Aleksandra Cz., 2017
@@ -15,155 +15,157 @@ In addition, there are also tools for searching for a model for the completion
 of a logic program, and tools to test if a given interpretation is a model for
 the completion of a logic program.
 -}
-module Completion
-    ( comp
-    , weakComp
-    , intLPtoIntCPL
-    --, makeModels
-    ) where
+module Completion (
+    comp,
+    weakComp,
+    intLPtoIntCPL,
+    -- , makeModels
+) where
 
-import           Auxiliary
-import           CPL
-import           Data.List      (foldl1', groupBy, nub, sort, sortBy, union,
-                                 (\\))
-import           Data.Maybe     (isNothing)
-import           LogicPrograms
-import           ThreeValuedSem
-
+import Auxiliary
+import CPL
+import Data.List (
+    foldl1',
+    groupBy,
+    nub,
+    sort,
+    sortBy,
+    union,
+    (\\),
+ )
+import Data.Maybe (isNothing)
+import LogicPrograms
+import ThreeValuedSem
 
 -- | Turns a list of atoms into a list of variables.
 atomsToVar :: [Atom] -> [Form]
 atomsToVar = map V
 
-
 -- | Turns a list of atoms into a list of negated variables.
 atomsToNVar :: [Atom] -> [Form]
 atomsToNVar = map (N . V)
 
-
--- | Weak Clark's completion for a logic program. Maps @mapConjunction@ and
--- @equivalenca@ (in that order) over the set of definitions for heads from the
--- logic program.
+{- | Weak Clark's completion for a logic program. Maps @mapConjunction@ and
+@equivalenca@ (in that order) over the set of definitions for heads from the
+logic program.
+-}
 weakComp :: LP -> [Form]
 weakComp lp = map (equivalence . mapConjunction) headsDefs
-    where
-        -- list of definitions (clauses) for all heads from the logic program;
-        -- as a result we obtain a list of lists of clauses
-        headsDefs = map (`atomDef` lp) (lpHeads lp)
+  where
+    -- list of definitions (clauses) for all heads from the logic program;
+    -- as a result we obtain a list of lists of clauses
+    headsDefs = map (`atomDef` lp) (lpHeads lp)
 
-        -- turning a clause into a tuple with head of the clause and the body of
-        -- the clause as a conjunction
-        conjunction cl = case cl of
-            Fact h          -> (V h, C [T])
-            Assumption h    -> (V h, C [F])
-            Cl h pb nb      -> (V h, C (atomsToVar (nub pb) ++ atomsToNVar (nub nb)))
+    -- turning a clause into a tuple with head of the clause and the body of
+    -- the clause as a conjunction
+    conjunction cl = case cl of
+        Fact h -> (V h, C [T])
+        Assumption h -> (V h, C [F])
+        Cl h pb nb -> (V h, C (atomsToVar (nub pb) ++ atomsToNVar (nub nb)))
 
-        -- mapping @conjunction@ over a list of clauses
-        mapConjunction cls = map conjunction cls
+    -- mapping @conjunction@ over a list of clauses
+    mapConjunction cls = map conjunction cls
 
-        -- turning a list of tuples with head of a clause and the body as
-        -- a conjunction into an equivalence, where one part is the head, while
-        -- the other is a disjunction of conjunctions from all of the tuples;
-        -- NOTICE: the assumption here is that the list contains tuples with the
-        -- same first element, i.e. with the same head
-        equivalence xs = E (fst (head xs)) (D (map snd xs))
-
+    -- turning a list of tuples with head of a clause and the body as
+    -- a conjunction into an equivalence, where one part is the head, while
+    -- the other is a disjunction of conjunctions from all of the tuples;
+    -- NOTICE: the assumption here is that the list contains tuples with the
+    -- same first element, i.e. with the same head
+    equivalence xs = E (fst (head xs)) (D (map snd xs))
 
 -- | Clark's completion for a logic program.
 comp :: LP -> [Form]
 comp lp = weakComp lp ++ atomsToNVar (bp lp \\ lpHeads lp)
 
-
 -- | Creates an interpretation for CPL from an interpretation for LP.
 intLPtoIntCPL :: IntLP -> IntCPL
 intLPtoIntCPL int = IntCPL (atomsToVar (trLP int)) (atomsToVar (faLP int))
-
 
 --------------------------------------------------------------------------------
 -- Looking for a model for Clark's completion in two-valued semantic          --
 --------------------------------------------------------------------------------
 
--- | Takes a formula and an interpretation and returns the value of the formula.
--- The interpretation is not complete, i.e. there are some variables that do not
--- belong to neither true set nor false set.
+{- | Takes a formula and an interpretation and returns the value of the formula.
+The interpretation is not complete, i.e. there are some variables that do not
+belong to neither true set nor false set.
+-}
 partialEvalCPL :: Form -> IntCPL -> Maybe Bool
 partialEvalCPL f (IntCPL tr fa) = case f of
-    T                       -> Just True
-    F                       -> Just False
+    T -> Just True
+    F -> Just False
     V a
-        | V a `elem` tr     -> Just True
-        | V a `elem` fa     -> Just False
-        | otherwise         -> Nothing
+        | V a `elem` tr -> Just True
+        | V a `elem` fa -> Just False
+        | otherwise -> Nothing
     N x
-        | isTr x            -> Just False
-        | isFa x            -> Just True
-        | otherwise         -> Nothing
+        | isTr x -> Just False
+        | isFa x -> Just True
+        | otherwise -> Nothing
     C xs
-        | anyFa xs          -> Just False
-        | anyUn xs          -> Nothing
-        | otherwise         -> Just True
+        | anyFa xs -> Just False
+        | anyUn xs -> Nothing
+        | otherwise -> Just True
     D xs
-        | anyTr xs          -> Just True
-        | anyUn xs          -> Nothing
-        | otherwise         -> Just False
+        | anyTr xs -> Just True
+        | anyUn xs -> Nothing
+        | otherwise -> Just False
     E x y
-        | isUn x || isUn y  -> Nothing
-        | sameEval x y      -> Just True
-        | otherwise         -> Just False
-    where
-        isTr x       = partialEvalCPL x (IntCPL tr fa) == Just True
-        isFa x       = partialEvalCPL x (IntCPL tr fa) == Just False
-        isUn x       = isNothing (partialEvalCPL x (IntCPL tr fa))
-        sameEval x y = partialEvalCPL x (IntCPL tr fa) == partialEvalCPL y (IntCPL tr fa)
-        anyTr        = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just True)
-        anyFa        = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just False)
-        anyUn        = any (\x -> isNothing (partialEvalCPL x (IntCPL tr fa)))
+        | isUn x || isUn y -> Nothing
+        | sameEval x y -> Just True
+        | otherwise -> Just False
+  where
+    isTr x = partialEvalCPL x (IntCPL tr fa) == Just True
+    isFa x = partialEvalCPL x (IntCPL tr fa) == Just False
+    isUn x = isNothing (partialEvalCPL x (IntCPL tr fa))
+    sameEval x y = partialEvalCPL x (IntCPL tr fa) == partialEvalCPL y (IntCPL tr fa)
+    anyTr = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just True)
+    anyFa = any (\x -> partialEvalCPL x (IntCPL tr fa) == Just False)
+    anyUn = any (\x -> isNothing (partialEvalCPL x (IntCPL tr fa)))
 
-
--- | Takes a list of formulas (Clark's completion), an interpretation and a list
--- of formulas whose value is unknown, and seeks for the model for all of the
--- formulas. If there are multiple ways of creating a model for a given formula,
--- then it is placed in the list of undefined formulas.
--- NOTICE: It is not generalised for every type of the formula, because the
--- completion of a logic program contains only formulas of the specific kind,
--- i.e. negated variables and equivalences.
+{- | Takes a list of formulas (Clark's completion), an interpretation and a list
+of formulas whose value is unknown, and seeks for the model for all of the
+formulas. If there are multiple ways of creating a model for a given formula,
+then it is placed in the list of undefined formulas.
+NOTICE: It is not generalised for every type of the formula, because the
+completion of a logic program contains only formulas of the specific kind,
+i.e. negated variables and equivalences.
+-}
 invariants :: [Form] -> (IntCPL, [Form]) -> (IntCPL, [Form])
-invariants [] (int, un)                = (int, un)
-invariants (f:fs) (IntCPL tr fa, un) = case f of
-    N a             -> invariants fs (IntCPL tr (a : fa), un)
-    E a T           -> invariants fs (IntCPL (a : tr) fa, un)
-    E a F           -> invariants fs (IntCPL tr (a : fa), un)
+invariants [] (int, un) = (int, un)
+invariants (f : fs) (IntCPL tr fa, un) = case f of
+    N a -> invariants fs (IntCPL tr (a : fa), un)
+    E a T -> invariants fs (IntCPL (a : tr) fa, un)
+    E a F -> invariants fs (IntCPL tr (a : fa), un)
     E a b
-        | isTr b    -> invariants fs (IntCPL (a : tr) fa, un)
-        | isFa b    -> invariants fs (IntCPL tr (a : fa), un)
+        | isTr b -> invariants fs (IntCPL (a : tr) fa, un)
+        | isFa b -> invariants fs (IntCPL tr (a : fa), un)
         | otherwise -> invariants fs (IntCPL tr fa, f : un)
-        where
-            isTr x = partialEvalCPL x (IntCPL tr fa) == Just True
-            isFa x = partialEvalCPL x (IntCPL tr fa) == Just False
-            isUn x = isNothing (partialEvalCPL x (IntCPL tr fa))
+      where
+        isTr x = partialEvalCPL x (IntCPL tr fa) == Just True
+        isFa x = partialEvalCPL x (IntCPL tr fa) == Just False
+        isUn x = isNothing (partialEvalCPL x (IntCPL tr fa))
 
-
--- | Iterates @invariants@ till the set of formulas with unknown
--- value is empty or does not change.
+{- | Iterates @invariants@ till the set of formulas with unknown
+value is empty or does not change.
+-}
 invIter :: [Form] -> (IntCPL, [Form], [Form]) -> (IntCPL, [Form])
 invIter fs (int, un, done)
-    | null newUn         = (newInt, newUn)
+    | null newUn = (newInt, newUn)
     | eqLists newUn done = (int, un)
-    | otherwise          = invIter newUn (newInt, [], newDone)
-        where
-            newInt  = fst inv
-            newUn   = snd inv
-            inv     = invariants fs (int, un)
-            newDone = done `union` newUn
+    | otherwise = invIter newUn (newInt, [], newDone)
+  where
+    newInt = fst inv
+    newUn = snd inv
+    inv = invariants fs (int, un)
+    newDone = done `union` newUn
 
-
--- | Function that starts from the empty interpretation and searches for the
--- model for the list of formulas. It returns a "part" of the model, i.e.
--- variables that can be established true or false, and the list of formulas
--- with unknown value.
+{- | Function that starts from the empty interpretation and searches for the
+model for the list of formulas. It returns a "part" of the model, i.e.
+variables that can be established true or false, and the list of formulas
+with unknown value.
+-}
 modelSearch :: [Form] -> (IntCPL, [Form])
 modelSearch fs = invIter (sort fs) (IntCPL [] [], [], [])
-
 
 --------------------------------------------------------------------------------
 -- Next step is to write function that creates a model for a list of formulas --

@@ -1,4 +1,4 @@
-{-|
+{- |
 Module      : FindOut
 Description : Tools needed to read a logic program from a '.txt' file.
 Copyright   : (c) Andrzej G., 2017
@@ -9,32 +9,30 @@ Portability : POSIX
 
 Longer description
 -}
-module FindOut
-    ( ReportFO (..)
-    , reportToLaTeX
-    , parserFO
-    ) where
+module FindOut (
+    ReportFO (..),
+    reportToLaTeX,
+    parserFO,
+) where
 
-import           Control.Applicative          ((<|>))
-import           Control.Monad
-import           Data.Array                   (assocs)
-import           Data.Char
-import           Data.Graph
-import           Data.Maybe                   (fromMaybe)
-import           Graph
-import           System.IO
-import           Text.ParserCombinators.ReadP
-
+import Control.Applicative ((<|>))
+import Control.Monad
+import Data.Array (assocs)
+import Data.Char
+import Data.Graph
+import Data.Maybe (fromMaybe)
+import Graph
+import System.IO
+import Text.ParserCombinators.ReadP
 
 data ReportFO = ReportFO
-    { code       :: String
-    , column1    :: [(Integer, String)]
-    , column2    :: [(Integer, String)]
+    { code :: String
+    , column1 :: [(Integer, String)]
+    , column2 :: [(Integer, String)]
     , situations :: [(Integer, String)]
-    , graph      :: Graph
+    , graph :: Graph
     }
-    deriving Show
-
+    deriving (Show)
 
 -- | Reader of the file content.
 reader :: IO ()
@@ -51,7 +49,7 @@ parserFO = do
     col2 <- getCols
     situations <- getSituations
     graphEdges <- fmap read textEOL
-    return (ReportFO sbjCode (zip [1..] col1) (zip [1..] col2) (zip [1..] situations) (buildG (0, length situations) graphEdges))
+    return (ReportFO sbjCode (zip [1 ..] col1) (zip [1 ..] col2) (zip [1 ..] situations) (buildG (0, length situations) graphEdges))
 
 getSCode :: ReadP String
 getSCode = do
@@ -106,50 +104,54 @@ exTEXT = "[KAJ08]\n\nKOLUMNA 1\n1. CELEBRYTA FAKTYCZNIE WYPIł WINO, KT\211REGO 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-latexWriterTest :: IO()
+latexWriterTest :: IO ()
 latexWriterTest = putStr $ reportToLaTeX $ fst $ head (readP_to_S parserFO exTEXT)
 
 reportToLaTeX :: ReportFO -> String
 reportToLaTeX (ReportFO code col1 col2 sts graph) =
-    "Nr osoby badanej: " ++ code ++ "\n\n" ++
-    "Kolumna 1:\n" ++
-    "\\begin{enumerate}\n" ++
-    itemized col1 ++
-    "\\end{enumerate}\n\n" ++
-    "Kolumna 2:\n" ++
-    "\\begin{enumerate}\n" ++
-    itemized col2 ++
-    "\\end{enumerate}\n\n" ++
-    "Sytuacje:\n" ++
-    "\\begin{enumerate}\n" ++
-    itemized sts ++
-    "\\end{enumerate}\n\n" ++
-    "Graf:\n" ++
-    graphToForest graph
+    "Nr osoby badanej: "
+        ++ code
+        ++ "\n\n"
+        ++ "Kolumna 1:\n"
+        ++ "\\begin{enumerate}\n"
+        ++ itemized col1
+        ++ "\\end{enumerate}\n\n"
+        ++ "Kolumna 2:\n"
+        ++ "\\begin{enumerate}\n"
+        ++ itemized col2
+        ++ "\\end{enumerate}\n\n"
+        ++ "Sytuacje:\n"
+        ++ "\\begin{enumerate}\n"
+        ++ itemized sts
+        ++ "\\end{enumerate}\n\n"
+        ++ "Graf:\n"
+        ++ graphToForest graph
 
 itemized :: [(Integer, String)] -> String
-itemized []     = ""
-itemized (x:xs) = "    \\item " ++ snd x ++ "\n" ++ itemized xs
+itemized [] = ""
+itemized (x : xs) = "    \\item " ++ snd x ++ "\n" ++ itemized xs
 
 fbf :: String -> String
 fbf s = "\\textbf{" ++ s ++ "}"
 
 graphToForest :: Graph -> String
 graphToForest g =
-    "\\begin{forest}\n" ++
-    "    " ++ numToNode 0 (assocs g) ++ "\n" ++
-    "\\end{forest}"
+    "\\begin{forest}\n"
+        ++ "    "
+        ++ numToNode 0 (assocs g)
+        ++ "\n"
+        ++ "\\end{forest}"
 
 numToNode :: Int -> [(Int, [Int])] -> String
 numToNode n ls
     | null connected = "[" ++ show n ++ "]"
-    | otherwise      = "[" ++ show n ++ " " ++ concatMap numsToNodes connected ++ "]"
-    where
-        connected   = succG n ls
-        numsToNodes = (`numToNode` ls)
+    | otherwise = "[" ++ show n ++ " " ++ concatMap numsToNodes connected ++ "]"
+  where
+    connected = succG n ls
+    numsToNodes = (`numToNode` ls)
 
 succG :: Int -> [(Int, [Int])] -> [Int]
 succG n xs = fromMaybe [] (lookup n xs)
 
 exGraph :: Graph
-exGraph = buildG (0,10) [(0,1), (0,2), (0,3), (0,4), (0,9), (1,5), (5,8), (8,6), (6,7), (7,10)]
+exGraph = buildG (0, 10) [(0, 1), (0, 2), (0, 3), (0, 4), (0, 9), (1, 5), (5, 8), (8, 6), (6, 7), (7, 10)]

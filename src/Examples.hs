@@ -1,4 +1,4 @@
-{-|
+{- |
 Module      : Examples
 Description : Examples of Horn clauses.
 Copyright   : (c) Aleksandra Cz., 2017
@@ -11,38 +11,37 @@ Portability : POSIX
 
 Longer description
 -}
-module Examples
-    ( lp1
-    , lp2
-    , lpDr
-    , lpDr'
-    , cl1
-    , cl2
-    , cl3
-    , cl4
-    , cl5
-    , lp2NN
-    --, lp2NNrec
-    --, lp2NNadd
-    , lpDrNNbase
-    , lpDrNNadd
-    , lpDrNNfull
-    , articleLP1
-    , articleLP2
-    , articleLP3
-    , articleLP4
-    , articleLP5
-    , articleLP6
-    , lpT
-    , abdGT
-    , nnFacT
-    ) where
+module Examples (
+    lp1,
+    lp2,
+    lpDr,
+    lpDr',
+    cl1,
+    cl2,
+    cl3,
+    cl4,
+    cl5,
+    lp2NN,
+    -- , lp2NNrec
+    -- , lp2NNadd
+    lpDrNNbase,
+    lpDrNNadd,
+    lpDrNNfull,
+    articleLP1,
+    articleLP2,
+    articleLP3,
+    articleLP4,
+    articleLP5,
+    articleLP6,
+    lpT,
+    abdGT,
+    nnFacT,
+) where
 
 import LogicPrograms
 import NeuralNetworks
-import TranslationTp
 import TpOperator
-
+import TranslationTp
 
 -- trouble P
 -- P = {
@@ -51,7 +50,7 @@ import TpOperator
 --
 -- abd. goal: A1
 lpT :: LP
-lpT = [ Cl (A 1 "") [A 2 ""] [A 3 ""] ]
+lpT = [Cl (A 1 "") [A 2 ""] [A 3 ""]]
 
 abdGT :: Clause
 abdGT = Cl (A 1 "") [] []
@@ -66,28 +65,24 @@ nnFacT = NNfactors 1 1 0.01 0.0 0.1 0.1
 lp1 :: LP
 lp1 = [Cl (A 2 "") [A 1 "", A 4 ""] [], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
-
 -- cl1 : A2 <- A3 , A4
 cl1 :: Clause
 cl1 = Cl (A 2 "") [A 3 "", A 4 ""] []
-
 
 -- cl2 : A2 <- A3 , A4 , A6
 cl2 :: Clause
 cl2 = Cl (A 2 "") [A 3 "", A 4 "", A 6 ""] []
 
-
 -- cl3 : A6 <- A3 , A4
 cl3 :: Clause
 cl3 = Cl (A 6 "") [A 3 "", A 4 ""] []
-
 
 -- P2 = {
 --      A2 <- A1 , ~A4
 --      A3 <- A1
 -- }
---lp2 :: LP
---lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
+-- lp2 :: LP
+-- lp2 = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 3 "") [A 1 ""] []]
 
 lp2NN :: (NeuralNetwork, Float)
 lp2NN = TranslationTp.baseNN lp2 (NNfactors 1 2 0.05 0.0 0.5 0.5)
@@ -96,32 +91,32 @@ lp2 :: LP
 lp2 =
     [ Cl (A 1 "") [A 10 "", A 10 ""] [A 11 "", A 11 ""]
     , Cl (A 2 "") [A 15 "", A 15 ""] [A 16 "", A 16 ""]
-    , Fact (A 1 ""), Assumption (A 1 "")
-    , Fact (A 2 ""), Assumption (A 2 "")
+    , Fact (A 1 "")
+    , Assumption (A 1 "")
+    , Fact (A 2 "")
+    , Assumption (A 2 "")
     ]
---lp2NNrec :: NeuralNetwork
---lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
---lp2NNadd :: IO NeuralNetwork
---lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5) [A 5 "", A 6 ""]
+-- lp2NNrec :: NeuralNetwork
+-- lp2NNrec = recursiveConnections lp2NN (overlappingAtoms lp2)
 
+-- lp2NNadd :: IO NeuralNetwork
+-- lp2NNadd = additionalNN lp2NNrec (NNfactors 1 2 0.05 0.0 0.5 0.5) [A 5 "", A 6 ""]
 
 -- cl4 : A2 <- A1 , ~A4
 cl4 :: Clause
 cl4 = Cl (A 2 "") [A 1 ""] [A 4 ""]
 
-
 -- cl5 : A2 <- A1 , ~A3
 cl5 :: Clause
 cl5 = Cl (A 2 "") [A 1 ""] [A 3 ""]
-
 
 -- Pd = {
 --      A1 <- A2 , A3
 --      A4 <- A5
 --      A6 <- T
 -- }
--- 
+--
 -- Pd' = {
 --      A1 <- A2 , A3
 --      A4 <- A5
@@ -130,16 +125,20 @@ cl5 = Cl (A 2 "") [A 1 ""] [A 3 ""]
 --      A5 <- T
 -- }
 lpDr :: LP
-lpDr = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
-         Cl (A 4 "") [A 5 ""] [],
-         Fact (A 6 "") ]
+lpDr =
+    [ Cl (A 1 "") [A 2 "", A 3 ""] []
+    , Cl (A 4 "") [A 5 ""] []
+    , Fact (A 6 "")
+    ]
 
 lpDr' :: LP
-lpDr' = [ Cl (A 1 "") [A 2 "", A 3 ""] [],
-          Cl (A 4 "") [A 5 ""] [],
-          Fact (A 6 ""),
-          Cl (A 7 "") [A 4 ""] [],
-          Fact (A 5 "") ]
+lpDr' =
+    [ Cl (A 1 "") [A 2 "", A 3 ""] []
+    , Cl (A 4 "") [A 5 ""] []
+    , Fact (A 6 "")
+    , Cl (A 7 "") [A 4 ""] []
+    , Fact (A 5 "")
+    ]
 
 lpDrNNbase :: (NeuralNetwork, Float)
 lpDrNNbase = TranslationTp.baseNN lpDr (NNfactors 1 1 0.05 0.0 0.5 0.5)
@@ -169,19 +168,18 @@ lpDrNNfull = do
     nn <- lpDrNNadd
     return $ recursiveConnections nn (overlappingAtoms lpDr [A 4 "", A 7 ""])
 
-
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 -- Examples from article on the core method for WCS with sceptical abduction
 
 articleLP1 :: LP
-articleLP1 = 
+articleLP1 =
     [ Cl (A 1 "") [A 2 ""] [A 3 ""]
     , Assumption (A 3 "")
     ]
 
 articleLP2 :: LP
-articleLP2 = 
+articleLP2 =
     [ Cl (A 1 "") [A 2 ""] [A 3 ""]
     , Assumption (A 3 "")
     , Cl (A 1 "") [A 4 ""] [A 5 ""]
@@ -217,8 +215,6 @@ articleLP6 =
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
-
 
 {-
 -- from LogicPrograms
@@ -285,7 +281,6 @@ cl3' = Cl (A 2 "") [] [A 1 ""]
 cl4' :: Clause
 cl4' = Cl (A 2 "") [] [A 1 "", A 3 ""]
 
-
 p3 :: LP
 p3 = [Cl (A 1 "") [A 2 ""] [], Cl (A 1 "") [A 3 ""] [], Assumption (A 3 "")]
 
@@ -303,8 +298,7 @@ p1'' :: LP
 p1'' = [Cl (A 2 "") [A 1 ""] [A 4 ""], Cl (A 1 "") [A 3 ""] [], Fact (A 5 "")]
 
 --p1NN'' :: NeuralNetwork
---p1NN'' = baseNN p1 0.5 0.5 1 0.0 0.05 2 
-
+--p1NN'' = baseNN p1 0.5 0.5 1 0.0 0.05 2
 
 p2'' :: LP
 p2'' = p1'' ++ [Fact (A 2 "h")]
@@ -330,7 +324,7 @@ p3'' = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 10 "") [A 2 ""] [A 3 ""]]
 --p3NNadd'' :: IO NeuralNetwork
 --p3NNadd'' = additionalConnectionsIO p3NNrec 2 0.4 4
 
-p4'' :: LP 
+p4'' :: LP
 p4'' = [Cl (A 1 "")[A 2 "", A 3 ""][], Cl (A 2 "")[A 3 ""][], Cl (A 2 "")[A 1 ""][]]
 
 --p4NN'' :: NeuralNetwork
@@ -354,10 +348,6 @@ p5'' = [Cl (A 1 "") [A 2 ""] [A 3 ""], Cl (A 2 "") [A 4 ""] [], Fact (A 4 "")]
 --p5NNadd'' :: IO NeuralNetwork
 --p5NNadd'' = additionalConnectionsIO p5NNrec 1 0.4 0.2
 
-
-
-
-
 exl = [(A 1, [A 2], [A 3]), (A 4, [A 6], [A 5]), (A 4, [A 1], [A 7]), (A 2, [], [])]
 ex1 = [(A 1, [], []), (A 2, [], [A 3]), (A 4, [A 1], [A 3])]
 ex1a = [(A 1, [], []), (A 2, [], [A 3]), (A 4, [A 1, A 3], [])]
@@ -377,7 +367,6 @@ ex11 = [(A 10,[],[A 4]),(A 4,[A 12],[]),(A 12,[],[]),(A 2,[],[A 2,A 4]),(A 6,[],
 
 --loop
 --ex3 = [(A 1, [A 3], []), (A 2, [A 1], [A 4]), (A 3, [], [A 2])]
-
 
 --program
 p1 = [(A 1, [A 2], [A 3]), (A 1, [], [A 4]), (A 2, [A 5], []), (A 5, [], [])]

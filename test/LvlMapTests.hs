@@ -1,7 +1,7 @@
 module LvlMapTests (lvlMapTests) where
 
-import ExamplesToTest
 import Auxiliary
+import ExamplesToTest
 import LogicPrograms
 import LvlMap
 import Test.Hspec

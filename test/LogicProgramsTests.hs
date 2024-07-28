@@ -1,12 +1,12 @@
 module LogicProgramsTests (lpTests) where
 
-import ExamplesToTest
 import Auxiliary
+import ExamplesToTest
 import LogicPrograms
-import TwoValuedSem
-import ThreeValuedSem
 import Test.Hspec
 import Test.QuickCheck
+import ThreeValuedSem
+import TwoValuedSem
 
 lpTests :: IO ()
 lpTests = hspec $ do
@@ -226,11 +226,11 @@ lpTests = hspec $ do
 
     describe "LogicPrograms module; bodiesLength" $ do
         it "for lp1 it's [0, 0, 0, 0]" $
-            bodiesLength lp1 `shouldBe` [0,0,0,0]
+            bodiesLength lp1 `shouldBe` [0, 0, 0, 0]
         it "for lp2 it's 4 x 0 and 2 x 2" $
-            eqLists (bodiesLength lp2) [0,0,0,0,2,2] `shouldBe` True
+            eqLists (bodiesLength lp2) [0, 0, 0, 0, 2, 2] `shouldBe` True
         it "for lp3 it's 2 x 4 and 2 x 0" $
-            eqLists (bodiesLength lp3) [0,0,4,4] `shouldBe` True
+            eqLists (bodiesLength lp3) [0, 0, 4, 4] `shouldBe` True
 
     describe "LogicPrograms module; clSameHeads" $ do
         it "for 'A1 <- Top' and lp1 it's 2" $
@@ -242,8 +242,8 @@ lpTests = hspec $ do
 
     describe "LogicPrograms module; clsSameHeads" $ do
         it "for lp1 it's 4 x 2" $
-            clsSameHeads lp1 `shouldBe` [2,2,2,2]
+            clsSameHeads lp1 `shouldBe` [2, 2, 2, 2]
         it "for lp2 it's 6 x 3" $
-            clsSameHeads lp2 `shouldBe` [3,3,3,3,3,3]
+            clsSameHeads lp2 `shouldBe` [3, 3, 3, 3, 3, 3]
         it "for lp3 it's 4 x 1" $
-            clsSameHeads lp3 `shouldBe` [1,1,1,1]
+            clsSameHeads lp3 `shouldBe` [1, 1, 1, 1]

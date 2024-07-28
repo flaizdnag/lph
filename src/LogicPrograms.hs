@@ -1,8 +1,8 @@
-{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-{-|
+{- |
 Module      : LogicPrograms
 Description : Logic programs with basic properties as Herbrand base or parts of
               clauses.
@@ -36,64 +36,70 @@ This module contains definitions of types for atoms, clauses and logic programs,
 as well as functions that provide essential properties of clauses and logic
 programs.
 -}
-module LogicPrograms
-    ( Atom (..)
-    , Clause (..)
-    , LP
-    , IntLP (..)
-    , OverlappingAtoms
-    , clPBody
-    , clNBody
-    , clBodyDup
-    , clBody
-    , lpHeadsDup
-    , lpHeads
-    , lpBodiesDup
-    , lpBodies
-    , onlyHeads
-    , onlyBodies
-    , lpPBodiesDup
-    , lpPBodies
-    , lpNBodiesDup
-    , lpNBodies
-    , bpDup
-    , bp
-    , atomDef
-    , definedLP
-    , undefinedLP
-    , isModel2vLP
-    , isModelLukasiewiczLP
-    , evalBody2v
-    , evalBodyLukasiewicz
-    , lpSymDifference
-    , modifiedLP
-    , intsLPgenerator2v
-    , intsLPgeneratorLuk
-    , getCounterModelsLuk
-    , getCounterModels2v
-    , overlappingAtoms
-    , bodyLength
-    , bodiesLength
-    , clSameHeads
-    , clsSameHeads
-    , mkCLpositive
-    , mkLPpositive
-    ) where
+module LogicPrograms (
+    Atom (..),
+    Clause (..),
+    LP,
+    IntLP (..),
+    OverlappingAtoms,
+    clPBody,
+    clNBody,
+    clBodyDup,
+    clBody,
+    lpHeadsDup,
+    lpHeads,
+    lpBodiesDup,
+    lpBodies,
+    onlyHeads,
+    onlyBodies,
+    lpPBodiesDup,
+    lpPBodies,
+    lpNBodiesDup,
+    lpNBodies,
+    bpDup,
+    bp,
+    atomDef,
+    definedLP,
+    undefinedLP,
+    isModel2vLP,
+    isModelLukasiewiczLP,
+    evalBody2v,
+    evalBodyLukasiewicz,
+    lpSymDifference,
+    modifiedLP,
+    intsLPgenerator2v,
+    intsLPgeneratorLuk,
+    getCounterModelsLuk,
+    getCounterModels2v,
+    overlappingAtoms,
+    bodyLength,
+    bodiesLength,
+    clSameHeads,
+    clsSameHeads,
+    mkCLpositive,
+    mkLPpositive,
+) where
 
+import Data.Aeson
+import GHC.Generics
 
-import           Data.Aeson
-import           GHC.Generics
-
-import           Auxiliary
-import           Data.List      (groupBy, intercalate, intersect, nub,
-                                 partition, sortBy, subsequences, (\\))
-import           System.Random
-import           ThreeValuedSem
-import           TwoValuedSem
-
+import Auxiliary
+import Data.List (
+    groupBy,
+    intercalate,
+    intersect,
+    nub,
+    partition,
+    sortBy,
+    subsequences,
+    (\\),
+ )
+import System.Random
+import ThreeValuedSem
+import TwoValuedSem
 
 -- | Atoms are basic structures for clauses.
-data Atom = A { idx :: Int, label :: [Char] }
+data Atom = A {idx :: Int, label :: [Char]}
     deriving (Read, Generic)
 
 {-
@@ -107,9 +113,10 @@ instance ToJSON Atom where
 
 instance Show Atom where
     show (A idx lab)
-        | null lab  = "A" ++ show idx
+        | null lab = "A" ++ show idx
         | otherwise = "A" ++ show idx ++ "^" ++ lab
-        -- | otherwise = "A" ++ show idx
+
+-- \| otherwise = "A" ++ show idx
 
 instance Eq Atom where
     A a xs == A b ys = a == b && eqLists xs ys
@@ -118,19 +125,19 @@ instance Ord Atom where
     A a xs < A b ys = a < b || (a == b && ltLists xs ys)
 
     a <= b = (a < b) || (a == b)
-    a >  b = b < a
+    a > b = b < a
     a >= b = b <= a
 
 instance TwoValuedSemantic Atom IntLP where
     eval2v a int
         | a `elem` trLP int = Tr2v
-        | otherwise         = Fa2v
+        | otherwise = Fa2v
 
 instance LukasiewiczSemantic Atom IntLP where
     evalLukasiewicz a int
         | a `elem` trLP int = Tr3v
         | a `elem` faLP int = Fa3v
-        | otherwise         = Un3v
+        | otherwise = Un3v
 
 instance Bounded Atom where
     minBound = A 1 ""
@@ -142,22 +149,22 @@ instance Enum Atom where
 
 instance Random Atom where
     random g = case randomR (fromEnum (minBound :: Atom), fromEnum (maxBound :: Atom)) g of
-                 (r, g') -> (toEnum r, g')
+        (r, g') -> (toEnum r, g')
 
-    randomR (a,b) g = case randomR (fromEnum a, fromEnum b) g of
-                        (r, g') -> (toEnum r, g')
+    randomR (a, b) g = case randomR (fromEnum a, fromEnum b) g of
+        (r, g') -> (toEnum r, g')
 
-
--- | We do not implement negation as finite failure---instead, the negated
--- atoms from the body of a clause are kept in a separate list. The tuple is
--- organised in the following way: atom, which is the head of a clause, list of
--- atoms from the body of a clause that are not preceded by negation, list of
--- atoms from the body of a clause that are negated.
-data Clause =
-      Fact { clHead :: Atom }
-    | Assumption { clHead :: Atom }
+{- | We do not implement negation as finite failure---instead, the negated
+atoms from the body of a clause are kept in a separate list. The tuple is
+organised in the following way: atom, which is the head of a clause, list of
+atoms from the body of a clause that are not preceded by negation, list of
+atoms from the body of a clause that are negated.
+-}
+data Clause
+    = Fact {clHead :: Atom}
+    | Assumption {clHead :: Atom}
     | Cl
-        { clHead   :: Atom
+        { clHead :: Atom
         , clPAtoms :: [Atom]
         , clNAtoms :: [Atom]
         }
@@ -169,75 +176,75 @@ instance ToJSON Clause where
 
 instance TwoValuedSemantic Clause IntLP where
     eval2v cl int = case cl of
-        Fact h                 -> eval2v h int
-        Assumption _           -> Tr2v
+        Fact h -> eval2v h int
+        Assumption _ -> Tr2v
         _
             | headTr || bodyFa -> Tr2v
-            | otherwise        -> Fa2v
-        where
-            headTr = eval2v (clHead cl) int == Tr2v
-            bodyFa = evalBody2v cl int == Fa2v
+            | otherwise -> Fa2v
+      where
+        headTr = eval2v (clHead cl) int == Tr2v
+        bodyFa = evalBody2v cl int == Fa2v
 
 instance LukasiewiczSemantic Clause IntLP where
     evalLukasiewicz cl int = case cl of
-        Fact h                 -> evalLukasiewicz h int
-        Assumption _           -> Tr3v
+        Fact h -> evalLukasiewicz h int
+        Assumption _ -> Tr3v
         _
-            | headTr           -> Tr3v
-            | bodyFa           -> Tr3v
+            | headTr -> Tr3v
+            | bodyFa -> Tr3v
             | headUn && bodyUn -> Tr3v
             | headFa && bodyTr -> Fa3v
-            | otherwise        -> Un3v
-        where
-            headTr = evalLukasiewicz (clHead cl) int == Tr3v
-            headFa = evalLukasiewicz (clHead cl) int == Fa3v
-            headUn = evalLukasiewicz (clHead cl) int == Un3v
-            bodyTr = evalBodyLukasiewicz cl int == Tr3v
-            bodyFa = evalBodyLukasiewicz cl int == Fa3v
-            bodyUn = evalBodyLukasiewicz cl int == Un3v
+            | otherwise -> Un3v
+      where
+        headTr = evalLukasiewicz (clHead cl) int == Tr3v
+        headFa = evalLukasiewicz (clHead cl) int == Fa3v
+        headUn = evalLukasiewicz (clHead cl) int == Un3v
+        bodyTr = evalBodyLukasiewicz cl int == Tr3v
+        bodyFa = evalBodyLukasiewicz cl int == Fa3v
+        bodyUn = evalBodyLukasiewicz cl int == Un3v
 
 instance Eq Clause where
-    Fact h1       == Fact h2        = h1 == h2
-    Assumption h1 == Assumption h2  = h1 == h2
-    Cl h1 pb1 nb1 == Cl h2 pb2 nb2  = h1 == h2 && eqLists pb1 pb2 && eqLists nb1 nb2
-    _             == _              = False
+    Fact h1 == Fact h2 = h1 == h2
+    Assumption h1 == Assumption h2 = h1 == h2
+    Cl h1 pb1 nb1 == Cl h2 pb2 nb2 = h1 == h2 && eqLists pb1 pb2 && eqLists nb1 nb2
+    _ == _ = False
 
 instance Ord Clause where
     Assumption h1 < Assumption h2 = h1 < h2
-    Assumption _  < _             = True
-    _             < Assumption _  = False
-    Fact h1       < Fact h2       = h1 < h2
-    Fact _        < _             = True
-    _             < Fact _        = False
+    Assumption _ < _ = True
+    _ < Assumption _ = False
+    Fact h1 < Fact h2 = h1 < h2
+    Fact _ < _ = True
+    _ < Fact _ = False
     Cl h1 pb1 nb1 < Cl h2 pb2 nb2
-        | h1  < h2  = True
-        | h1  > h2  = False
+        | h1 < h2 = True
+        | h1 > h2 = False
         | pb1 < pb2 = True
         | pb1 > pb2 = False
         | nb1 < nb2 = True
         | otherwise = False
 
     a <= b = (a < b) || (a == b)
-    a >  b = b < a
+    a > b = b < a
     a >= b = b <= a
 
 instance Show Clause where
     show cl = case cl of
-        Fact h          -> show h ++ " <- Top"
-        Assumption h    -> show h ++ " <- Bot"
+        Fact h -> show h ++ " <- Top"
+        Assumption h -> show h ++ " <- Bot"
         Cl h pb nb
-            | null pb   -> show h ++ " <- ~" ++ intercalate ", ~" (map show nb)
-            | null nb   -> show h ++ " <- " ++ intercalate ", " (map show pb)
+            | null pb -> show h ++ " <- ~" ++ intercalate ", ~" (map show nb)
+            | null nb -> show h ++ " <- " ++ intercalate ", " (map show pb)
             | otherwise -> show h ++ " <- " ++ intercalate ", " (map show pb) ++ ", ~" ++ intercalate ", ~" (map show nb)
 
 -- | Logic program is a list of clauses.
 type LP = [Clause]
 
-
--- | An interpretation is a tuple with lists of atoms: the first list contains
--- atoms that are mapped to truth and the second those that are mapped to
--- false.
-data IntLP = IntLP { trLP :: [Atom] , faLP :: [Atom] }
+{- | An interpretation is a tuple with lists of atoms: the first list contains
+atoms that are mapped to truth and the second those that are mapped to
+false.
+-}
+data IntLP = IntLP {trLP :: [Atom], faLP :: [Atom]}
     deriving (Read)
 
 instance Show IntLP where
@@ -252,265 +259,253 @@ instance Ord IntLP where
         isProperSublist tr1 tr2 && isProperSublist fa1 fa2
 
     a <= b = (a < b) || (a == b)
-    a >  b = b < a
+    a > b = b < a
     a >= b = b <= a
 
 type OverlappingAtoms = (Atom, Atom)
 
-
 -- | Positive body of a clause, i.e. atoms that are not preceded by negation.
 clPBody :: Clause -> [Atom]
 clPBody cl = case cl of
-    Cl {}        -> nub $ clPAtoms cl
-    Fact _       -> []
+    Cl{} -> nub $ clPAtoms cl
+    Fact _ -> []
     Assumption _ -> []
-
 
 -- | Negative body of a clause, i.e. atoms that are preceded by negation.
 clNBody :: Clause -> [Atom]
 clNBody cl = case cl of
-    Cl {}        -> nub $ clNAtoms cl
-    Fact _       -> []
+    Cl{} -> nub $ clNAtoms cl
+    Fact _ -> []
     Assumption _ -> []
-
 
 -- | Atoms from the body of a clause (with duplicates).
 clBodyDup :: Clause -> [Atom]
 clBodyDup cl = case cl of
-    Cl {}        -> clPBody cl ++ clNBody cl
-    Fact _       -> []
+    Cl{} -> clPBody cl ++ clNBody cl
+    Fact _ -> []
     Assumption _ -> []
-
 
 -- | Atoms from the body of a clause (without duplicates).
 clBody :: Clause -> [Atom]
 clBody = nub . clBodyDup
 
-
 -- | All heads of clauses from a given logic program with duplicates.
 lpHeadsDup :: LP -> [Atom]
 lpHeadsDup = map clHead
-
 
 -- | All heads of clauses from a given logic program without duplicates.
 lpHeads :: LP -> [Atom]
 lpHeads = nub . lpHeadsDup
 
-
--- | Atoms from the bodies of all clauses from a given logic program with
--- duplicates.
+{- | Atoms from the bodies of all clauses from a given logic program with
+duplicates.
+-}
 lpBodiesDup :: LP -> [Atom]
 lpBodiesDup = concatMap clBodyDup
 
-
--- | Atoms from the bodies of all clauses from a given logic program without
--- duplicates.
+{- | Atoms from the bodies of all clauses from a given logic program without
+duplicates.
+-}
 lpBodies :: LP -> [Atom]
 lpBodies = nub . lpBodiesDup
 
-
--- | A list of atoms that are heads of some clauses from a given logic program,
--- and in the same time they do not occur in any body of those clauses.
+{- | A list of atoms that are heads of some clauses from a given logic program,
+and in the same time they do not occur in any body of those clauses.
+-}
 onlyHeads :: LP -> [Atom]
-onlyHeads lp = [ a | a <- lpHeads lp, a `notElem` lpBodiesDup lp ]
+onlyHeads lp = [a | a <- lpHeads lp, a `notElem` lpBodiesDup lp]
 
-
--- | A list of atoms that occur in a body of some clause from a given logic
--- program, and in the same time they do not occur in any head of those clauses.
+{- | A list of atoms that occur in a body of some clause from a given logic
+program, and in the same time they do not occur in any head of those clauses.
+-}
 onlyBodies :: LP -> [Atom]
-onlyBodies lp = [ a | a <- lpBodies lp, a `notElem` lpHeads lp ]
+onlyBodies lp = [a | a <- lpBodies lp, a `notElem` lpHeads lp]
 
-
--- | Positive atoms from bodies of all clauses form a given logic program with
--- duplicates.
+{- | Positive atoms from bodies of all clauses form a given logic program with
+duplicates.
+-}
 lpPBodiesDup :: LP -> [Atom]
 lpPBodiesDup = concatMap clPBody
 
-
--- | Positive atoms from bodies of all clauses form a given logic program
--- without duplicates.
+{- | Positive atoms from bodies of all clauses form a given logic program
+without duplicates.
+-}
 lpPBodies :: LP -> [Atom]
 lpPBodies = nub . lpPBodiesDup
 
-
--- | Negative atoms from bodies of all clauses form a given logic program with
--- duplicates.
+{- | Negative atoms from bodies of all clauses form a given logic program with
+duplicates.
+-}
 lpNBodiesDup :: LP -> [Atom]
 lpNBodiesDup = concatMap clNBody
 
-
--- | Negative atoms from bodies of all clauses form a given logic program with
--- duplicates.
+{- | Negative atoms from bodies of all clauses form a given logic program with
+duplicates.
+-}
 lpNBodies :: LP -> [Atom]
 lpNBodies = nub . lpNBodiesDup
 
-
--- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
--- in the clauses from a given logic program (with duplicates).
+{- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
+in the clauses from a given logic program (with duplicates).
+-}
 bpDup :: LP -> [Atom]
 bpDup lp = lpHeadsDup lp ++ lpBodiesDup lp
 
-
--- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
--- in the clauses from a given logic program (without duplicates).
+{- | The Herbrand base of a logic program, i.e. the list of all atoms that occur
+in the clauses from a given logic program (without duplicates).
+-}
 bp :: LP -> [Atom]
 bp = nub . bpDup
 
-
--- | Definition of an atom is the set of all clauses that have the atom as the
--- head (may contain duplicates).
+{- | Definition of an atom is the set of all clauses that have the atom as the
+head (may contain duplicates).
+-}
 atomDef :: Atom -> LP -> LP
-atomDef a lp = [ cl | cl <- lp, clHead cl == a ]
-
+atomDef a lp = [cl | cl <- lp, clHead cl == a]
 
 -- | Defined atoms in a given LP.
 definedLP :: LP -> [Atom]
 definedLP = lpHeads
 
-
 -- | Undefined atoms in a given LP.
 undefinedLP :: LP -> [Atom]
 undefinedLP = onlyBodies
 
-
 -- | Evaluates the body of a clause in the two-valued semantic.
 evalBody2v :: Clause -> IntLP -> TwoValues
 evalBody2v cl int = case cl of
-    Fact _                           -> Tr2v
-    Assumption _                     -> Fa2v
+    Fact _ -> Tr2v
+    Assumption _ -> Fa2v
     Cl _ pb nb
         | any isFa pb || any isTr nb -> Fa2v
-        | otherwise                  -> Tr2v
-    where
-        isTr x = eval2v (x :: Atom) int == Tr2v
-        isFa x = eval2v (x :: Atom) int == Fa2v
-
+        | otherwise -> Tr2v
+  where
+    isTr x = eval2v (x :: Atom) int == Tr2v
+    isFa x = eval2v (x :: Atom) int == Fa2v
 
 -- | Evaluates the body of a clause in the Lukasiewicz semantic.
 evalBodyLukasiewicz :: Clause -> IntLP -> ThreeValues
 evalBodyLukasiewicz cl int = case cl of
-    Fact _                           -> Tr3v
-    Assumption _                     -> Fa3v
+    Fact _ -> Tr3v
+    Assumption _ -> Fa3v
     Cl _ pb nb
         | any isFa pb || any isTr nb -> Fa3v
-        | any isUn (pb ++ nb)        -> Un3v
-        | otherwise                  -> Tr3v
-    where
-        isTr x = evalLukasiewicz (x :: Atom) int == Tr3v
-        isFa x = evalLukasiewicz (x :: Atom) int == Fa3v
-        isUn x = evalLukasiewicz (x :: Atom) int == Un3v
+        | any isUn (pb ++ nb) -> Un3v
+        | otherwise -> Tr3v
+  where
+    isTr x = evalLukasiewicz (x :: Atom) int == Tr3v
+    isFa x = evalLukasiewicz (x :: Atom) int == Fa3v
+    isUn x = evalLukasiewicz (x :: Atom) int == Un3v
 
-
--- | Checks if a given interpretation is a model for a given logic program in
--- two-valued semantic.
+{- | Checks if a given interpretation is a model for a given logic program in
+two-valued semantic.
+-}
 isModel2vLP :: LP -> IntLP -> Bool
 isModel2vLP lp int = all (\x -> eval2v x int == Tr2v) lp
 
-
--- | Checks if a given interpretation is a model for a given logic program in
--- Lukasiewicz semantic.
+{- | Checks if a given interpretation is a model for a given logic program in
+Lukasiewicz semantic.
+-}
 isModelLukasiewiczLP :: LP -> IntLP -> Bool
 isModelLukasiewiczLP lp int = all (\x -> evalLukasiewicz x int == Tr3v) lp
 
-
--- | Generator of all possible interpretations from a given set of atoms (in
--- 2-valued semantic).
+{- | Generator of all possible interpretations from a given set of atoms (in
+2-valued semantic).
+-}
 intsLPgenerator2v :: [Atom] -> [IntLP]
 intsLPgenerator2v as =
-    [ IntLP x (as \\ x) | x <- subsequences as ]
+    [IntLP x (as \\ x) | x <- subsequences as]
 
-
--- | Generator of all possible interpretations from a given set of atoms (in
--- Lukasiewicz semantic).
+{- | Generator of all possible interpretations from a given set of atoms (in
+Lukasiewicz semantic).
+-}
 intsLPgeneratorLuk :: [Atom] -> [IntLP]
 intsLPgeneratorLuk as =
-    [ IntLP x y | x <- powerAs, y <- powerAs, null (y `intersect` x) && null (x `intersect` y) ]
-    where
-        powerAs = subsequences as
+    [IntLP x y | x <- powerAs, y <- powerAs, null (y `intersect` x) && null (x `intersect` y)]
+  where
+    powerAs = subsequences as
 
-
--- | Generates all models of a given logic program that are not models of
--- a given clause (for 2-valued semantic).
+{- | Generates all models of a given logic program that are not models of
+a given clause (for 2-valued semantic).
+-}
 getCounterModels2v :: LP -> Clause -> [IntLP]
 getCounterModels2v lp cl = filter countermodels (intsLPgenerator2v $ bp $ cl : lp)
-    where
-        countermodels x = isModel2vLP lp x && not (isModel2vLP [cl] x)
+  where
+    countermodels x = isModel2vLP lp x && not (isModel2vLP [cl] x)
 
-
--- | Generates all models of a given logic program that are not models of
--- a given clause (for Lukasiewicz semantic).
+{- | Generates all models of a given logic program that are not models of
+a given clause (for Lukasiewicz semantic).
+-}
 getCounterModelsLuk :: LP -> Clause -> [IntLP]
 getCounterModelsLuk lp cl = filter countermodels (intsLPgeneratorLuk $ bp $ cl : lp)
-    where
-        countermodels x = isModelLukasiewiczLP lp x && not (isModelLukasiewiczLP [cl] x)
+  where
+    countermodels x = isModelLukasiewiczLP lp x && not (isModelLukasiewiczLP [cl] x)
 
-
--- | Symmetric difference between two logic programs (without atoms with h in
--- the upper index).
+{- | Symmetric difference between two logic programs (without atoms with h in
+the upper index).
+-}
 lpSymDifference :: LP -> LP -> LP
 lpSymDifference lp1 lp2 =
-    [ a | a <- symDifference lp1 lp2, 'h' `notElem` label (clHead a) ]
+    [a | a <- symDifference lp1 lp2, 'h' `notElem` label (clHead a)]
 
-
--- | Modifies a logic program w.r.t. a clause h, i.e. atoms from the body of
--- h are added to the logic program as facts, if they are not preceded by
--- negation, and as assumptions, if they are preceded by negation.
+{- | Modifies a logic program w.r.t. a clause h, i.e. atoms from the body of
+h are added to the logic program as facts, if they are not preceded by
+negation, and as assumptions, if they are preceded by negation.
+-}
 modifiedLP :: LP -> Clause -> LP
 modifiedLP lp cl = case cl of
-    Fact _       -> lp
+    Fact _ -> lp
     Assumption _ -> lp
-    Cl _ pb nb   -> lp ++ facts ++ assumptions
-        where
-            makeFact x       = Fact (A (idx x) (label x ++ "h"))
-            makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
-            facts            = map makeFact pb
-            assumptions      = map makeAssumption nb
+    Cl _ pb nb -> lp ++ facts ++ assumptions
+      where
+        makeFact x = Fact (A (idx x) (label x ++ "h"))
+        makeAssumption x = Assumption (A (idx x) (label x ++ "h"))
+        facts = map makeFact pb
+        assumptions = map makeAssumption nb
 
-
--- | List of atoms that "overlap", i.e. atoms that have the same index number
--- but one of them has label with "h" and the other does not.
+{- | List of atoms that "overlap", i.e. atoms that have the same index number
+but one of them has label with "h" and the other does not.
+-}
 overlappingAtoms :: LP -> [Atom] -> [OverlappingAtoms]
-overlappingAtoms lp abdG = [ (atom, atomCouterpart) |
-    atom <- abdG ++ snd partitionedAtoms,
-    atomCouterpart <- fst partitionedAtoms,
-    LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart ]
-    where
-        -- atoms with "h" in the label and atoms without "h" in the label
-        partitionedAtoms = partition (elem 'h' . LogicPrograms.label) (bp lp)
-
+overlappingAtoms lp abdG =
+    [ (atom, atomCouterpart)
+    | atom <- abdG ++ snd partitionedAtoms
+    , atomCouterpart <- fst partitionedAtoms
+    , LogicPrograms.idx atom == LogicPrograms.idx atomCouterpart
+    ]
+  where
+    -- atoms with "h" in the label and atoms without "h" in the label
+    partitionedAtoms = partition (elem 'h' . LogicPrograms.label) (bp lp)
 
 -- | The length of the body of a given clause.
 bodyLength :: Clause -> Int
 bodyLength = length . clBody
 
-
 -- | Lengths of all bodies of clauses from a given logic program.
 bodiesLength :: LP -> [Int]
 bodiesLength = map bodyLength
 
-
--- | The number of clauses that have the same atom in their head as the given
--- clause.
+{- | The number of clauses that have the same atom in their head as the given
+clause.
+-}
 clSameHeads :: Clause -> LP -> Int
-clSameHeads cl lp = length [ cls | cls <- lp, clHead cls == clHead cl ]
+clSameHeads cl lp = length [cls | cls <- lp, clHead cls == clHead cl]
 
-
--- | The number of clauses that have the same atom in their head as the given
--- clause for every clause in a given logic program.
+{- | The number of clauses that have the same atom in their head as the given
+clause for every clause in a given logic program.
+-}
 clsSameHeads :: LP -> [Int]
 clsSameHeads lp = map (`clSameHeads` lp) lp
-
 
 -- | Creates a positive version of a clause
 mkCLpositive :: Clause -> Clause
 mkCLpositive cl = case cl of
     Cl head positiveAts negativeAts -> Cl head newPositiveAts []
-        where
-            newPositiveAts = positiveAts ++ map markAtN negativeAts
+      where
+        newPositiveAts = positiveAts ++ map markAtN negativeAts
 
-            markAtN :: Atom -> Atom
-            markAtN (A idx label) = A idx ('n': label)
-
+        markAtN :: Atom -> Atom
+        markAtN (A idx label) = A idx ('n' : label)
     _ -> cl
 
 mkLPpositive :: LP -> LP

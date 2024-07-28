@@ -1,11 +1,11 @@
 module TpOperatorTests (tpOperatorTests) where
 
-import ExamplesToTest
 import Auxiliary
+import ExamplesToTest
 import LogicPrograms
-import TpOperator
 import Test.Hspec
 import Test.QuickCheck
+import TpOperator
 
 tpOperatorTests :: IO ()
 tpOperatorTests = hspec $ do
@@ -65,7 +65,6 @@ tpOperatorTests = hspec $ do
         it "for lp5 and int5" $
             opTp lp5 int5 `shouldBe` IntLP [A 2 ""] [A 1 ""]
 
-
     describe "PhiOperator module; upArrow" $ do
         it "for lp1" $
             upArrow lp1 `shouldBe` [IntLP [A 1 "", A 2 ""] [], int1]
@@ -77,7 +76,6 @@ tpOperatorTests = hspec $ do
             upArrow lp4 `shouldBe` [IntLP [] [A 1 "", A 2 ""], int1]
         it "for lp5" $
             upArrow lp5 `shouldBe` [IntLP [A 2 ""] [A 1 ""], IntLP [A 1 "", A 2 ""] [], int1]
-
 
     describe "PhiOperator module; isCondequenceA" $ do
         it "for lp1 and A1" $
@@ -93,22 +91,17 @@ tpOperatorTests = hspec $ do
         it "for lp5 and A2" $
             isConsequenceA (A 2 "") lp5 `shouldBe` True
 
-
 int1 :: IntLP
 int1 = IntLP [] []
-
 
 int2 :: IntLP
 int2 = IntLP [A 10 ""] [A 11 ""]
 
-
 int3 :: IntLP
 int3 = IntLP [A 1 "", A 3 ""] [A 4 "", A 5 ""]
 
-
 int4 :: IntLP
 int4 = IntLP [A 4 "", A 5 ""] [A 1 "", A 2 "", A 3 ""]
-
 
 int5 :: IntLP
 int5 = IntLP [A 2 ""] [A 1 ""]

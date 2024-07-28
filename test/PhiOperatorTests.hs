@@ -1,7 +1,7 @@
 module PhiOperatorTests (phiOperatorTests) where
 
-import ExamplesToTest
 import Auxiliary
+import ExamplesToTest
 import LogicPrograms
 import PhiOperator
 import Test.Hspec
@@ -65,7 +65,6 @@ phiOperatorTests = hspec $ do
         it "for lp5 and int5" $
             opPhi lp5 int5 `shouldBe` IntLP [A 2 ""] [A 1 ""]
 
-
     describe "PhiOperator module; iterOpPhi" $ do
         it "for lp1" $
             iterOpPhi lp1 `shouldBe` [IntLP [A 1 "", A 2 ""] [], int1]
@@ -77,7 +76,6 @@ phiOperatorTests = hspec $ do
             iterOpPhi lp4 `shouldBe` [int1]
         it "for lp5" $
             iterOpPhi lp5 `shouldBe` [int1]
-
 
     describe "PhiOperator module; findModelOpPhi" $ do
         it "for lp1" $
@@ -91,22 +89,17 @@ phiOperatorTests = hspec $ do
         it "for lp5" $
             findModelOpPhi lp5 `shouldBe` int1
 
-
 int1 :: IntLP
 int1 = IntLP [] []
-
 
 int2 :: IntLP
 int2 = IntLP [A 10 ""] [A 11 ""]
 
-
 int3 :: IntLP
 int3 = IntLP [A 1 "", A 3 ""] [A 4 "", A 5 ""]
 
-
 int4 :: IntLP
 int4 = IntLP [A 4 "", A 5 ""] [A 1 "", A 2 "", A 3 ""]
-
 
 int5 :: IntLP
 int5 = IntLP [A 2 ""] [A 1 ""]

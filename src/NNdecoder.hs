@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-{-|
+{- |
 Module      : NNdecoder
 Description : Conversion from Python data into a logic program.
 Copyright   : (c) Andrzej G., 2017-
@@ -12,60 +12,58 @@ Portability : POSIX
 
 Longer description.
 -}
-module NNdecoder
-    ( InpOutTOlp (..)
-    , LPpython (..)
-    , decodeNN
-    , neuronToAtom
-    , makeLPpython
-    ) where
+module NNdecoder (
+    InpOutTOlp (..),
+    LPpython (..),
+    decodeNN,
+    neuronToAtom,
+    makeLPpython,
+) where
 
-import           Auxiliary
-import           Data.Aeson
-import           Data.List      (partition)
-import           GHC.Generics
-import           LogicPrograms  as LP
-import           NeuralNetworks as NN
+import Auxiliary
+import Data.Aeson
+import Data.List (partition)
+import GHC.Generics
+import LogicPrograms as LP
+import NeuralNetworks as NN
 
-import           JsonHandling
-import           LPsimplifier
-
+import JsonHandling
+import LPsimplifier
 
 data InpOutTOlp = InpOutTOlp
     { orderInp :: [String]
     , orderOut :: [String]
-    , amin     :: Float
-    , ioPairs  :: [IOpair]
-    } deriving (Generic, Read, Eq, Show)
+    , amin :: Float
+    , ioPairs :: [IOpair]
+    }
+    deriving (Generic, Read, Eq, Show)
 
 instance FromJSON InpOutTOlp
 instance ToJSON InpOutTOlp where
     toEncoding = genericToEncoding defaultOptions
 
-
 newtype LPpython = LPpython
     { lp :: LPjson
-    } deriving (Show, Read, Generic)
+    }
+    deriving (Show, Read, Generic)
 
 instance FromJSON LPpython
 instance ToJSON LPpython where
     toEncoding = genericToEncoding defaultOptions
 
-
-type IOpair   = ([Int], [Float])
-
+type IOpair = ([Int], [Float])
 
 neuronToAtom :: String -> Atom
 neuronToAtom n = case n of
-    "inpT" -> A { LP.idx = -1, LP.label = "truth" }
-    _      -> read n :: LP.Atom
+    "inpT" -> A{LP.idx = -1, LP.label = "truth"}
+    _ -> read n :: LP.Atom
+
 {-
     _      -> A { LP.idx = newIndex, LP.label = newLabel}
         where
             newIndex = read $ tail n
             newLabel = []
 -}
-
 
 decodeNN :: InpOutTOlp -> LP
 decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
@@ -77,27 +75,30 @@ decodeNN (InpOutTOlp inpNs outNs amin ioPairs) = do
             (getAtoms $ atomsTrFa $ zip inpAtoms inpValues, trHeads $ zip outAtoms outValues)
 
         getAtoms (p1, p2) = (map fst p1, map fst p2)
-        atomsTrFa = partition ((1==) . snd) . filter (("truth"/=) . LP.label . fst)
-        trHeads = map fst . filter ((amin<=) . snd)
+        atomsTrFa = partition ((1 ==) . snd) . filter (("truth" /=) . LP.label . fst)
+        trHeads = map fst . filter ((amin <=) . snd)
 
     do
         head <- heads
         return (Cl head trAtoms faAtoms)
 
-
 makeLPpython :: LP -> LPpython
-makeLPpython xs = LPpython { NNdecoder.lp = LPjson
-    { facts = filter isFact xs
-    , assumptions = filter isAssumption xs
-    , clauses = filter isClause xs}
-    }
-    where
-        isFact x = case x of
-            Fact _ -> True
-            _      -> False
-        isAssumption x = case x of
-            Assumption _ -> True
-            _            -> False
-        isClause x = case x of
-            Cl {} -> True
-            _     -> False
+makeLPpython xs =
+    LPpython
+        { NNdecoder.lp =
+            LPjson
+                { facts = filter isFact xs
+                , assumptions = filter isAssumption xs
+                , clauses = filter isClause xs
+                }
+        }
+  where
+    isFact x = case x of
+        Fact _ -> True
+        _ -> False
+    isAssumption x = case x of
+        Assumption _ -> True
+        _ -> False
+    isClause x = case x of
+        Cl{} -> True
+        _ -> False
