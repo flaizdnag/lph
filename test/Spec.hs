@@ -1,20 +1,19 @@
-import           AcceptableTests
-import           AuxiliaryTests
-import           CPLTests
-import           CompletionTests
-import           GraphTests
-import           LPsimplifierTests
-import           LogicProgramsTests
-import           LvlMapTests
-import           NNdecoderTests
-import           NeuralNetworksTests
-import           PhiOperatorTests
-import           Test.Hspec
-import           Test.QuickCheck
-import           TpOperatorTests
-import           TranslationTpTests
+import AcceptableTests
+import AuxiliaryTests
+import CPLTests
+import CompletionTests
+import GraphTests
+import LPsimplifierTests
+import LogicProgramsTests
+import LvlMapTests
+import NNdecoderTests
+import NeuralNetworksTests
+import PhiOperatorTests
+import Test.Hspec
+import Test.QuickCheck
+import TpOperatorTests
+import TranslationTpTests
 
-    
 main :: IO ()
 main = do
     putStrLn "Tests for 'Accepatble' module"
@@ -53,10 +52,10 @@ main = do
     neuralNetworksTests
     putStrLn ""
     putStrLn ""
-    --putStrLn "Tests for 'NNdecoder' module"
-    --nnDecoderTests
-    --putStrLn ""
-    --putStrLn ""
+    -- putStrLn "Tests for 'NNdecoder' module"
+    -- nnDecoderTests
+    -- putStrLn ""
+    -- putStrLn ""
     putStrLn "Tests for 'PhiOperator' module"
     phiOperatorTests
     putStrLn ""
@@ -65,5 +64,6 @@ main = do
     tpOperatorTests
     putStrLn ""
     putStrLn ""
-    --putStrLn "Tests for 'TranslationTp' module"
-    --translationTpTests
+
+-- putStrLn "Tests for 'TranslationTp' module"
+-- translationTpTests

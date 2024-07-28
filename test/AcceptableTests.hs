@@ -1,10 +1,9 @@
 module AcceptableTests (acceptableTests) where
 
-import ExamplesToTest
 import Acceptable
+import ExamplesToTest
 import Test.Hspec
 import Test.QuickCheck
-
 
 acceptableTests :: IO ()
 acceptableTests = hspec $ do

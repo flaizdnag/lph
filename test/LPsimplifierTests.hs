@@ -1,9 +1,9 @@
 module LPsimplifierTests (lpSimplifierTests) where
 
-import ExamplesToTest
 import Auxiliary
-import LogicPrograms
+import ExamplesToTest
 import LPsimplifier
+import LogicPrograms
 import Test.Hspec
 import Test.QuickCheck
 
@@ -25,14 +25,11 @@ lpSimplifierTests = hspec $ do
         it "for lp5" $
             eqLists (simplifyLP lp5) simpLP5 `shouldBe` True
 
-
 simpLP1 :: LP
-simpLP1 = [ Fact (A 1 ""), Fact (A 2 "") ]
-
+simpLP1 = [Fact (A 1 ""), Fact (A 2 "")]
 
 simpLP2 :: LP
-simpLP2 = [ Fact (A 1 ""), Fact (A 2 "") ]
-
+simpLP2 = [Fact (A 1 ""), Fact (A 2 "")]
 
 simpLP3 :: LP
 simpLP3 =
@@ -42,6 +39,5 @@ simpLP3 =
     , Fact (A 4 "")
     ]
 
-
 simpLP5 :: LP
-simpLP5 = [ Fact (A 2 ""), Cl (A 1 "") [] [A 2 ""] ]
+simpLP5 = [Fact (A 2 ""), Cl (A 1 "") [] [A 2 ""]]

@@ -1,16 +1,16 @@
 module NNdecoderTests (nnDecoderTests) where
 
-import           Auxiliary
-import           ExamplesToTest
-import           LogicPrograms
-import           NNdecoder
+import Auxiliary
+import ExamplesToTest
+import LogicPrograms
+import NNdecoder
 
-import           Test.Hspec
-import           Test.QuickCheck
-
+import Test.Hspec
+import Test.QuickCheck
 
 nnDecoderTests :: IO ()
 nnDecoderTests = putStrLn "x"
+
 {-
 nnDecoderTests = hspec $ do
     describe "NNdecoder module; decodeNN" $ do
@@ -21,12 +21,11 @@ nnDecoderTests = hspec $ do
         it "decoding three clauses" $
             eqLists (decodeNN 0.7 ord2 ioPairs2) rawLP2 `shouldBe` True
 
-
 ord0 :: ([Atom], [Atom])
 ord0 = ([A 1 "", A 2 ""], [A 1 "", A 2 ""])
 
 ioPairs0 :: [([Int], [Float])]
-ioPairs0 = 
+ioPairs0 =
     [ ([ 1, 1], [-1.0,-1.0])
     , ([ 1,-1], [-1.0,-1.0])
     , ([-1, 1], [-1.0,-1.0])
@@ -36,12 +35,11 @@ ioPairs0 =
 rawLP0 :: LP
 rawLP0 = []
 
-
 ord1 :: ([Atom], [Atom])
 ord1 = ([A 1 "", A 2 ""], [A 1 "", A 2 ""])
 
 ioPairs1 :: [([Int], [Float])]
-ioPairs1 = 
+ioPairs1 =
     [ ([ 1, 1], [-1.0,-1.0])
     , ([ 1,-1], [-1.0,-1.0])
     , ([-1, 1], [ 1.0,-1.0])
@@ -51,12 +49,11 @@ ioPairs1 =
 rawLP1 :: LP
 rawLP1 = [ Cl (A 1 "") [A 2 ""] [A 1 ""] ]
 
-
 ord2 :: ([Atom], [Atom])
 ord2 = ([A 1 "", A 2 "", A 3 ""], [A 1 "", A 2 "", A 3 ""])
 
 ioPairs2 :: [([Int], [Float])]
-ioPairs2 = 
+ioPairs2 =
     [ ([ 1, 1, 1], [-1.0,-1.0,-1.0])
     , ([ 1, 1,-1], [-1.0,-1.0, 1.0])
     , ([ 1,-1, 1], [-1.0, 1.0,-1.0])

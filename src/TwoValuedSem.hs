@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-{-|
+{- |
 Module      : TwoValuedSem
 Description : Module defining two-valued semantics
 Copyright   : (c) Andrzej G., 2017-
@@ -11,15 +11,13 @@ Portability : POSIX
 
 Module containing class for two-valued semantics.
 -}
-module TwoValuedSem
-    ( TwoValues (..)
-    , TwoValuedSemantic (..)
-    ) where
-
+module TwoValuedSem (
+    TwoValues (..),
+    TwoValuedSemantic (..),
+) where
 
 class TwoValuedSemantic a b where
     eval2v :: a -> b -> TwoValues
-
 
 data TwoValues = Tr2v | Fa2v
     deriving (Show, Read, Eq)
