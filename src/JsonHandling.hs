@@ -36,7 +36,7 @@ data LPjson = LPjson
     , assumptions :: [Clause]
     , clauses :: [Clause]
     }
-    deriving (Show, Read, Eq, Generic)
+    deriving (Show, Read, Eq, Generic, Ord)
 
 instance FromJSON LPjson
 instance ToJSON LPjson where
